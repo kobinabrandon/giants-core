@@ -1,3 +1,4 @@
+import os
 import re
 import json 
 import spacy  
@@ -33,12 +34,14 @@ class Reader:
     def __init__(self, book: Book, use_spacy: bool) -> None:
         self.book = book 
         self.use_spacy = use_spacy
+        self.save_path = PAGE_DETAILS_WITH_SPACY if self.use_spacy else PAGE_DETAILS_WITHOUT_SPACY
+        make_fundamental_paths()
 
     def read_pdf(self) -> Document:
         return pymupdf.open(filename=self.book.file_path)
 
     @staticmethod
-    def remove_newline_marker(text: str) -> str:
+    def remove_new_line_marker(text: str) -> str:
         return text.replace("\n", " ").strip()
 
     def get_page_details(self, document: Document,  describe: bool) -> list[dict] | tuple[list[dict], pd.DataFrame]:
@@ -54,8 +57,7 @@ class Reader:
             use_spacy (bool): whether to use spacy to perform sentence segmentation.
             describe (bool): whether to make and save a dataframe containing descriptive statistics for the whole book.
         """
-        save_path = PAGE_DETAILS_WITH_SPACY if self.use_spacy else PAGE_DETAILS_WITHOUT_SPACY
-        page_details_path = save_path/"all_page_details.json"
+        page_details_path = self.save_path/"all_page_details.json"
 
         if Path(page_details_path).is_file():
             logger.success(f"The details of every page of {self.book.title} have already been collected -> Fetching them")
@@ -65,10 +67,10 @@ class Reader:
             all_page_details = []
             for page_number, page in tqdm(
                 iterable=enumerate(document),  
-                desc=f"Collecting the details of the pages of {self.book.title}"
+                desc=f'Collecting the details of the pages of "{self.book.title}"'
             ):
                 raw_text = page.get_text()
-                cleaned_text = self.remove_new_line_(text=raw_text)
+                cleaned_text = self.remove_new_line_marker(text=raw_text)
 
                 if self.use_spacy:
                     segmenter = SentenceSegmentation(text=cleaned_text, use_spacy=True)
@@ -87,21 +89,25 @@ class Reader:
                 }
 
                 all_page_details.append(page_details)
+
+            logger.success(f'Saving the details of all the pages of "{self.book.title}"')
+            with open(self.save_path, mode="w") as file:
+                json.dump(all_page_details, file)
     
         if describe:
             logger.warning("Now to generate descriptive statistics for the details of all the pages")            
-            descriptives_path = save_path/f"{self.book.file_name}_descriptives.parquet"
+            descriptives_path = self.save_path/f"{self.book.file_name}_descriptives.parquet"
             
             if Path(descriptives_path).is_file():
                 logger.success("The descriptives have already been calculated -> Fetching them")
                 descriptives = pd.read_parquet(path=descriptives_path)
             else:
-                details_dataframe = pd.DataFrame()
+                dataframe_of_all_details = pd.DataFrame()
                 for page_details in tqdm(iterable=all_page_details, desc="Making dataframe of details for each page"):
-                    dataframe_of_page = pd.DataFrame(data=page_details)
-                    details_dataframe = pd.concat([details_dataframe, dataframe_of_page], axis=0)
+                    dataframe_of_page_details = pd.DataFrame(data=page_details)
+                    dataframe_of_all_details = pd.concat([dataframe_of_all_details, dataframe_of_page_details], axis=0)
 
-                descriptives = details_dataframe.describe().round(2)
+                descriptives = dataframe_of_all_details.describe().round(2)
                 descriptives.to_parquet(descriptives_path)
                 return all_page_details, descriptives
 
@@ -227,15 +233,30 @@ class SentenceChunking:
         return all_chunk_details
 
 
-def read_books(books: list[Book], use_spacy: bool, describe: bool):
+def read_books(books: list[Book], use_spacy: bool, describe: bool) -> dict[str, list[dict] | tuple[list[dict], pd.DataFrame]]:
+    """
+    Read each of the books and produce the lists that contain all the dictionaries that contain the details of each page.
 
-    for book in books:
+    Args:
+        books (list[Book]): the books to be read
+        use_spacy (bool): whether to use spacy to perform sentence segmentation 
+        describe (bool): whether to produce dataframes of descriptive statistics
+
+    Returns:
+        dict[str, list[dict] | tuple[list[dict], pd.DataFrame]]: 
+    """
+    details_of_books = {}
+    for book in tqdm(iterable=books, desc="Reading books and extracting their details"):
         reader = Reader(book=book, use_spacy=use_spacy)
         document = reader.read_pdf()
-        reader.get_page_details(document=document, describe=describe)
+        all_page_details = reader.get_page_details(document=document, describe=describe)
+
+        details_of_books[book.title] = all_page_details
+
+    return details
 
 
 if __name__ == "__main__":
-    read_books(
+    details_of_all_books = read_books(
         books=[neo_colonialism, africa_unite, dark_days], use_spacy=True, describe=True
     )
