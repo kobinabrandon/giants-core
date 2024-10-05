@@ -24,17 +24,17 @@ class Book:
             title (str): _description_
         """
         if not os.path.exists(path=self.file_path):
-            logger.warning(f"You don't have {self.title}. Downloading it now...")
+            logger.warning(f'You do not have "{self.title}" -> Downloading it now...')
             response = requests.get(url=self.url)
 
             if response.status_code == 200:
                 with open(self.file_path, mode="wb") as file:
                     file.write(response.content)
-                logger.success(f"Downloaded {self.title}")
+                logger.success(f'Downloaded "{self.title}')
             else:
                 logger.error(f"Couldn't download {self.title}. Status code: {response.status_code}")
         else:
-            logger.success(f"You already have {self.title}!")
+            logger.success(f'You already have "{self.title}"')
 
 
 neo_colonialism = Book(

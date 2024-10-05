@@ -1,5 +1,7 @@
+# Files
 .env
 
 
 # Directories 
-/data
+/data/
+**/__pycache__/
