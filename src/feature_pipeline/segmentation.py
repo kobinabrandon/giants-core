@@ -1,3 +1,8 @@
+"""
+Provides code that uses spacy to perform sentence segmentation.
+"""
+
+
 from spacy.lang.en import English
 from spacy.tokens import Doc, Span
 
