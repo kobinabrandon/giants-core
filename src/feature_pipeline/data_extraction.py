@@ -4,7 +4,6 @@ Contains code that downloads selected books by His Excellency Osagyefo Dr Kwame 
 import os 
 import requests 
 from loguru import logger 
-from tqdm.auto import tqdm 
 
 from src.setup.paths import RAW_DATA_DIR, make_fundamental_paths
 
@@ -29,8 +28,8 @@ class Book:
 
             if response.status_code == 200:
                 with open(self.file_path, mode="wb") as file:
-                    file.write(response.content)
-                logger.success(f'Downloaded "{self.title}')
+                    _ = file.write(response.content)
+                logger.success(f"Downloaded {self.title}")
             else:
                 logger.error(f"Couldn't download {self.title}. Status code: {response.status_code}")
         else:

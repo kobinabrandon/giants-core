@@ -1,17 +1,16 @@
 """
-Providing t
+Providing custom types to manage the details of our texts or sections therefrom.
 """
 from dataclasses import dataclass
-from typing import Union, List
 
 
 @dataclass
 class SectionDetails:
     name: str
-    value: Union[str, int]
+    value: str | int
     
 
 @dataclass
 class BooksAndDetails:
     titles: str
-    details: List[SectionDetails]
+    details: list[SectionDetails]

@@ -1,10 +1,10 @@
 """
 
 """ 
-from pathlib import Path 
+import pandas as pd 
 
 from tqdm import tqdm
-from typing import List
+from pathlib import Path 
 from loguru import logger
 from pymupdf import Document
 
@@ -19,7 +19,7 @@ from src.setup.paths import (
 )
 
 
-def scan_books_for_details(books: list[Book], use_spacy: bool, describe: bool) -> BooksAndDetails:
+def scan_book_for_details(book: Book, use_spacy: bool, describe: bool) -> BooksAndDetails:
     """
     Read each of the books and produce the lists that contain all the dictionaries that contain the details of each page.
 
@@ -34,21 +34,20 @@ def scan_books_for_details(books: list[Book], use_spacy: bool, describe: bool) -
     """ 
     details_of_books = {}
     save_path = PAGE_DETAILS_WITH_SPACY if use_spacy else PAGE_DETAILS_WITHOUT_SPACY
-    page_details_path = save_path/"all_page_details.json"
+    page_details_path = save_path/"details_of_all_pages.json"
 
-    for book in tqdm(books):
-        if Path(page_details_path).is_file():
-            logger.success(f"The details of every page of {book.title} have already been collected -> Fetching them")
-            with open(page_details_path) as file:
-                all_page_details = json.load(file)
-        else:
-            document = read_pdf(book=book)
-            all_page_details = scan_page_for_details(book=book, document=document, use_spacy=use_spacy, save_path=save_path)
+    if Path(page_details_path).is_file():
+        logger.success(f"The details of every page of {book.title} have already been collected -> Fetching them")
+        with open(page_details_path) as file:
+            details_of_all_pages = json.load(file)
+    else:
+        document = read_pdf(book=book)
+        details_of_all_pages = scan_page_for_details(book=book, document=document, use_spacy=use_spacy, save_path=save_path)
 
-            if describe: 
-                save_descriptives(book=book, all_page_details=all_page_details, save_path=save_path)
+        if describe: 
+            save_descriptives(book=book, details_of_all_pages=details_of_all_pages, save_path=save_path)
 
-        details_of_books[book.title] = all_page_details
+    details_of_books[book.title] = details_of_all_pages
 
     return details_of_books
 
@@ -69,9 +68,14 @@ def perform_sentence_chunking(books: list[Book], details_of_books: BooksAndDetai
     """
     books_and_chunk_info = {}
     for book in tqdm(iterable=books, desc="Performing sentence chunking for the selected books"):
-        all_page_details = details_of_all_books[book.title]
-        updated_details_for_all_pages = make_chunks_of_sentences(all_page_details=all_page_details, sentences_per_chunk=10)
-        all_chunk_info = collect_chunk_info(all_page_details=all_page_details)
+        details_of_all_pages = details_of_books[book.title]
+        
+        updated_details_for_all_pages = make_chunks_of_sentences(
+            book_title=book.title, 
+            details_of_all_pages=details_of_all_pages
+        )
+        
+        all_chunk_info = collect_chunk_info(details_of_all_pages=details_of_all_pages)
         books_and_chunk_info[book.title] = all_chunk_info
         
     return books_and_chunk_info
@@ -80,5 +84,10 @@ def perform_sentence_chunking(books: list[Book], details_of_books: BooksAndDetai
 if __name__ == "__main__":
     make_fundamental_paths()
     books = [neo_colonialism, africa_unite, dark_days]
+
     details_of_all_books = scan_books_for_details(books=books, use_spacy=True, describe=True)
     all_chunk_info = perform_sentence_chunking(books=books, details_of_books=details_of_all_books)
+    
+    df = pd.DataFrame(all_chunk_info)
+    breakpoint()
+    

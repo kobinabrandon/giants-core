@@ -1,15 +1,14 @@
 """
 Provides code that uses spacy to perform sentence segmentation.
 """
-
-
 from spacy.lang.en import English
-from spacy.tokens import Doc, Span
+from spacy.tokens import Doc 
 
 
-def segment_with_spacy(text: list[str], doc_file: Doc) -> list[Span]:
+def segment_with_spacy(doc_file: Doc) -> list[str]:
     sentences = [sentence.text for sentence in doc_file.sents]
     return sentences  
+
 
 def add_spacy_pipeline_component(text: list[str], component_name: str) -> Doc:
 
