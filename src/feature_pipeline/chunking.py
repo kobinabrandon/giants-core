@@ -4,27 +4,27 @@ Contains functions that group sentences into chunks.
 import re
 from tqdm import tqdm
 
-from src.types import SectionDetails, BooksAndDetails
+from src.setup.paths import CHUNK_DETAILS_DIR
 from src.feature_pipeline.reading import remove_new_line_marker
 
 
 def make_chunks_of_sentences(
     book_title: str, 
-    details_of_all_pages: list[dict[str, str]], 
+    details_of_all_pages: list[dict[str, str|int]], 
     sentences_per_chunk: int = 10
-    ) -> list[SectionDetails]:
+    ) -> list[dict[str, str|int]]:
     """
     Taking the list of dictionaries which contains the all the details of the page that were collected, we extract the
-    list of strings that contains all the sentences.
-
-    Then we split this list of strings into sublists (the chunks) using the split_sentences method. We also count 
-    the number of chunks.
+    list of strings that contains all the sentences.Then we split this list of strings into sublists (the chunks) using 
+    the split_sentences method. We also count the number of chunks.
 
     Args:
+        book_title (str):
+        details_of_all_pages (list[dict[str, str|int]]): 
         sentences_per_chunk (int): how many sentences we will have in each chunk.
 
     Returns:
-        list[SectionDetails]: the details of each page, which have now been updated with the chunks and how many
+        list[dict[str, str|int]]: the details of each page, which have now been updated with the chunks and how many
                             chunks there are in the page.            
     """
     for details_per_page in tqdm(
@@ -52,14 +52,15 @@ def collect_chunk_info(details_of_all_pages: list[dict[str, str|int]]) -> list[S
 
         # The iterable here is a list which contains lists of strings, each of which is a 
         for sentence_chunk in details_per_page["sentence_chunks"]:
+            chunk_details = {}
             merged_chunk = merge_sentences_in_chunk(sentence_chunk=sentence_chunk)
             merged_chunk = remove_new_line_marker(text=merged_chunk)
 
-            chunk_details = {}
             chunk_details["merged_chunk"] = merged_chunk
             chunk_details["page_number"] = details_per_page["page_number"]
             chunk_details["chunk_character_count"] = len(merged_chunk)
             chunk_details["chunk_word_count"] = len([word for word in merged_chunk.split(" ")])
+            chunk_details["chunk_token_count"] = len(merged_chunk) / 4
 
             all_chunk_details.append(chunk_details)
     
@@ -91,6 +92,7 @@ def split_sentences(sentences: list[str], split_size: int) -> list[list[str]]:
 
     Args:
         split_size (int): the preferred length of the splits 
+        sentences (list[str]): 
 
     Returns:
         list[list[str]]: a list of sub-lists of sentences

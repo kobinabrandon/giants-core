@@ -1,7 +1,6 @@
 # Files
 .env
 
-
 # Directories 
 /data/
 **/__pycache__/

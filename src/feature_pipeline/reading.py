@@ -18,7 +18,6 @@ from pathlib import Path
 from loguru import logger
 from pymupdf import Document
 
-from src.types import SectionDetails, BooksAndDetails
 from src.feature_pipeline.data_extraction import Book
 from src.feature_pipeline.segmentation import get_tokens_with_spacy, segment_with_spacy, add_spacy_pipeline_component
 
@@ -31,7 +30,13 @@ def remove_new_line_marker(text: str) -> str:
     return text.replace("\n", " ").strip()
 
 
-def scan_page_for_details(book: Book, use_spacy: bool, document: Document, save_path: Path) -> list[SectionDetails]:
+def scan_pages_for_details(
+    book: Book, 
+    document: Document, 
+    save_path: Path, 
+    use_spacy: bool, 
+    describe: bool
+    ) -> list[dict[str, str|int]]:
     """
     Extract various details about the book, by collecting these details on a page-by-page basis. 
     For each page, these details will be placed into dictionaries, and then gathered into a list, which
@@ -42,19 +47,19 @@ def scan_page_for_details(book: Book, use_spacy: bool, document: Document, save_
         save_path (Path): the directory where the details are to be saved.
         document (Document): the document file obtained from reading the PDF.
         use_spacy (bool): whether to use spacy to perform sentence segmentation.
+        describe (bool):
 
     Returns:
-        list[SectionDetails]:
+        list[dict[str, str|int]]:
     """
-    page_details_path = save_path/f"{book.title}.json"
-    if Path(page_details_path).is_file():
+    path_to_book_details = save_path / f"{book.title}_page_details.json"
+    if Path(path_to_book_details).is_file():
         logger.success(f'The details of all the pages of {book.title} have been saved -> Fetching them')
-        with open(page_details_path, mode="r") as file:
+        with open(path_to_book_details, mode="r") as file:
             details_of_all_pages = json.load(file)
-
     else:
         details_of_all_pages = []
-        for page_number, page in tqdm(iterable=enumerate(document), desc=f'Collecting details of pages of "{book.title}"'):
+        for page_number, page in tqdm(iterable=enumerate(document), desc=f'Collecting details of the pages of "{book.title}"'):
             raw_text = page.get_text()
             cleaned_text = remove_new_line_marker(text=raw_text)
 
@@ -76,8 +81,11 @@ def scan_page_for_details(book: Book, use_spacy: bool, document: Document, save_
 
             details_of_all_pages.append(page_details)
 
+        if describe: 
+            save_descriptives(book=book, details_of_all_pages=details_of_all_pages, save_path=save_path)
+
         logger.success(f'Saving the details of all the pages of "{book.title}"')
-        with open(page_details_path, mode="w") as file:
+        with open(path_to_book_details, mode="w") as file:
             json.dump(details_of_all_pages, file)       
       
     return details_of_all_pages

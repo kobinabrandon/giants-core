@@ -5,7 +5,7 @@ import os
 import requests 
 from loguru import logger 
 
-from src.setup.paths import RAW_DATA_DIR, make_fundamental_paths
+from src.setup.paths import RAW_DATA_DIR, make_data_directories
 
 
 class Book:
@@ -57,7 +57,7 @@ africa_unite = Book(
 
 if __name__ == "__main__":
 
-    make_fundamental_paths()
+    make_data_directories()
 
     for book in [neo_colonialism, dark_days, africa_unite]:
         book.download()
