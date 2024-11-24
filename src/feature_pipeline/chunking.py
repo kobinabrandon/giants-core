@@ -58,8 +58,8 @@ def collect_chunk_info(details_of_all_pages: list[dict[str, str|int]]) -> list[S
             chunk_details = {}
             chunk_details["merged_chunk"] = merged_chunk
             chunk_details["page_number"] = details_per_page["page_number"]
-            chunk_details["character_count"] = len(merged_chunk)
-            chunk_details["word_count"] = len([word for word in merged_chunk.split(" ")])
+            chunk_details["chunk_character_count"] = len(merged_chunk)
+            chunk_details["chunk_word_count"] = len([word for word in merged_chunk.split(" ")])
 
             all_chunk_details.append(chunk_details)
     

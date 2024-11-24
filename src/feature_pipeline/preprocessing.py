@@ -7,6 +7,7 @@ from tqdm import tqdm
 from pathlib import Path 
 from loguru import logger
 from pymupdf import Document
+from argparse import ArgumentParser, BooleanOptionalAction
 
 from src.types import SectionDetails, BooksAndDetails
 from src.feature_pipeline.data_extraction import neo_colonialism, africa_unite, dark_days, Book
@@ -32,7 +33,6 @@ def scan_book_for_details(book: Book, use_spacy: bool, describe: bool) -> BooksA
         BooksAndDetails: a dictionary whose key is the title of the book in question, and whose value is a list of 
                         dictionaries, each of which provides the details for a specific page.
     """ 
-    details_of_books = {}
     save_path = PAGE_DETAILS_WITH_SPACY if use_spacy else PAGE_DETAILS_WITHOUT_SPACY
     page_details_path = save_path/"details_of_all_pages.json"
 
@@ -47,19 +47,17 @@ def scan_book_for_details(book: Book, use_spacy: bool, describe: bool) -> BooksA
         if describe: 
             save_descriptives(book=book, details_of_all_pages=details_of_all_pages, save_path=save_path)
 
-    details_of_books[book.title] = details_of_all_pages
-
-    return details_of_books
+    return details_of_all_pages
 
 
-def perform_sentence_chunking(books: list[Book], details_of_books: BooksAndDetails):
+def perform_sentence_chunking(book: Book, book_details: BooksAndDetails):
     """
     Produce a dataframe of descriptive statistics for the entire book. In this  case, both the list of page details,
     and the dataframe of descriptives will be returned. 
 
     Args:
         books (list[Book]): list of book objects 
-        details_of_books (BooksAndDetails): a dictionary whose keys are the titles of the books in question, and each 
+        book_details (BooksAndDetails): a dictionary whose keys are the titles of the books in question, and each 
                                             of whose values is a list of dictionaries of page details and/or the same 
                                             list which contains either a list of dictionaries (each dictionary of 
                                             those dictionary provides the details of each page)    
@@ -67,27 +65,31 @@ def perform_sentence_chunking(books: list[Book], details_of_books: BooksAndDetai
         : _description_
     """
     books_and_chunk_info = {}
-    for book in tqdm(iterable=books, desc="Performing sentence chunking for the selected books"):
-        details_of_all_pages = details_of_books[book.title]
-        
-        updated_details_for_all_pages = make_chunks_of_sentences(
-            book_title=book.title, 
-            details_of_all_pages=details_of_all_pages
-        )
-        
-        all_chunk_info = collect_chunk_info(details_of_all_pages=details_of_all_pages)
-        books_and_chunk_info[book.title] = all_chunk_info
+    details_of_all_pages = book_details[book.title]
+    
+    updated_details_for_all_pages = make_chunks_of_sentences(
+        book_title=book.title, 
+        details_of_all_pages=details_of_all_pages
+    )
+    
+    chunk_info = collect_chunk_info(details_of_all_pages=details_of_all_pages)
+    books_and_chunk_info[book.title] = chunk_info
         
     return books_and_chunk_info
 
 
 if __name__ == "__main__":
     make_fundamental_paths()
-    books = [neo_colonialism, africa_unite, dark_days]
 
-    details_of_all_books = scan_books_for_details(books=books, use_spacy=True, describe=True)
-    all_chunk_info = perform_sentence_chunking(books=books, details_of_books=details_of_all_books)
-    
-    df = pd.DataFrame(all_chunk_info)
-    breakpoint()
+    parser = ArgumentParser()
+    _ = parser.add_argument("--use_spacy", action=BooleanOptionalAction)
+    _ = parser.add_argument("--describe", action=BooleanOptionalAction)
+
+    args = parser.parse_args()
+    for book in [neo_colonialism, africa_unite, dark_days]:
+        book_details = scan_book_for_details(book=book, use_spacy=args.use_spacy, describe=args.describe)
+        chunk_info = perform_sentence_chunking(book=book, book_details=book_details)
+
+        df = pd.DataFrame(chunk_info)
+        breakpoint()
     
