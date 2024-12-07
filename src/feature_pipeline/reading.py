@@ -6,10 +6,7 @@ in each page, and of course how many sentences there are.
 In addition to these functions, we can also choose to provide descriptive statistics for all these metrics across 
 pages.
 """
-import os
-import re
 import json 
-import spacy  
 import pymupdf
 import pandas as pd
 
@@ -18,6 +15,7 @@ from pathlib import Path
 from loguru import logger
 from pymupdf import Document
 
+from src.setup.types import SectionDetails
 from src.feature_pipeline.data_extraction import Book
 from src.feature_pipeline.segmentation import get_tokens_with_spacy, segment_with_spacy, add_spacy_pipeline_component
 
@@ -53,25 +51,27 @@ def scan_pages_for_details(
         list[dict[str, str|int]]:
     """
     path_to_book_details = save_path / f"{book.title}_page_details.json"
+
     if Path(path_to_book_details).is_file():
         logger.success(f'The details of all the pages of {book.title} have been saved -> Fetching them')
         with open(path_to_book_details, mode="r") as file:
-            details_of_all_pages = json.load(file)
+            details_of_all_pages: list[dict[str, int|list[str]]] = json.load(file)
     else:
         details_of_all_pages = []
-        for page_number, page in tqdm(iterable=enumerate(document), desc=f'Collecting details of the pages of "{book.title}"'):
-            raw_text = page.get_text()
+        process_description = f'Collecting details of the pages of "{book.title}"'
+        for page_number, page in tqdm(iterable=enumerate(document), desc=process_description):
+            raw_text: str = page.get_text()
             cleaned_text = remove_new_line_marker(text=raw_text)
 
             if use_spacy:
                 doc_file = add_spacy_pipeline_component(text=raw_text, component_name="sentencizer")
-                tokens = get_tokens_with_spacy(text=cleaned_text, doc_file=doc_file)
+                tokens = get_tokens_with_spacy( doc_file=doc_file)
                 sentences = segment_with_spacy(doc_file=doc_file)   
             else:
                 tokens = cleaned_text.split(" ")                
                 sentences = cleaned_text.split(". ")
 
-            page_details = {   
+            page_details: dict[str, int|list[str]] = {   
                 "page_number": page_number,
                 "sentences": sentences,
                 "character_count_per_page": len(cleaned_text),

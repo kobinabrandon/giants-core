@@ -56,7 +56,6 @@ africa_unite = Book(
 
 
 if __name__ == "__main__":
-
     make_data_directories()
 
     for book in [neo_colonialism, dark_days, africa_unite]:

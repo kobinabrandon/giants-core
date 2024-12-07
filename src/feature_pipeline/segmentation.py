@@ -18,5 +18,5 @@ def add_spacy_pipeline_component(text: list[str], component_name: str) -> Doc:
     return doc_file
 
 
-def get_tokens_with_spacy(text: list[str], doc_file: Doc) -> list[str]:
+def get_tokens_with_spacy(doc_file: Doc) -> list[str]:
     return [token.text for token in doc_file if not token.is_space]
