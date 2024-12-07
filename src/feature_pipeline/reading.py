@@ -6,6 +6,7 @@ in each page, and of course how many sentences there are.
 In addition to these functions, we can also choose to provide descriptive statistics for all these metrics across 
 pages.
 """
+from gettext import find
 import json 
 import pymupdf
 import pandas as pd
@@ -18,6 +19,7 @@ from pymupdf import Document
 from src.setup.paths import CLEANED_TEXT
 from src.setup.types import SectionDetails
 from src.feature_pipeline.data_extraction import Book
+from src.feature_pipeline.preprocessing import find_non_core_pages 
 from src.feature_pipeline.segmentation import get_tokens_with_spacy, segment_with_spacy, add_spacy_pipeline_component
 
 
@@ -29,9 +31,9 @@ def remove_new_line_marker(text: str) -> str:
     return text.replace("\n", " ").strip()
 
 
-def merge_books(books: list[Book], exclude_non_core_pages: bool = True) -> str:
+def merge_books(books: list[Book]) -> str:
     
-    file_path = CLEANED_TEXT / f"merged_books.txt"
+    file_path = CLEANED_TEXT / "merged_books.txt"
 
     if Path(file_path).is_file():
         logger.success("The merged text file containing the text in all the books is already present")
@@ -39,15 +41,22 @@ def merge_books(books: list[Book], exclude_non_core_pages: bool = True) -> str:
             return text_file.read()
     else:
         logger.warning("There is no merged text file -> Generating it")
-        
+       
+        book_contents: list[str] = []
         for book in books:
             logger.warning(f"Checking for the presence of {book.title}...")
             book.download()
              
+            intro_page, end_page = find_non_core_pages(book=book)
             document = read_pdf(book=book)    
-            for page_number, page in tqdm(iterable=enumerate(document), desc=process_description):
-                raw_text: str = page.get_text()
-                cleaned_text = remove_new_line_marker(text=raw_text)
+        
+            for page_number, page in tqdm(iterable=enumerate(document), desc=f"Extracting the raw text of {book.title}"):
+                
+                if page_number in range(intro_page, end_page+1):
+                    raw_text: str = page.get_text()
+                    cleaned_text: str = remove_new_line_marker(text=raw_text)
+                    book_contents.append(cleaned_text) 
+
             
 
 

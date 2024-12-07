@@ -4,7 +4,6 @@ from src.feature_pipeline.chunking import perform_sentence_chunking
 from src.feature_pipeline.reading import read_pdf, scan_pages_for_details
 from src.feature_pipeline.data_extraction import Book, neo_colonialism, africa_unite, dark_days
 from src.setup.paths import make_data_directories, PAGE_DETAILS_WITH_SPACY, PAGE_DETAILS_WITHOUT_SPACY
-from src.setup.config import find_non_core_pages
 
 
 def process_book(book: Book, use_spacy: bool, describe: bool):
@@ -34,6 +33,17 @@ def choose_core_pages(details_of_all_pages: list[dict[str, str|int]], book: Book
     intro_pages, end_pages  = find_non_core_pages(book=book)
     return details_of_all_pages[intro_pages: end_pages]
     
+
+def find_non_core_pages(book: Book) -> tuple[int, int]:
+    
+    book_and_non_core_pages = {
+        neo_colonialism: (4, 201),
+        africa_unite: (5, 236),
+        dark_days: (7, 162)
+    }
+
+    return book_and_non_core_pages[book]
+
 
 if __name__ == "__main__":
     make_data_directories()

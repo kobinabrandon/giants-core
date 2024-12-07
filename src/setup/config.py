@@ -14,13 +14,4 @@ class GeneralConfig(BaseSettings):
 config = GeneralConfig()
 
 
-def find_non_core_pages(book: Book) -> tuple[int, int]:
-    
-    book_and_non_core_pages = {
-        neo_colonialism: (4, 201),
-        africa_unite: (5, 236),
-        dark_days: (7, 162)
-    }
-
-    return book_and_non_core_pages[book]
 
