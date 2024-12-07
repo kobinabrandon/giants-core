@@ -10,10 +10,10 @@ def segment_with_spacy(doc_file: Doc) -> list[str]:
     return sentences  
 
 
-def add_spacy_pipeline_component(text: list[str], component_name: str) -> Doc:
+def add_spacy_pipeline_component(text: str, component_name: str) -> Doc:
 
     nlp = English()
-    nlp.add_pipe(factory_name=component_name)
+    _ = nlp.add_pipe(factory_name=component_name)
     doc_file = nlp(text=text)
     return doc_file
 

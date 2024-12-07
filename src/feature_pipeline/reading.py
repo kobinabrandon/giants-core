@@ -108,3 +108,4 @@ def save_descriptives(book: Book, details_of_all_pages: list[SectionDetails], sa
 
         descriptives: pd.DataFrame = dataframe_of_all_details.describe().round(2)
         descriptives.to_parquet(descriptives_path)
+

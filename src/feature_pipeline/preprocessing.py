@@ -1,9 +1,10 @@
 from argparse import ArgumentParser, BooleanOptionalAction
 
-from src.feature_pipeline.data_extraction import neo_colonialism, africa_unite, dark_days, Book
-from src.feature_pipeline.reading import read_pdf, scan_pages_for_details
 from src.feature_pipeline.chunking import perform_sentence_chunking
-from src.setup.paths import make_data_directories, PAGE_DETAILS_WITH_SPACY, PAGE_DETAILS_WITHOUT_SPACY 
+from src.feature_pipeline.reading import read_pdf, scan_pages_for_details
+from src.feature_pipeline.data_extraction import Book, neo_colonialism, africa_unite, dark_days
+from src.setup.paths import make_data_directories, PAGE_DETAILS_WITH_SPACY, PAGE_DETAILS_WITHOUT_SPACY
+from src.setup.config import find_non_core_pages
 
 
 def process_book(book: Book, use_spacy: bool, describe: bool):
@@ -20,12 +21,20 @@ def process_book(book: Book, use_spacy: bool, describe: bool):
         describe=describe
     )
 
+    details_of_core_pages = choose_core_pages(details_of_all_pages=details_of_all_pages, book=book)
+
     _ = perform_sentence_chunking(
         book=book, 
-        details_of_all_pages=details_of_all_pages,
+        details_of_all_pages=details_of_core_pages,
         examine_chunk_details=True
     )
 
+
+def choose_core_pages(details_of_all_pages: list[dict[str, str|int]], book: Book) -> list[dict[str, str|int]]:
+   
+    intro_pages, end_pages  = find_non_core_pages(book=book)
+    return details_of_all_pages[intro_pages: end_pages]
+    
 
 if __name__ == "__main__":
     make_data_directories()
@@ -36,4 +45,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     for book in [neo_colonialism, africa_unite, dark_days]:
-        process_book(book=book, use_spacy=args.use_spacy, describe=args.describe)
+       process_book(book=book, use_spacy=args.use_spacy, describe=args.describe)
