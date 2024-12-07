@@ -10,7 +10,6 @@ from src.setup.config import find_non_core_pages
 def process_book(book: Book, use_spacy: bool, describe: bool):
 
     save_path = PAGE_DETAILS_WITH_SPACY if use_spacy else PAGE_DETAILS_WITHOUT_SPACY
-
     document = read_pdf(book=book)
 
     details_of_all_pages = scan_pages_for_details(

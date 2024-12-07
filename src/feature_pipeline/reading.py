@@ -15,6 +15,7 @@ from pathlib import Path
 from loguru import logger
 from pymupdf import Document
 
+from src.setup.paths import CLEANED_TEXT
 from src.setup.types import SectionDetails
 from src.feature_pipeline.data_extraction import Book
 from src.feature_pipeline.segmentation import get_tokens_with_spacy, segment_with_spacy, add_spacy_pipeline_component
@@ -26,6 +27,33 @@ def read_pdf(book: Book) -> Document:
 
 def remove_new_line_marker(text: str) -> str:
     return text.replace("\n", " ").strip()
+
+
+def merge_books(books: list[Book], exclude_non_core_pages: bool = True) -> str:
+    
+    file_path = CLEANED_TEXT / f"merged_books.txt"
+
+    if Path(file_path).is_file():
+        logger.success("The merged text file containing the text in all the books is already present")
+        with open(file_path, mode="r") as text_file:
+            return text_file.read()
+    else:
+        logger.warning("There is no merged text file -> Generating it")
+        
+        for book in books:
+            logger.warning(f"Checking for the presence of {book.title}...")
+            book.download()
+             
+            document = read_pdf(book=book)    
+            for page_number, page in tqdm(iterable=enumerate(document), desc=process_description):
+                raw_text: str = page.get_text()
+                cleaned_text = remove_new_line_marker(text=raw_text)
+            
+
+
+        with open(file_path, mode="w") as text_file:
+            text_file.write()
+         
 
 
 def scan_pages_for_details(
@@ -59,6 +87,7 @@ def scan_pages_for_details(
     else:
         details_of_all_pages = []
         process_description = f'Collecting details of the pages of "{book.title}"'
+
         for page_number, page in tqdm(iterable=enumerate(document), desc=process_description):
             raw_text: str = page.get_text()
             cleaned_text = remove_new_line_marker(text=raw_text)
