@@ -1,6 +1,9 @@
 # Files
 .env
+sp_model.model 
+sp_model.vocab
 
 # Directories 
 /data/
+/models/
 **/__pycache__/

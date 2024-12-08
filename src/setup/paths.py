@@ -4,7 +4,7 @@ from pathlib import Path
 
 PARENT_DIR = Path("__file__").parent.resolve()
 DATA_DIR = PARENT_DIR / "data"
-CLEANED_TEXT = PARENT_DIR / "clean_text"
+CLEANED_TEXT = DATA_DIR / "clean_text"
 MODELS_DIR = PARENT_DIR / "models"
 RAW_DATA_DIR = DATA_DIR/"raw"
 CHUNK_DETAILS_DIR = DATA_DIR/"chunk_details"

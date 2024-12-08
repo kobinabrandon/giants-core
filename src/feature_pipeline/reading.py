@@ -6,8 +6,8 @@ in each page, and of course how many sentences there are.
 In addition to these functions, we can also choose to provide descriptive statistics for all these metrics across 
 pages.
 """
-from gettext import find
 import json 
+from pandas.core.internals.construction import ma
 import pymupdf
 import pandas as pd
 
@@ -16,10 +16,10 @@ from pathlib import Path
 from loguru import logger
 from pymupdf import Document
 
-from src.setup.paths import CLEANED_TEXT
+from src.setup.paths import CLEANED_TEXT, make_data_directories
 from src.setup.types import SectionDetails
+from src.setup.config import find_non_core_pages 
 from src.feature_pipeline.data_extraction import Book
-from src.feature_pipeline.preprocessing import find_non_core_pages 
 from src.feature_pipeline.segmentation import get_tokens_with_spacy, segment_with_spacy, add_spacy_pipeline_component
 
 
@@ -32,7 +32,7 @@ def remove_new_line_marker(text: str) -> str:
 
 
 def merge_books(books: list[Book]) -> str:
-    
+   
     file_path = CLEANED_TEXT / "merged_books.txt"
 
     if Path(file_path).is_file():
@@ -40,6 +40,7 @@ def merge_books(books: list[Book]) -> str:
         with open(file_path, mode="r") as text_file:
             return text_file.read()
     else:
+        make_data_directories()  # Just to ensure that the directories are present.
         logger.warning("There is no merged text file -> Generating it")
        
         book_contents: list[str] = []
@@ -57,12 +58,13 @@ def merge_books(books: list[Book]) -> str:
                     cleaned_text: str = remove_new_line_marker(text=raw_text)
                     book_contents.append(cleaned_text) 
 
-            
-
+        logger.warning("Merging the books into a single string")
+        merged_text = " ".join(book_contents)
 
         with open(file_path, mode="w") as text_file:
-            text_file.write()
-         
+            _  = text_file.write(merged_text)
+        
+        return merged_text
 
 
 def scan_pages_for_details(
@@ -102,7 +104,7 @@ def scan_pages_for_details(
             cleaned_text = remove_new_line_marker(text=raw_text)
 
             if use_spacy:
-                doc_file = add_spacy_pipeline_component(text=raw_text, component_name="sentencizer")
+                doc_file = add_spacy_pipeline_component(text=raw_text)
                 tokens = get_tokens_with_spacy( doc_file=doc_file)
                 sentences = segment_with_spacy(doc_file=doc_file)   
             else:

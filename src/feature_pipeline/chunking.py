@@ -1,7 +1,6 @@
 """
 Contains functions that group sentences into chunks.
 """
-from pathlib import Path
 import re
 import pandas as pd 
 import sentencepiece as spm
@@ -88,20 +87,13 @@ def collect_chunk_info(book: Book, details_of_all_pages: list[dict[str, str|int]
             merged_chunk: str = merge_sentences(sentence_chunk=sentence_chunk)
             merged_chunk: str = remove_new_line_marker(text=merged_chunk)
             
-            tokenizer_path = train_tokenizer(book=book, chunk=merged_chunk)
-            tokens = tokenize_chunk(chunk=merged_chunk, model_path=tokenizer_path)
-
             chunk_details["merged_chunk"] = merged_chunk
             chunk_details["page_number"] = details_per_page["page_number"]
             chunk_details["chunk_character_count"] = len(merged_chunk)
             chunk_details["chunk_word_count"] = len([word for word in merged_chunk.split(" ")])
-            chunk_details["chunk_tokens"] = tokens 
-            chunk_details["chunk_token_count"] = len(tokens)
 
             all_chunk_details.append(chunk_details)
             
-            breakpoint()
-
     return all_chunk_details
 
 
@@ -140,23 +132,4 @@ def split_sentences(sentences: list[str], split_size: int) -> list[list[str]]:
     ]
 
 
-def train_tokenizer(book: Book, chunk: str) -> str:
-    
-    spm.SentencePieceTrainer.Train(
-       sentence_iterator=iter(chunk), 
-       model_prefix=f"{book.file_name}_spm_model", 
-       pad_id=config.pad_id,
-       unk_id=config.unk_id,
-       bos_id=config.bos_id,
-       eos_id=config.eos_id,
-       vocab_size=46
-    )
-    
-    return f"{book.file_name}_spm_model"
-
-
-def tokenize_chunk(chunk: str, model_path: tuple[Path]) -> str:
-    
-    processor = spm.SentencePieceProcessor(model_file=model_path)
-    return processor.Encode(chunk, out_type=str)
-    
+   
