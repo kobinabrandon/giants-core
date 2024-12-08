@@ -8,4 +8,8 @@ tokens:
 	poetry run python src/feature_pipeline/tokenizer.py
 
 embeddings:
-	poetry run python src/feature_pipeline/embeddings.py
+	poetry run python src/feature_pipeline/embeddings.py 
+
+
+search:
+	poetry run python src/feature_pipeline/semantic_search.py 
