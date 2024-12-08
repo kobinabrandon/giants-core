@@ -7,7 +7,6 @@ In addition to these functions, we can also choose to provide descriptive statis
 pages.
 """
 import json 
-from pandas.core.internals.construction import ma
 import pymupdf
 import pandas as pd
 
@@ -16,14 +15,14 @@ from pathlib import Path
 from loguru import logger
 from pymupdf import Document
 
-from src.setup.paths import CLEANED_TEXT, make_data_directories
-from src.setup.types import SectionDetails
 from src.setup.config import find_non_core_pages 
 from src.feature_pipeline.data_extraction import Book
+from src.setup.paths import CLEANED_TEXT, make_data_directories
 from src.feature_pipeline.segmentation import get_tokens_with_spacy, segment_with_spacy, add_spacy_pipeline_component
 
 
 def read_pdf(book: Book) -> Document:
+    logger.info(f"Reading '{book.title}'")
     return pymupdf.open(filename=book.file_path)
 
 
@@ -131,7 +130,7 @@ def scan_pages_for_details(
     return details_of_all_pages
 
 
-def save_descriptives(book: Book, details_of_all_pages: list[SectionDetails], save_path: Path) -> None:
+def save_descriptives(book: Book, details_of_all_pages: list[dict[str, str|int]], save_path: Path) -> None:
 
     descriptives_path = save_path/f"{book.file_name}_descriptives.parquet"    
     

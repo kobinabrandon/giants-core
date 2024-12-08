@@ -17,6 +17,7 @@ pyarrow = "^17.0.0"
 fastparquet = "^2024.5.0"
 sentencepiece = "^0.2.0"
 pydantic-settings = "^2.6.1"
+sentence-transformers = "^3.3.1"
 
 
 [build-system]

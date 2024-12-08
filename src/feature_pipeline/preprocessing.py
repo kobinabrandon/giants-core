@@ -1,3 +1,4 @@
+from loguru import logger 
 from argparse import ArgumentParser, BooleanOptionalAction
 
 from src.setup.config import find_non_core_pages
@@ -7,8 +8,9 @@ from src.feature_pipeline.data_extraction import Book, neo_colonialism, africa_u
 from src.setup.paths import make_data_directories, PAGE_DETAILS_WITH_SPACY, PAGE_DETAILS_WITHOUT_SPACY
 
 
-def process_book(book: Book, use_spacy: bool, describe: bool):
-
+def process_book(book: Book, use_spacy: bool, describe: bool) -> list[dict[str, str|int]]:
+    
+    logger.info(f"Processing '{book.title}' to produce chunks of sentences")
     save_path = PAGE_DETAILS_WITH_SPACY if use_spacy else PAGE_DETAILS_WITHOUT_SPACY
     document = read_pdf(book=book)
 
@@ -21,20 +23,12 @@ def process_book(book: Book, use_spacy: bool, describe: bool):
     )
 
     details_of_core_pages = choose_core_pages(details_of_all_pages=details_of_all_pages, book=book)
-
-    _ = perform_sentence_chunking(
-        book=book, 
-        details_of_all_pages=details_of_core_pages,
-        examine_chunk_details=True
-    )
+    return perform_sentence_chunking(book=book, details_of_all_pages=details_of_core_pages)
 
 
 def choose_core_pages(details_of_all_pages: list[dict[str, str|int]], book: Book) -> list[dict[str, str|int]]:
-   
     intro_pages, end_pages  = find_non_core_pages(book=book)
     return details_of_all_pages[intro_pages: end_pages]
-    
-
 
 
 if __name__ == "__main__":

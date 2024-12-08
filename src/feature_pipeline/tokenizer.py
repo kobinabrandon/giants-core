@@ -1,10 +1,9 @@
-from pathlib import Path
 import sentencepiece as sp
 
 from src.setup.config import config 
 from src.feature_pipeline.reading import merge_books  
 from src.feature_pipeline.data_extraction import neo_colonialism, africa_unite, dark_days
-from src.feature_pipeline.segmentation import add_spacy_pipeline_component, segment_with_spacy 
+from src.feature_pipeline.segmentation import segment_into_sentences
 
 
 def train_tokenizer(sentences: list[str]) -> str:
@@ -31,9 +30,6 @@ def view_tokens(text: str, model_name: str) -> list[str]:
 
 if __name__ == "__main__":
     merged_text = merge_books(books=[neo_colonialism, africa_unite, dark_days])
-    doc_file_for_all_books = add_spacy_pipeline_component(text=merged_text)    
-    all_sentences = segment_with_spacy(doc_file=doc_file_for_all_books) 
+    all_sentences = segment_into_sentences(text=merged_text) 
     tokenizer_path = train_tokenizer(sentences=all_sentences)
     
-    vector = view_tokens(text=merged_text, model_path=tokenizer_path)
-    breakpoint()

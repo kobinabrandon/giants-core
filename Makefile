@@ -6,3 +6,6 @@ process:
 
 tokens:
 	poetry run python src/feature_pipeline/tokenizer.py
+
+embeddings:
+	poetry run python src/feature_pipeline/embeddings.py

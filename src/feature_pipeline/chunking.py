@@ -2,19 +2,17 @@
 Contains functions that group sentences into chunks.
 """
 import re
-import pandas as pd 
-import sentencepiece as spm
+import json
 
 from tqdm import tqdm
 
-from src.setup.config import config 
-from src.setup.types import SectionDetails
-from src.setup.paths import CHUNK_DETAILS_DIR, MODELS_DIR
+from src.setup.config import config
+from src.setup.paths import CHUNK_DETAILS_DIR
 from src.feature_pipeline.data_extraction import Book
 from src.feature_pipeline.reading import remove_new_line_marker
 
 
-def perform_sentence_chunking(book: Book, details_of_all_pages: dict[str, str|int], examine_chunk_details: bool) -> None:
+def perform_sentence_chunking(book: Book, details_of_all_pages: dict[str, str|int]) -> list[dict[str, str|int]]:
     """
     Produce a dataframe of descriptive statistics for the entire book. In this  case, both the list of page details,
     and the dataframe of descriptives will be returned. 
@@ -31,17 +29,18 @@ def perform_sentence_chunking(book: Book, details_of_all_pages: dict[str, str|in
         : _description_
     """
     updated_details_for_per_page = make_chunks_of_sentences(book_title=book.title, details_of_all_pages=details_of_all_pages)
-    chunk_details = collect_chunk_info(book=book, details_of_all_pages=updated_details_for_per_page)
+    chunk_details = collect_chunk_info(details_of_all_pages=updated_details_for_per_page)
 
-    if examine_chunk_details:
-        chunk_details_df = pd.DataFrame(data=chunk_details)
-        chunk_details_df.to_parquet(CHUNK_DETAILS_DIR/f"{book.title}.parquet")
+    with open(CHUNK_DETAILS_DIR /f"{book.file_name}.json", mode="w") as file:
+       _ = json.dump(chunk_details, file) 
+    
+    return chunk_details
 
 
 def make_chunks_of_sentences(
     book_title: str, 
     details_of_all_pages: list[dict[str, str|int]], 
-    sentences_per_chunk: int = 30
+    sentences_per_chunk: int = config.sentences_per_chunk 
     ) -> list[dict[str, str|int]]:
     """
     Taking the list of dictionaries which contains the all the details of the page that were collected, we extract the
@@ -68,7 +67,7 @@ def make_chunks_of_sentences(
     return details_of_all_pages
 
 
-def collect_chunk_info(book: Book, details_of_all_pages: list[dict[str, str|int]]) -> list[SectionDetails]:
+def collect_chunk_info(details_of_all_pages: list[dict[str, str|int]]) -> list[dict[str, str|int]]:
     """
     For each chunk of sentencsa, we begin by merging the sentences in the chunk into a single string.
     Then, we collect various metrics about the newly merged chunk (including itself) and append those 
@@ -131,5 +130,3 @@ def split_sentences(sentences: list[str], split_size: int) -> list[list[str]]:
         sentences[i:i+split_size] for i in range(0, len(sentences), split_size)
     ]
 
-
-   
