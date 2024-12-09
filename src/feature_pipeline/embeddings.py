@@ -15,12 +15,15 @@ from src.feature_pipeline.preprocessing import process_book
 from src.feature_pipeline.data_extraction import Book, neo_colonialism, africa_unite, dark_days
 
 
-def make_embeddings_of_chunks(book: Book) -> None:
-    
+def get_embedding_model(model_name: str = config.sentence_transformer_name) -> SentenceTransformer:
     device = set_device() 
-    embedding_model = SentenceTransformer(model_name_or_path=config.sentence_transformer_name, device=device)
-    logger.info("Creating embeddings from chunks of text in each book") 
+    return SentenceTransformer(model_name_or_path=model_name, device=device)
+
+
+def make_embeddings_of_chunks(book: Book, model_name: str) -> None:
     
+    logger.info("Creating embeddings from chunks of text in each book") 
+    embedding_model = get_embedding_model(model_name=model_name)
     data_file = CHUNK_DETAILS_DIR/f"{book.file_name}.json" 
 
     if Path(data_file).exists():
@@ -32,7 +35,7 @@ def make_embeddings_of_chunks(book: Book) -> None:
     
     for chunk in tqdm(
             iterable=chunk_details, 
-            desc=f"Parsing the chunks of sentences from '{book.title}' to make embeddings for each of them"
+            desc=f"Parsing chunks of sentences from '{book.title}' to make embeddings for each of them"
         ):
 
         chunk_of_text: str = chunk["merged_chunk"]
@@ -51,19 +54,18 @@ def set_embeddings_path(book: Book) -> Path:
     return EMBEDDINGS_DIR / f"{book.file_name}.csv"  
 
 
-def retrieve_embeddings_of_chunks(book: Book):
-    
+def retrieve_embeddings_of_chunks(book: Book, model_name: str = config.sentence_transformer_name):
+    device = set_device() 
     embedding_path = set_embeddings_path(book=book) 
     
     if not Path(embedding_path).exists():
-        make_embeddings_of_chunks(book=book)
-        
+        make_embeddings_of_chunks(book=book, model_name=model_name)
+    
     chunk_details_and_embeddings: pd.DataFrame = pd.read_csv(embedding_path)
     chunk_details_and_embeddings["embedding"] = chunk_details_and_embeddings["embedding"].apply(lambda x: np.fromstring(x.strip("[]")))
 
-    chunk_info_dict = chunk_details_and_embeddings.to_dict(orient="records")
-    embeddings = torch.tensor(data=chunk_details_and_embeddings["embedding"])
-
+    embedding = torch.tensor(data=chunk_details_and_embeddings["embedding"].tolist()).to(device=device)
+    return embedding
 
 if __name__ == "__main__":
     for book in [neo_colonialism, africa_unite, dark_days]: 
