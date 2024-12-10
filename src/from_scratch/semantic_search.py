@@ -4,8 +4,8 @@ from loguru import logger
 from time import perf_counter as timer 
 from sentence_transformers import util, SentenceTransformer
 
-from feature_pipeline.embeddings import get_embedding_model, retrieve_embeddings_of_chunks
-from feature_pipeline.data_extraction import Book, neo_colonialism, dark_days, africa_unite
+from embeddings import get_embedding_model, retrieve_embeddings_of_chunks
+from data_extraction import Book, neo_colonialism
 
 
 def perform_dot_product(query: str, book: Book) -> torch.Tensor: 

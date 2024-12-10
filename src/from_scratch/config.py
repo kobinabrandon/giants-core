@@ -1,5 +1,5 @@
 from pydantic_settings import SettingsConfigDict, BaseSettings
-from feature_pipeline.data_extraction import Book, neo_colonialism, africa_unite, dark_days
+from data_extraction import Book, neo_colonialism, africa_unite, dark_days
 
 
 class GeneralConfig(BaseSettings):

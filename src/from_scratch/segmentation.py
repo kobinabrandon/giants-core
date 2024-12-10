@@ -4,7 +4,7 @@ Provides code that uses spacy to perform sentence segmentation.
 from spacy.tokens import Doc
 from spacy.lang.en import English
 
-from setup.config import config
+from config import config
 
 
 def segment_into_sentences(text: str):

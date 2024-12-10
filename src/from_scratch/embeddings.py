@@ -9,10 +9,10 @@ from loguru import logger
 
 from sentence_transformers import SentenceTransformer
 
-from setup.config import config 
-from setup.paths import CHUNK_DETAILS_DIR, EMBEDDINGS_DIR
-from feature_pipeline.preprocessing import process_book
-from feature_pipeline.data_extraction import Book, neo_colonialism, africa_unite, dark_days
+from config import config 
+from processing import process_book
+from paths import CHUNK_DETAILS_DIR, EMBEDDINGS_DIR
+from data_extraction import Book, neo_colonialism, africa_unite, dark_days
 
 
 def get_embedding_model(model_name: str = config.sentence_transformer_name) -> SentenceTransformer:

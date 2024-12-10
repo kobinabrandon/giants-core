@@ -1,21 +1,28 @@
-import requests
-from pathlib import Path
-from loguru import logger
-from langchain.document_loaders.pdf import PyPDFDirectoryLoader
-from setup.paths import RAW_DATA_DIR, make_data_directories
+"""
+Contains code that downloads selected books by His Excellency Osagyefo Dr Kwame Nkrumah
+"""
+import os 
+import requests 
+from loguru import logger 
+
+from paths import RAW_DATA_DIR, make_data_directories
 
 
 class Book:
-    def __init__(self, url: str, title: str, file_name: str) -> None:
-        self.url = url 
+    def __init__(self, title: str, file_name: str, url: str) -> None:
+        self.url = url
         self.title = title
-        self.file_name = file_name
-        self.file_path = RAW_DATA_DIR / f"{file_name}.pdf"
+        self.file_name = file_name  
+        self.file_path = RAW_DATA_DIR/f"{file_name}.pdf"
 
-    def download(self):
-        if Path(self.file_path).exists():
-            logger.success(f"'{self.file_name} is already saved to disk'")
-        else:
+    def download(self) -> None:
+        """
+        Download the text in question if it isn't already present
+
+        Args:
+            title (str): _description_
+        """
+        if not os.path.exists(path=self.file_path):
             logger.warning(f'You do not have "{self.title}" -> Downloading it now...')
             response = requests.get(url=self.url)
 
@@ -25,9 +32,8 @@ class Book:
                 logger.success(f"Downloaded {self.title}")
             else:
                 logger.error(f"Couldn't download {self.title}. Status code: {response.status_code}")
-
-    def load(self):
-        document_loader = PyPDFDirectoryLoader(self.file_path)
+        else:
+            logger.success(f'You already have "{self.title}"')
 
 
 neo_colonialism = Book(

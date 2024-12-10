@@ -1,11 +1,11 @@
 from loguru import logger 
 from argparse import ArgumentParser, BooleanOptionalAction
 
-from setup.config import find_non_core_pages
-from feature_pipeline.chunking import perform_sentence_chunking
-from feature_pipeline.reading import read_pdf, scan_pages_for_details
-from feature_pipeline.data_extraction import Book, neo_colonialism, africa_unite, dark_days
-from setup.paths import make_data_directories, PAGE_DETAILS_WITH_SPACY, PAGE_DETAILS_WITHOUT_SPACY
+from config import find_non_core_pages
+from chunking import perform_sentence_chunking
+from reading import read_pdf, scan_pages_for_details
+from data_extraction import Book, neo_colonialism, africa_unite, dark_days
+from paths import make_data_directories, PAGE_DETAILS_WITH_SPACY, PAGE_DETAILS_WITHOUT_SPACY
 
 
 def process_book(book: Book, use_spacy: bool, describe: bool) -> list[dict[str, str|int]]:

@@ -1,9 +1,9 @@
 import sentencepiece as sp
 
-from setup.config import config 
-from feature_pipeline.reading import merge_books  
-from feature_pipeline.data_extraction import neo_colonialism, africa_unite, dark_days
-from feature_pipeline.segmentation import segment_into_sentences
+from config import config 
+from reading import merge_books  
+from data_extraction import neo_colonialism, africa_unite, dark_days
+from segmentation import segment_into_sentences
 
 
 def train_tokenizer(sentences: list[str]) -> str:
