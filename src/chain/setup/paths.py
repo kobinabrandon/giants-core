@@ -1,4 +1,4 @@
-import os 
+import os
 from pathlib import Path 
 
 
@@ -29,3 +29,5 @@ def make_data_directories():
     ]:
         if not Path(path).exists():
             os.mkdir(path=path)
+
+

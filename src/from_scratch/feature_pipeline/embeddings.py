@@ -9,10 +9,10 @@ from loguru import logger
 
 from sentence_transformers import SentenceTransformer
 
-from src.setup.config import config 
-from src.setup.paths import CHUNK_DETAILS_DIR, EMBEDDINGS_DIR
-from src.feature_pipeline.preprocessing import process_book
-from src.feature_pipeline.data_extraction import Book, neo_colonialism, africa_unite, dark_days
+from setup.config import config 
+from setup.paths import CHUNK_DETAILS_DIR, EMBEDDINGS_DIR
+from feature_pipeline.preprocessing import process_book
+from feature_pipeline.data_extraction import Book, neo_colonialism, africa_unite, dark_days
 
 
 def get_embedding_model(model_name: str = config.sentence_transformer_name) -> SentenceTransformer:
@@ -64,7 +64,9 @@ def retrieve_embeddings_of_chunks(book: Book, model_name: str = config.sentence_
     chunk_details_and_embeddings: pd.DataFrame = pd.read_csv(embedding_path)
     chunk_details_and_embeddings["embedding"] = chunk_details_and_embeddings["embedding"].apply(lambda x: np.fromstring(x.strip("[]")))
 
-    embedding = torch.tensor(data=chunk_details_and_embeddings["embedding"].tolist()).to(device=device)
+    array_to_embed = np.array(chunk_details_and_embeddings["embedding"].tolist())
+        
+    embedding = torch.tensor(array_to_embed).to(device=device)
     return embedding
 
 if __name__ == "__main__":

@@ -6,10 +6,10 @@ import json
 
 from tqdm import tqdm
 
-from src.setup.config import config
-from src.setup.paths import CHUNK_DETAILS_DIR
-from src.feature_pipeline.data_extraction import Book
-from src.feature_pipeline.reading import remove_new_line_marker
+from setup.config import config
+from setup.paths import CHUNK_DETAILS_DIR
+from feature_pipeline.data_extraction import Book
+from feature_pipeline.reading import remove_new_line_marker
 
 
 def perform_sentence_chunking(book: Book, details_of_all_pages: dict[str, str|int]) -> list[dict[str, str|int]]:

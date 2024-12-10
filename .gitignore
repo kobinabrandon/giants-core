@@ -4,6 +4,6 @@ sp_model.model
 sp_model.vocab
 
 # Directories 
-/data/
-/models/
+**/data/
+**/models/
 **/__pycache__/
