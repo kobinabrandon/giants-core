@@ -17,7 +17,6 @@ from pymupdf import Document
 
 from data_extraction import Book
 from config import find_non_core_pages 
-from paths import CLEANED_TEXT, make_data_directories
 from segmentation import get_tokens_with_spacy, segment_with_spacy, add_spacy_pipeline_component
 
 
