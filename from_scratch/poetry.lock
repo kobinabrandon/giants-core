@@ -502,6 +502,23 @@ test-full = ["adlfs", "aiohttp (!=4.0.0a0,!=4.0.0a1)", "cloudpickle", "dask", "d
 tqdm = ["tqdm"]
 
 [[package]]
+name = "general"
+version = "0.1.0"
+description = ""
+optional = false
+python-versions = "^3.12"
+files = []
+develop = false
+
+[package.dependencies]
+loguru = "^0.7.3"
+requests = "^2.32.3"
+
+[package.source]
+type = "directory"
+url = "../general"
+
+[[package]]
 name = "huggingface-hub"
 version = "0.26.5"
 description = "Client library to download and publish models, datasets and other repos on the huggingface.co hub"
@@ -2816,4 +2833,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "b4e89e52749713934f71037cbfa2cb8f5631928b25a02a0fed96fe4f5f88a812"
+content-hash = "bae755ef07a0d5ba57c4b8b5c70bea84dfd6325fed8f89fca964080a87a1a9a3"

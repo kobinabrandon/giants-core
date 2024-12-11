@@ -10,7 +10,6 @@ python = "^3.12"
 requests = "^2.32.3"
 loguru = "^0.7.3"
 
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

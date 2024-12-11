@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "from_scratch"
+name = "src"
 version = "0.1.0"
 description = ""
 authors = ["Kobina Brandon <kobinabrandon@proton.me>"]
@@ -19,7 +19,7 @@ sentencepiece = "^0.2.0"
 pydantic-settings = "^2.6.1"
 sentence-transformers = "^3.3.1"
 numpy = "1.26.4"
-
+general = {path = "../general"}
 
 [build-system]
 requires = ["poetry-core"]
