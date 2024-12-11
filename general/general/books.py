@@ -11,6 +11,7 @@ class Book:
         self.title: str = title
         self.file_name: str = file_name
         self.file_path: Path =  self.__get_file_path__()/ f"{file_name}.pdf"
+        self.non_core_pages: tuple[int, int] = self.__find_non_core_pages__()
 
     def __get_file_path__(self):
         return set_paths(from_scratch=False, general=True)["raw_data"]
@@ -29,6 +30,17 @@ class Book:
             else:
                 logger.error(f"Couldn't download {self.title}. Status code: {response.status_code}")
 
+    def __find_non_core_pages__(self) -> tuple[int, int]: 
+        
+        book_and_non_core_pages = {
+            "neo_colonialism": (4, 201),
+            "africa_must_unite": (5, 236),
+            "dark_days": (7, 162)
+        }
+        
+        assert self.file_name in book_and_non_core_pages.keys()
+        return book_and_non_core_pages[self.file_name]
+
     
 neo_colonialism = Book(
     file_name="neo_colonialism", 
@@ -38,7 +50,7 @@ neo_colonialism = Book(
 
 dark_days = Book(
     title="Dark Days in Ghana",
-    file_name="dark_days_in_ghana",
+    file_name="dark_days",
     url="https://www.marxists.org/subject/africa/nkrumah/1968/dark-days.pdf"
 )
 

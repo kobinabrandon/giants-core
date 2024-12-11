@@ -1,5 +1,6 @@
+from pathlib import Path
 from pydantic_settings import SettingsConfigDict, BaseSettings
-from data_extraction import Book, neo_colonialism, africa_unite, dark_days
+from general.paths import set_paths
 
 
 class GeneralConfig(BaseSettings):
@@ -15,17 +16,7 @@ class GeneralConfig(BaseSettings):
     sentence_transformer_name: str = "all-mpnet-base-v2"
     batch_size_for_embedding: int = 32
 
+    paths: dict[str, Path] = set_paths(from_scratch=True, general=False) 
 
 config = GeneralConfig()
-
-
-def find_non_core_pages(book: Book) -> tuple[int, int]:
-    
-    book_and_non_core_pages = {
-        neo_colonialism: (4, 201),
-        africa_unite: (5, 236),
-        dark_days: (7, 162)
-    }
-
-    return book_and_non_core_pages[book]
 

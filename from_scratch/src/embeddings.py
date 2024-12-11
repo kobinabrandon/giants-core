@@ -9,21 +9,24 @@ from loguru import logger
 
 from sentence_transformers import SentenceTransformer
 
-from config import config 
-from processing import process_book
-from paths import CHUNK_DETAILS_DIR, EMBEDDINGS_DIR
-from data_extraction import Book, neo_colonialism, africa_unite, dark_days
+from src.config import config 
+from src.processing import process_book
+from general.paths import make_data_directories
+from general.books import Book, neo_colonialism, africa_unite, dark_days
 
 
-def get_embedding_model(model_name: str = config.sentence_transformer_name) -> SentenceTransformer:
-    device = set_device() 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
+def get_embedding_model(model_name: str) -> SentenceTransformer:
     return SentenceTransformer(model_name_or_path=model_name, device=device)
 
-
-def make_embeddings_of_chunks(book: Book, model_name: str) -> None:
+def make_embeddings_of_chunks(book: Book, model_name: str = config.sentence_transformer_name) -> None:
     
-    logger.info("Creating embeddings from chunks of text in each book") 
+    logger.info(f"Creating embeddings from chunks of text in '{book.title}'") 
     embedding_model = get_embedding_model(model_name=model_name)
+    
+    CHUNK_DETAILS_DIR = config.paths["chunk_details"]
     data_file = CHUNK_DETAILS_DIR/f"{book.file_name}.json" 
 
     if Path(data_file).exists():
@@ -33,11 +36,7 @@ def make_embeddings_of_chunks(book: Book, model_name: str) -> None:
     else:
         chunk_details: list[dict[str, str|int]] = process_book(book=book, use_spacy=True, describe=False)                        
     
-    for chunk in tqdm(
-            iterable=chunk_details, 
-            desc=f"Parsing chunks of sentences from '{book.title}' to make embeddings for each of them"
-        ):
-
+    for chunk in tqdm(iterable=chunk_details, desc=f"Parsing chunks of text from '{book.title}' to make embeddings for each of them"):
         chunk_of_text: str = chunk["merged_chunk"]
         chunk["embedding"] = embedding_model.encode(chunk_of_text, batch_size=config.batch_size_for_embedding, convert_to_tensor=True)
         
@@ -46,16 +45,13 @@ def make_embeddings_of_chunks(book: Book, model_name: str) -> None:
     chunk_details_with_embeddings.to_csv(embeddings_path)
 
 
-def set_device() -> torch._C.device:
-    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-
 def set_embeddings_path(book: Book) -> Path:
+    EMBEDDINGS_DIR = config.paths["embeddings"]
     return EMBEDDINGS_DIR / f"{book.file_name}.csv"  
 
 
 def retrieve_embeddings_of_chunks(book: Book, model_name: str = config.sentence_transformer_name):
-    device = set_device() 
+
     embedding_path = set_embeddings_path(book=book) 
     
     if not Path(embedding_path).exists():
@@ -69,8 +65,11 @@ def retrieve_embeddings_of_chunks(book: Book, model_name: str = config.sentence_
     embedding = torch.tensor(array_to_embed).to(device=device)
     return embedding
 
+
 if __name__ == "__main__":
-    for book in [neo_colonialism, africa_unite, dark_days]: 
+    make_data_directories(from_scratch=True, general=False)
+    for book in [neo_colonialism, africa_unite, dark_days]:
+        book.download()
         make_embeddings_of_chunks(book=book)
 
 

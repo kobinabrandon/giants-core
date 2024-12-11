@@ -6,13 +6,13 @@ import json
 
 from tqdm import tqdm
 
-from config import config
-from data_extraction import Book
-from paths import CHUNK_DETAILS_DIR
-from reading import remove_new_line_marker
+from src.config import config
+
+from general.books import Book
+from general.reading import remove_new_line_marker
 
 
-def perform_sentence_chunking(book: Book, details_of_all_pages: dict[str, str|int]) -> list[dict[str, str|int]]:
+def perform_sentence_chunking(book: Book, details_of_all_pages: list[dict[str, str|int]]) -> list[dict[str, str|int]]:
     """
     Produce a dataframe of descriptive statistics for the entire book. In this  case, both the list of page details,
     and the dataframe of descriptives will be returned. 
@@ -28,6 +28,8 @@ def perform_sentence_chunking(book: Book, details_of_all_pages: dict[str, str|in
     Returns:
         : _description_
     """
+    CHUNK_DETAILS_DIR = config.paths["chunk_details"]
+
     updated_details_for_per_page = make_chunks_of_sentences(book_title=book.title, details_of_all_pages=details_of_all_pages)
     chunk_details = collect_chunk_info(details_of_all_pages=updated_details_for_per_page)
 

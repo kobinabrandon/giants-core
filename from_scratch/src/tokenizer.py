@@ -1,9 +1,10 @@
 import sentencepiece as sp
 
 from config import config 
-from reading import merge_books  
-from data_extraction import neo_colonialism, africa_unite, dark_days
 from segmentation import segment_into_sentences
+
+from general.reading import read_pdf, merge_books
+from general.books import neo_colonialism, africa_unite, dark_days
 
 
 def train_tokenizer(sentences: list[str]) -> str:

@@ -4,11 +4,11 @@ Provides code that uses spacy to perform sentence segmentation.
 from spacy.tokens import Doc
 from spacy.lang.en import English
 
-from config import config
+from .config import config
 
 
 def segment_into_sentences(text: str):
-    doc_file = add_spacy_pipeline_component(text=text, component_name="sentencizer")
+    doc_file = add_spacy_pipeline_component(text=text)
     return segment_with_spacy(doc_file=doc_file)
 
     
@@ -17,7 +17,7 @@ def segment_with_spacy(doc_file: Doc) -> list[str]:
     return sentences  
 
 
-def add_spacy_pipeline_component(text: str, component_name: str) -> Doc:
+def add_spacy_pipeline_component(text: str, component_name: str = "sentencizer") -> Doc:
 
     nlp = English()
     nlp.max_length = config.spacy_max_length

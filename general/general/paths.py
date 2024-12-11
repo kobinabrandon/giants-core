@@ -47,10 +47,10 @@ def set_paths(from_scratch: bool, general: bool) -> dict[str, Path]:
     return paths
 
 
-def make_data_directories(from_scratch: bool, general: bool):
+def make_data_directories(from_scratch: bool, general: bool) -> None: 
     
     paths = set_paths(from_scratch=from_scratch, general=general)
     for path in paths.values():
         if not Path(path).exists():
             os.mkdir(path=path)
-
+    

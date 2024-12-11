@@ -512,7 +512,10 @@ develop = false
 
 [package.dependencies]
 loguru = "^0.7.3"
+pydantic-settings = "^2.6.1"
+pymupdf = "^1.25.0"
 requests = "^2.32.3"
+tqdm = "^4.67.1"
 
 [package.source]
 type = "directory"

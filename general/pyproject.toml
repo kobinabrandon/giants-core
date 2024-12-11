@@ -9,6 +9,9 @@ readme = "README.md"
 python = "^3.12"
 requests = "^2.32.3"
 loguru = "^0.7.3"
+pymupdf = "^1.25.0"
+pydantic-settings = "^2.6.1"
+tqdm = "^4.67.1"
 
 [build-system]
 requires = ["poetry-core"]

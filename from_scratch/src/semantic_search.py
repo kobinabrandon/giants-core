@@ -4,11 +4,11 @@ from loguru import logger
 from time import perf_counter as timer 
 from sentence_transformers import util, SentenceTransformer
 
-from embeddings import get_embedding_model, retrieve_embeddings_of_chunks
-from data_extraction import Book, neo_colonialism
+from src.embeddings import get_embedding_model, retrieve_embeddings_of_chunks
+from general.books import Book, neo_colonialism
 
 
-def perform_dot_product(query: str, book: Book) -> torch.Tensor: 
+def perform_dot_product(query: str, book: Book) -> torch.return_types.topk: 
     
     logger.info(f"Query: {query}")
     embedding_model: SentenceTransformer = get_embedding_model()
@@ -32,5 +32,6 @@ def perform_dot_product(query: str, book: Book) -> torch.Tensor:
     return torch.topk(dot_product_score, k=5)
 
 
-perform_dot_product(query="What is Neocolonialism?", book=neo_colonialism)
+if __name__ == "__main__":
+    score = perform_dot_product(query="What is Neocolonialism?", book=neo_colonialism)
 

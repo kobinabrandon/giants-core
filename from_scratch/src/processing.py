@@ -1,20 +1,27 @@
+from pathlib import Path
 from loguru import logger 
 from argparse import ArgumentParser, BooleanOptionalAction
 
-from config import find_non_core_pages
-from chunking import perform_sentence_chunking
-from reading import read_pdf, scan_pages_for_details
-from data_extraction import Book, neo_colonialism, africa_unite, dark_days
-from paths import make_data_directories, PAGE_DETAILS_WITH_SPACY, PAGE_DETAILS_WITHOUT_SPACY
+from src.config import config
+from src.reading import scan_pages_for_details
+from src.chunking import perform_sentence_chunking
+
+from general.reading import read_pdf
+from general.books import Book, neo_colonialism, africa_unite, dark_days
+from general.paths import make_data_directories
 
 
 def process_book(book: Book, use_spacy: bool, describe: bool) -> list[dict[str, str|int]]:
     
     logger.info(f"Processing '{book.title}' to produce chunks of sentences")
+
+    PAGE_DETAILS_WITH_SPACY: Path = config.paths["page_details_with_spacy"]
+    PAGE_DETAILS_WITHOUT_SPACY: Path = config.paths["page_details_without_spacy"]
+
     save_path = PAGE_DETAILS_WITH_SPACY if use_spacy else PAGE_DETAILS_WITHOUT_SPACY
     document = read_pdf(book=book)
 
-    details_of_all_pages = scan_pages_for_details(
+    details_of_all_pages: list[dict[str, str|int]] = scan_pages_for_details(
         book=book,
         document=document, 
         save_path=save_path,
@@ -27,17 +34,18 @@ def process_book(book: Book, use_spacy: bool, describe: bool) -> list[dict[str, 
 
 
 def choose_core_pages(details_of_all_pages: list[dict[str, str|int]], book: Book) -> list[dict[str, str|int]]:
-    intro_pages, end_pages  = find_non_core_pages(book=book)
+    intro_pages, end_pages = book.non_core_pages 
     return details_of_all_pages[intro_pages: end_pages]
 
 
 if __name__ == "__main__":
-    make_data_directories()
 
     parser = ArgumentParser()
     _ = parser.add_argument("--use_spacy", action=BooleanOptionalAction)
     _ = parser.add_argument("--describe", action=BooleanOptionalAction)
 
     args = parser.parse_args()
+    make_data_directories(from_scratch=True, general=False)
+
     for book in [neo_colonialism, africa_unite, dark_days]:
        process_book(book=book, use_spacy=args.use_spacy, describe=args.describe)
