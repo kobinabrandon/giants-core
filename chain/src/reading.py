@@ -1,21 +1,14 @@
-from tomllib import load
+"""
+Module contains code that reads the code so that Langchain's text processing modules can make use of them.
+We load could load the text using the pdf loader that is native to langchain, but it isn't working. So I 
+used my alternative. 
+"""
 import requests
-from pathlib import Path
-
-from loguru import logger
-
-from langchain.document_loaders.pdf import PyPDFDirectoryLoader
-
-from general.paths import make_data_directories
-from general.books import Book, africa_unite, neo_colonialism, dark_days
+from general.reading import merge_books
+from general.books import Book
 
 
-
-def load_book(book: Book):
-    document_loader = PyPDFDirectoryLoader(path=book.file_path)
-    return document_loader.load()
+def get_text(books: list[Book]) -> str:
+    return merge_books(books=books, from_scratch=False, general=False)
 
 
-make_data_directories(from_scratch=False, general=False)
-loaded_text = load_book(book=dark_days)
-breakpoint()

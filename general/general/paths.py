@@ -16,23 +16,23 @@ def set_paths(from_scratch: bool, general: bool) -> dict[str, Path]:
     
     PARENT_DIR = set_parent(from_scratch=from_scratch, general=general)
     DATA_DIR = PARENT_DIR / "data"
-
+    CLEANED_TEXT_DIR = DATA_DIR / "cleaned_text"
+    
     paths = {
         "data": DATA_DIR,
         "raw_data": DATA_DIR / "raw",
+        "cleaned_text": CLEANED_TEXT_DIR
     }
     
     if from_scratch:
         MODELS_DIR = PARENT_DIR / "models"
         BOOK_STATS = DATA_DIR / "book_stats"
-        CLEANED_TEXT_DIR = DATA_DIR / "cleaned_text"
         PAGE_DETAILS_DIR = DATA_DIR/"page_details"
 
         paths.update(
             {   
                 "models": MODELS_DIR,
                 "book_stats": BOOK_STATS,
-                "cleaned_text": CLEANED_TEXT_DIR,
                 "page_details": PAGE_DETAILS_DIR,
                 "embeddings": DATA_DIR / "embeddings",
                 "chunk_details": DATA_DIR / "chunk_details",
