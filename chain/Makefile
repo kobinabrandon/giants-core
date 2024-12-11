@@ -1,3 +1,3 @@
-books:
-	poetry run python feature_pipeline/data_extraction.py
-
+load:
+	poetry run python src/reading.py
+	

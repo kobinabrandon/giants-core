@@ -1,23 +1,23 @@
 import requests
-from loguru import logger 
 from pathlib import Path
+from loguru import logger 
 
-from paths import set_paths, make_data_directories
+from general.paths import set_paths, make_data_directories
 
 
 class Book:
     def __init__(self, url: str, title: str, file_name: str) -> None:
-        self.url = url 
-        self.title = title
-        self.file_name = file_name
-        self.file_path =  self.__get_file_path__()/ f"{file_name}.pdf"
+        self.url: str = url 
+        self.title: str = title
+        self.file_name: str = file_name
+        self.file_path: Path =  self.__get_file_path__()/ f"{file_name}.pdf"
 
     def __get_file_path__(self):
         return set_paths(from_scratch=False, general=True)["raw_data"]
 
     def download(self):
         if Path(self.file_path).exists():
-            logger.success(f"'{self.file_name} is already saved to disk'")
+            logger.success(f"'{self.title} is already saved to disk'")
         else:
             logger.warning(f'You do not have "{self.title}" -> Downloading it now...')
             response = requests.get(url=self.url)

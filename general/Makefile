@@ -1,3 +1,3 @@
 books:
-	poetry run python books.py
+	poetry run python general/books.py
 
