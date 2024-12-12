@@ -8,7 +8,7 @@ class GeneralConfig(BaseSettings):
     chunk_overlap: int = 100
     length_function: object = len
     add_start_index: bool = True 
-    
+    sentence_transformer_name: str = "all-mpnet-base-v2"
 
 config = GeneralConfig()
 
