@@ -12,6 +12,7 @@ loguru = "^0.7.3"
 requests = "^2.32.3"
 langchain-community = "^0.3.11"
 pydantic-settings = "^2.6.1"
+chromadb = "^0.5.23"
 general = {path = "../general"}
 
 [build-system]

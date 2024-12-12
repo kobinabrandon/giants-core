@@ -43,6 +43,14 @@ def set_paths(from_scratch: bool, general: bool) -> dict[str, Path]:
                 "page_details_without_spacy": PAGE_DETAILS_DIR / "without_spacy"
             } 
         )
+    
+    elif not from_scratch and not general:
+
+        paths.update(
+            {
+                "chroma": PARENT_DIR / "chroma"
+            } 
+        )
 
     return paths
 
