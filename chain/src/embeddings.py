@@ -1,55 +1,54 @@
-from pathlib import Path
+import time 
 from loguru import logger 
 
-from langchain.vectorstores.chroma import Chroma
-from langchain.embeddings.huggingface import HuggingFaceEmbeddings 
-from langchain.llms.huggingface_pipeline import HuggingFacePipeline 
+from pinecone import Pinecone, ServerlessSpec
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_pinecone.vectorstores import PineconeVectorStore
+from langchain_community.llms.huggingface_pipeline import HuggingFacePipeline 
 
 from src.config import config 
-from src.reading import get_text
 from src.chunking import split_text_into_chunks
 
-from general.paths import set_paths
-from general.books import neo_colonialism, africa_unite, dark_days
-
-
-def get_model_path():
-    paths = set_paths(from_scratch=False, general=False)
-    return paths["chroma"]
-    
+from general.books import Book, neo_colonialism, africa_unite, dark_days
+ 
 
 def choose_embedding_model() -> HuggingFaceEmbeddings:
     return HuggingFaceEmbeddings(model_name=config.sentence_transformer_name)
 
 
-def set_vector_database(chunks_of_text: list[str] | None, path: Path, embedding_model: HuggingFaceEmbeddings) -> Chroma:
+def create_serverless_pinecone_index(
+    cloud: str = "aws", 
+    region: str = "us-east-1", 
+    metric: str = "cosine"
+    ) -> None: 
+    """
+    The free tier of Pinecone only comes with AWS, and only the "us-east-1" region
+    """
+    pinecone = Pinecone(api=config.pinecone_api_key)
+    spec = ServerlessSpec(cloud=cloud, region=region)
+    pinecone.create_index(name=config.pinecone_index, dimension=config.vector_dim, metric=metric, spec=spec)
+    
+    while not pinecone.describe_index(name=config.pinecone_index).status["ready"]:
+        time.sleep(1)
+
+
+def push_vectors(chunks_of_text: list[str] | None, embedding_model: HuggingFaceEmbeddings) -> PineconeVectorStore:
     
     if chunks_of_text is None:
-        return Chroma.from_texts(embedding=embedding_model, persist_directory=str(path))
+        return PineconeVectorStore.from_texts(embedding=embedding_model, index_name=config.pinecone_index)
     else:
-        return Chroma.from_texts(texts=chunks_of_text, embedding=embedding_model, persist_directory=str(path))
-
-
-def save_chunks_to_chroma(chunks_of_text: list[str], path: Path) -> None:
+        return PineconeVectorStore.from_texts(texts=chunks_of_text, embedding=embedding_model, index_name=config.pinecone_index)
     
-    embedding_model = choose_embedding_model()
-    db = set_vector_database(chunks_of_text=chunks_of_text, path=get_model_path(), embedding_model=embedding_model) 
-    db.persist()
 
-    logger.success(f"Saved {len(chunks_of_text)} chunks to {path}")    
-
-
-def query_embeddings(query: str):
+def query_embeddings(books: list[Book]):
     
+    chunks_of_text = split_text_into_chunks(books=books)
+    breakpoint()
     embedding_model = choose_embedding_model()
-    db = set_vector_database(chunks_of_text=chunks_of_text, path=get_model_path(), embedding_model=embedding_model) 
+
+    db = push_vectors(chunks_of_text=chunks_of_text, embedding_model=embedding_model) 
     results = db.similarity_search_with_relevance_scores(query=query) 
     
-
-
-if __name__ == "__main__":
-    books = [neo_colonialism, africa_unite, dark_days] 
-    text = get_text(books=books) 
-    chunks = split_text_into_chunks(books=books)
-    save_chunks_to_chroma(chunks_of_text=chunks)
-
+    if len(results) == 0:
+        logger.error("Could not find matching results")
+    

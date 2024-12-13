@@ -34,7 +34,6 @@ def set_paths(from_scratch: bool, general: bool) -> dict[str, Path]:
                 "models": MODELS_DIR,
                 "book_stats": BOOK_STATS,
                 "page_details": PAGE_DETAILS_DIR,
-                "embeddings": DATA_DIR / "embeddings",
                 "chunk_details": DATA_DIR / "chunk_details",
                 "non_core_sections": DATA_DIR / "non_core_sections",
                 "book_stats_with_spacy": BOOK_STATS / "with_spacy",
@@ -44,13 +43,9 @@ def set_paths(from_scratch: bool, general: bool) -> dict[str, Path]:
             } 
         )
     
-    elif not from_scratch and not general:
-
-        paths.update(
-            {
-                "chroma": PARENT_DIR / "chroma"
-            } 
-        )
+    paths.update(
+        {"embeddings": DATA_DIR / "embeddings"}
+    )
 
     return paths
 

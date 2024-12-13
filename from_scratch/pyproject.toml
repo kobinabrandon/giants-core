@@ -6,7 +6,7 @@ authors = ["Kobina Brandon <kobinabrandon@proton.me>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "<3.13, >=3.9"
 requests = "^2.32.3"
 loguru = "^0.7.2"
 tqdm = "^4.66.5"
