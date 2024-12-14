@@ -3,7 +3,7 @@ from pydantic_settings import SettingsConfigDict, BaseSettings
 from general.paths import set_paths
 
 
-class GeneralConfig(BaseSettings):
+class SectionConfig(BaseSettings):
     _ = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
     
     pad_id: int = 0
@@ -18,5 +18,5 @@ class GeneralConfig(BaseSettings):
 
     paths: dict[str, Path] = set_paths(from_scratch=True, general=False) 
 
-config = GeneralConfig()
+config = SectionConfig()
 

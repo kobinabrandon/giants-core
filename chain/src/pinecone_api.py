@@ -1,7 +1,7 @@
 import time 
 from loguru import logger 
 
-from pinecone import Pinecone, ServerlessSpec
+from pinecone import Index, Pinecone, ServerlessSpec
 
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_pinecone.vectorstores import PineconeVectorStore
@@ -33,27 +33,23 @@ class PineconeAPI:
         The free tier of Pinecone only comes with AWS, and only the "us-east-1" region
         """
         spec = ServerlessSpec(cloud=cloud, region=region)
+
+        logger.info(f"Creating a pinecone index called {name} and pushing data to it")
         self.pc.create_index(name=name, dimension=dimension, metric=metric, spec=spec)
             
         while not self.pc.describe_index(name=name).status["ready"]:
             time.sleep(1)
 
-    def get_index(self, name: str):
+    def get_index(self, name: str = config.pinecone_index) -> Index:
         
         existing_indexes = [
             index["name"] for index in self.pc.list_indexes()
         ]
-        
+
         if name not in existing_indexes:
-
-            try:
-                self.create_index(name=name)
-                index = self.pc.Index(name)
-                return index
-
-            except Exception as error:
-                logger.error(error)
-
+            self.create_index(name=name)
+            index = self.pc.Index(name)
+            return index
         else:
             return self.pc.Index(name=name) 
     
@@ -69,5 +65,6 @@ if __name__ == "__main__":
     embedding_model = choose_embedding_model()
 
     api = PineconeAPI()
+    _ = api.get_index()
     _ = api.push_vectors(chunks_of_text=chunks_of_text, embedding_model=embedding_model) 
      

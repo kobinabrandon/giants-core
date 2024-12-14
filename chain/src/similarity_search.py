@@ -4,9 +4,10 @@ from pinecone_api import PineconeAPI
 from sentence_transformers import SentenceTransformer
 
 from general.books import Book
-
 from config import config
+
 from chunking import split_text_into_chunks
+
 
 def query_embeddings(query: str):
    
@@ -14,10 +15,9 @@ def query_embeddings(query: str):
     index = api.get_index(name=config.pinecone_index)
 
     device = "gpu" if torch.cuda.is_available() else "cpu"
-    model = SentenceTransformer("all-MiniLM-L6-v2", device=device)
-    
-    query_vector = model.encode(query).tolist()
+    model = SentenceTransformer(config.sentence_transformer_name, device=device)
 
+    query_vector = model.encode(query).tolist()
     xc = index.query(vector=query_vector, top_k=5, include_metadata=True)
 
     breakpoint()

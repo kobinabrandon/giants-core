@@ -1,15 +1,15 @@
 from loguru import logger
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-from src.reading import get_text
 from src.config import config
 
 from general.books import Book
+from general.reading import merge_books
 
 
 def split_text_into_chunks(books: list[Book]) -> list[str]:
 
-    text = get_text(books=books)
+    text = merge_books(books=books, from_scratch=False, general=False)
 
     splitter = RecursiveCharacterTextSplitter(
        chunk_size=config.chunk_size,

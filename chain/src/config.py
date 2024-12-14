@@ -7,10 +7,10 @@ _  = load_dotenv()
 
 
 class SectionConfig(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    _ = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
-    chunk_size: int = 400
-    chunk_overlap: int = 100
+    chunk_size: int = 200
+    chunk_overlap: int = 30
     length_function: object = len
     add_start_index: bool = True 
     sentence_transformer_name: str = "all-mpnet-base-v2"
