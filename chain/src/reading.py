@@ -4,6 +4,7 @@ We load could load the text using the pdf loader that is native to langchain, bu
 used my alternative. 
 """
 import requests
+
 from general.reading import merge_books
 from general.books import Book
 
