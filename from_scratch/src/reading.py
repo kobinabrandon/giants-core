@@ -15,17 +15,10 @@ from pathlib import Path
 from loguru import logger
 from pymupdf import Document
 
-from src.setup.types import SectionDetails
-from src.feature_pipeline.data_extraction import Book
-from src.feature_pipeline.segmentation import get_tokens_with_spacy, segment_with_spacy, add_spacy_pipeline_component
+from src.segmentation import get_tokens_with_spacy, segment_with_spacy, add_spacy_pipeline_component
 
-
-def read_pdf(book: Book) -> Document:
-    return pymupdf.open(filename=book.file_path)
-
-
-def remove_new_line_marker(text: str) -> str:
-    return text.replace("\n", " ").strip()
+from general.books import Book
+from general.reading import remove_new_line_marker
 
 
 def scan_pages_for_details(
@@ -59,12 +52,13 @@ def scan_pages_for_details(
     else:
         details_of_all_pages = []
         process_description = f'Collecting details of the pages of "{book.title}"'
+
         for page_number, page in tqdm(iterable=enumerate(document), desc=process_description):
             raw_text: str = page.get_text()
             cleaned_text = remove_new_line_marker(text=raw_text)
 
             if use_spacy:
-                doc_file = add_spacy_pipeline_component(text=raw_text, component_name="sentencizer")
+                doc_file = add_spacy_pipeline_component(text=raw_text)
                 tokens = get_tokens_with_spacy( doc_file=doc_file)
                 sentences = segment_with_spacy(doc_file=doc_file)   
             else:
@@ -91,7 +85,7 @@ def scan_pages_for_details(
     return details_of_all_pages
 
 
-def save_descriptives(book: Book, details_of_all_pages: list[SectionDetails], save_path: Path) -> None:
+def save_descriptives(book: Book, details_of_all_pages: list[dict[str, str|int]], save_path: Path) -> None:
 
     descriptives_path = save_path/f"{book.file_name}_descriptives.parquet"    
     
@@ -108,3 +102,4 @@ def save_descriptives(book: Book, details_of_all_pages: list[SectionDetails], sa
 
         descriptives: pd.DataFrame = dataframe_of_all_details.describe().round(2)
         descriptives.to_parquet(descriptives_path)
+
