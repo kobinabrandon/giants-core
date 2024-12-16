@@ -15,14 +15,21 @@ def set_parent(from_scratch: bool, general: bool):
 def set_paths(from_scratch: bool, general: bool) -> dict[str, Path]:
     
     PARENT_DIR = set_parent(from_scratch=from_scratch, general=general)
+   
     DATA_DIR = PARENT_DIR / "data"
     CLEANED_TEXT_DIR = DATA_DIR / "cleaned_text"
-    
-    paths = {
-        "data": DATA_DIR,
-        "raw_data": DATA_DIR / "raw",
-        "cleaned_text": CLEANED_TEXT_DIR
+
+    paths: dict[str, Path] = {
+        "data": DATA_DIR
     }
+
+    if general:
+        paths.update(
+            {   
+                "raw_data": DATA_DIR / "raw"
+            }
+
+        )
     
     if from_scratch:
         MODELS_DIR = PARENT_DIR / "models"
@@ -44,7 +51,10 @@ def set_paths(from_scratch: bool, general: bool) -> dict[str, Path]:
         )
     
     paths.update(
-        {"embeddings": DATA_DIR / "embeddings"}
+        {
+            "embeddings": DATA_DIR / "embeddings",
+            "cleaned_text": CLEANED_TEXT_DIR
+        }
     )
 
     return paths

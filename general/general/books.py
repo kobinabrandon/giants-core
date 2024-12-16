@@ -18,7 +18,7 @@ class Book:
 
     def download(self):
         if Path(self.file_path).exists():
-            logger.success(f"'{self.title} is already saved to disk'")
+            logger.success(f'"{self.title}" is already saved to disk')
         else:
             logger.warning(f'You do not have "{self.title}" -> Downloading it now...')
             response = requests.get(url=self.url)
@@ -26,7 +26,8 @@ class Book:
             if response.status_code == 200:
                 with open(self.file_path, mode="wb") as file:
                     _ = file.write(response.content)
-                logger.success(f"Downloaded {self.title}")
+                logger.success(f'Downloaded "{self.title}"')
+                
             else:
                 logger.error(f"Couldn't download {self.title}. Status code: {response.status_code}")
 
@@ -57,8 +58,10 @@ dark_days = Book(
 africa_unite = Book(
     title="Africa Must Unite",
     file_name="africa_must_unite",
-    url="https://ccaf.africa/books/Africa-Must-Unite-Kwame-Nkrumah.pdf"
+    url="https://www.marxists.org/subject/africa/nkrumah/1963/africa-must-unite.pdf"
 )
+
+
 
 
 if __name__ == "__main__":

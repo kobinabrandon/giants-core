@@ -13,10 +13,6 @@ def read_pdf(book: Book) -> pymupdf.Document:
     return pymupdf.open(filename=book.file_path)
 
 
-def get_raw_text(document: pymupdf.Document) -> str:
-    return document.get_text()
-
-
 def remove_new_line_marker(text: str) -> str:
     return text.replace("\n", " ").strip()
 
