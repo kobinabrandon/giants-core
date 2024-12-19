@@ -1,10 +1,16 @@
-import torch
-from pydantic_settings import BaseSettings
+import os
+from dotenv import load_dotenv, find_dotenv
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+_ = load_dotenv(find_dotenv())
 
 
 class GeneralConfig(BaseSettings):
-    device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    _ = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    
+    dropbox_app_name: str = os.environ["DROPBOX_APP_NAME"]
+    dropbox_access_token: str = os.environ["DROPBOX_ACCESS_TOKEN"]
 
-
-general_config = GeneralConfig
+general_config = GeneralConfig()
 
