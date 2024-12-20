@@ -1,6 +1,6 @@
 import torch
 
-from pinecone_api import PineconeAPI
+from index import PineconeAPI
 from sentence_transformers import SentenceTransformer
 
 from general.books import Book

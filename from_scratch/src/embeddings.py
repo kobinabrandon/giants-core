@@ -17,7 +17,8 @@ from general.paths import make_data_directories
 from general.books import Book, neo_colonialism, africa_unite, dark_days
 
 
-device = general_config.device
+device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
 
 def get_embedding_model(model_name: str) -> SentenceTransformer:
     return SentenceTransformer(model_name_or_path=model_name, device=device)

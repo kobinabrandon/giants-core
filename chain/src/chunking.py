@@ -2,7 +2,6 @@ from loguru import logger
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from src.config import config
-
 from general.books import Book
 from general.reading import merge_books
 
