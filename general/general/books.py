@@ -30,9 +30,11 @@ class Book:
 
             try:
                 response = requests.get(url=self.url)
+
                 if response.status_code == 200:
                     with open(self.file_path, mode="wb") as file:
                         _ = file.write(response.content)
+                    
                     logger.success(f'Downloaded "{self.title}"')
                
             except Exception as error:
@@ -83,6 +85,9 @@ class DropboxTransfers:
 
     def download(self):
         metadata, response = self.connector.files_download(self.remote_file_path)
+
+        breakpoint()
+
         with open(self.book.file_path, "wb") as file:
             file.write(response.content)
 

@@ -21,7 +21,7 @@ def merge_books(books: list[Book], from_scratch: bool, general: bool) -> str:
 
     make_data_directories(from_scratch=from_scratch, general=general)  # Just to ensure that the directories are present.
     paths = set_paths(from_scratch=from_scratch, general=general) 
-
+    
     CLEANED_TEXT_DIR = paths["cleaned_text"] 
     file_path: Path = CLEANED_TEXT_DIR / "merged_books.txt"
 
@@ -36,7 +36,7 @@ def merge_books(books: list[Book], from_scratch: bool, general: bool) -> str:
        for book in books:
            logger.warning(f"Checking for the presence of {book.title}...")
            book.download()
-            
+          
            intro_page, end_page = book.non_core_pages  
            document = read_pdf(book=book)    
        
@@ -54,7 +54,4 @@ def merge_books(books: list[Book], from_scratch: bool, general: bool) -> str:
            _  = text_file.write(merged_text)
        
        return merged_text
-
-
-
 

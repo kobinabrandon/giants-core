@@ -12,19 +12,22 @@ from chunking import split_text_into_chunks
 from general.books import Book, neo_colonialism, dark_days, africa_unite
 
     
-def choose_embedding_model() -> HuggingFaceEmbeddings:
-    return HuggingFaceEmbeddings(model_name=config.sentence_transformer_name)
-
 
 class PineconeAPI:
-    def __init__(self, books: list[Book], single_index: bool = False, api_key: str = config.pinecone_api_key) -> None:
+    def __init__(self, multi_index: bool = False, api_key: str = config.pinecone_api_key) -> None:
         self.api_key = api_key 
-        self.books = books
-        self.single_index = single_index
-        self.index_names = ["nkrumah"] if self.single_index else [book.file_name for book in self.books]         
+        self.multi_index = multi_index 
         self.pc =  Pinecone(api=api_key)
-    
-    def create_index(
+        self.books = [neo_colonialism, dark_days, africa_unite]
+        self.index_names = ["nkrumah"] if not self.multi_index else [book.file_name for book in self.books]         
+
+        self.chunks_of_text: list[str] = split_text_into_chunks(books=self.books)
+
+    @staticmethod
+    def choose_embedding_model() -> HuggingFaceEmbeddings:
+        return HuggingFaceEmbeddings(model_name=config.sentence_transformer_name)
+
+    def start_indexing(
         self,
         cloud: str = "aws", 
         region: str = "us-east-1", 
@@ -36,41 +39,41 @@ class PineconeAPI:
         """
         spec = ServerlessSpec(cloud=cloud, region=region)
         
-        for name in 
-            logger.info(f"Creating a pinecone index called {name} and pushing data to it")
-            self.pc.create_index(name=name, dimension=dimension, metric=metric, spec=spec)
-        
-            # Wait till the index is ready
-            while not self.pc.describe_index(name=name).status["ready"]:
-                time.sleep(1)
+        try:
+            existing_indexes = [
+                index["name"] for index in self.pc.list_indexes()
+            ]
 
-    def get_index(self) -> Index:
+            for name in self.index_names:
+
+                if name not in existing_indexes:
+                    logger.info(f"Creating a pinecone index called {name} and pushing data to it")
+                    self.pc.start_indexing(name=name, dimension=dimension, metric=metric, spec=spec)
+                else:
+                    logger.warning(f"There is already an index called {name}")
+
+                # Wait till the index is ready
+                while not self.pc.describe_index(name=name).status["ready"]:
+                    time.sleep(1)
+
+        except Exception as error:
+            logger.error(error)
        
-        existing_indexes = [
-            index["name"] for index in self.pc.list_indexes()
-        ]
+    def push_vectors(self, embedding_model: HuggingFaceEmbeddings) -> None:
+
+        embedding_model = self.choose_embedding_model()
         
         for name in self.index_names:
+            _ = PineconeVectorStore.from_texts(texts=self.chunks_of_text, embedding=embedding_model)
 
-            if name not in existing_indexes:
-                self.create_index()
-          
-       
-    @staticmethod
-    def push_vectors(chunks_of_text: list[str], embedding_model: HuggingFaceEmbeddings, index_name: str = config.pinecone_index) -> PineconeVectorStore:
-        return PineconeVectorStore.from_texts(texts=chunks_of_text, embedding=embedding_model, index_name=index_name)
-        
-  
+
 if __name__ == "__main__": 
+
     parser = ArgumentParser()
-    _ = parser.add_argument("books", nargs="+", type=str)
-    _ = parser.add_argument("single_index", action="store_true")
+    _ = parser.add_argument("--multi_index", action="store_true")
     args = parser.parse_args()
     
-    chunks_of_text = split_text_into_chunks(books=args.books)
-    embedding_model = choose_embedding_model()
-
-    api = PineconeAPI(single_index=args.single_index, books=args.books)
-    _ = api.get_index()
+    api = PineconeAPI(multi_index=args.multi_index)
+    api.start_indexing()
     _ = api.push_vectors(chunks_of_text=chunks_of_text, embedding_model=embedding_model) 
-     
+

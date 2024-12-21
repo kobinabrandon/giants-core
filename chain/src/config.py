@@ -11,11 +11,10 @@ class SectionConfig(BaseSettings):
 
     chunk_size: int = 200
     chunk_overlap: int = 30
-    length_function: object = len
     add_start_index: bool = True 
+    length_function: object = len
     sentence_transformer_name: str = "all-mpnet-base-v2"
     pinecone_api_key: str = os.environ["PINECONE_API_KEY"]
-    pinecone_index: str = os.environ["PINECONE_INDEX"]
     pinecone_embedding_model: str = "multilingual-e5-large"
     vector_dim: int = 768
 

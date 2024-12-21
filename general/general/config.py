@@ -9,7 +9,6 @@ _ = load_dotenv(find_dotenv())
 class GeneralConfig(BaseSettings):
     _ = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
     
-    dropbox_app_name: str = os.environ["DROPBOX_APP_NAME"]
     dropbox_access_token: str = os.environ["DROPBOX_ACCESS_TOKEN"]
 
 general_config = GeneralConfig()
