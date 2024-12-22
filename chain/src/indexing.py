@@ -18,7 +18,6 @@ class PineconeAPI:
         self.multi_index = multi_index 
         self.pc =  Pinecone(api=api_key)
         self.books = [neo_colonialism, dark_days, africa_unite]
-        self.chunks_of_text: list[str] = split_text_into_chunks(books=self.books)
 
         # Pinecone does not allow underscores in index names 
         self.index_names = ["nkrumah"] if not self.multi_index else [book.file_name.replace("_", "-") for book in self.books]         
@@ -61,11 +60,16 @@ class PineconeAPI:
        
     def push_vectors(self) -> None:
 
-        breakpoint()
         embedding_model = self.choose_embedding_model()
-        
-        for name in self.index_names:
-            _ = PineconeVectorStore.from_texts(texts=self.chunks_of_text, embedding=embedding_model)
+        index_names_and_their_books = {index_name: book for index_name, book in zip(self.index_names, self.books)}
+
+        for index_name in index_names_and_their_books.keys():
+            
+            book = index_names_and_their_books[index_name]
+            chunks = split_text_into_chunks(books=[book])
+            
+            logger.info(f'Pushing chunks of text and their embeddings from "{book.title}"')
+            _ = PineconeVectorStore.from_texts(index_name=index_name, texts=chunks, embedding=embedding_model)
 
 
 if __name__ == "__main__": 

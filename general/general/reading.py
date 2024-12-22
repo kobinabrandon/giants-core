@@ -35,7 +35,7 @@ def merge_books(books: list[Book], from_scratch: bool, general: bool) -> str:
 
        for book in books:
            logger.warning(f"Checking for the presence of {book.title}...")
-           book.download()
+           book.download(upload=False)
           
            intro_page, end_page = book.non_core_pages  
            document = read_pdf(book=book)    
