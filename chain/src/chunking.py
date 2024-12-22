@@ -7,8 +7,7 @@ from general.reading import merge_books
 
 
 def split_text_into_chunks(books: list[Book]) -> list[str]:
-
-    text = merge_books(books=books, from_scratch=False, general=False)
+    text = merge_books(books=books, from_scratch=False, general=True)
 
     splitter = RecursiveCharacterTextSplitter(
        chunk_size=config.chunk_size,

@@ -2,10 +2,6 @@ import requests
 from pathlib import Path
 from loguru import logger
 
-from dropbox import Dropbox
-from dropbox.files import WriteMode
-
-from general.config import general_config
 from general.paths import set_paths, make_data_directories
 
 
@@ -17,12 +13,13 @@ class Book:
 
         self.file_path: Path =  self.__get_file_path__() / f"{file_name}.pdf"
         self.non_core_pages: tuple[int, int] = self.__find_non_core_pages__()
-        self.dropbox_connector = DropboxTransfers(book=self)
     
     def __get_file_path__(self):
         return set_paths(from_scratch=False, general=True)["raw_data"]
 
     def download(self):
+        from general.remote_storage import upload_to_dropbox, download_from_dropbox 
+        
         if Path(self.file_path).exists():
             logger.success(f'"{self.title}" is already saved to disk')
         else:
@@ -41,9 +38,9 @@ class Book:
                 logger.error(error)
                 logger.error(f"Unable to download {self.title} from the original source.")
                 logger.warning(f'Attempting to download "{self.title}" from Dropbox')
-                self.dropbox_connector.download()
-        
-        self.dropbox_connector.upload()
+                download_from_dropbox(book=self) 
+       
+        upload_to_dropbox(book=self)
 
     def __find_non_core_pages__(self) -> tuple[int, int]: 
         
@@ -56,42 +53,7 @@ class Book:
         assert self.file_name in book_and_non_core_pages.keys()
         return book_and_non_core_pages[self.file_name]
 
-
-class DropboxTransfers:
-    def __init__(self, book: Book) -> None:
-        self.book = book
-        self.connector = Dropbox(general_config.dropbox_access_token)
-        self.remote_file_path = f"/{book.file_name}.pdf"
-
-    def upload(self) -> bool | None:
-        try:
-            logger.info(f'Checking whether {self.book.title} has already been uploaded')
-            metadata = self.connector.files_get_metadata(path=self.remote_file_path)
-            breakpoint()
-            if self.remote_file_path in metadata.values():
-                return True
-
-        except Exception as error:
-            logger.error(error)
-            logger.info(f'File not found. Attempting to upload "{self.book.title}" to Dropbox')
-
-            with open(self.book.file_path, "rb") as file:
-                self.connector.files_upload(
-                    f=file.read(), 
-                    path=self.remote_file_path
-                )
-
-            logger.success(f"{self.book.title} uploaded")
-
-    def download(self):
-        metadata, response = self.connector.files_download(self.remote_file_path)
-
-        breakpoint()
-
-        with open(self.book.file_path, "wb") as file:
-            file.write(response.content)
-
-    
+   
 neo_colonialism = Book(
     file_name="neo_colonialism", 
     title="Neo-Colonialism, the Last Stage of imperialism",

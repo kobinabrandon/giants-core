@@ -2,7 +2,7 @@ import time
 from loguru import logger 
 from argparse import ArgumentParser, BooleanOptionalAction
 
-from pinecone import Index, Pinecone, ServerlessSpec
+from pinecone import  Pinecone, ServerlessSpec
 
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_pinecone.vectorstores import PineconeVectorStore
@@ -10,7 +10,6 @@ from langchain_pinecone.vectorstores import PineconeVectorStore
 from config import config
 from chunking import split_text_into_chunks 
 from general.books import Book, neo_colonialism, dark_days, africa_unite
-
     
 
 class PineconeAPI:
@@ -19,9 +18,10 @@ class PineconeAPI:
         self.multi_index = multi_index 
         self.pc =  Pinecone(api=api_key)
         self.books = [neo_colonialism, dark_days, africa_unite]
-        self.index_names = ["nkrumah"] if not self.multi_index else [book.file_name for book in self.books]         
-
         self.chunks_of_text: list[str] = split_text_into_chunks(books=self.books)
+
+        # Pinecone does not allow underscores in index names 
+        self.index_names = ["nkrumah"] if not self.multi_index else [book.file_name.replace("_", "-") for book in self.books]         
 
     @staticmethod
     def choose_embedding_model() -> HuggingFaceEmbeddings:
@@ -48,7 +48,7 @@ class PineconeAPI:
 
                 if name not in existing_indexes:
                     logger.info(f"Creating a pinecone index called {name} and pushing data to it")
-                    self.pc.start_indexing(name=name, dimension=dimension, metric=metric, spec=spec)
+                    self.pc.create_index(name=name, dimension=dimension, metric=metric, spec=spec)
                 else:
                     logger.warning(f"There is already an index called {name}")
 
@@ -59,8 +59,9 @@ class PineconeAPI:
         except Exception as error:
             logger.error(error)
        
-    def push_vectors(self, embedding_model: HuggingFaceEmbeddings) -> None:
+    def push_vectors(self) -> None:
 
+        breakpoint()
         embedding_model = self.choose_embedding_model()
         
         for name in self.index_names:
@@ -75,5 +76,5 @@ if __name__ == "__main__":
     
     api = PineconeAPI(multi_index=args.multi_index)
     api.start_indexing()
-    _ = api.push_vectors(chunks_of_text=chunks_of_text, embedding_model=embedding_model) 
+    _ = api.push_vectors() 
 
