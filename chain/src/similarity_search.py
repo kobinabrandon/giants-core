@@ -1,27 +1,34 @@
 import torch
-
-from index import PineconeAPI
+from argparse import ArgumentParser
 from sentence_transformers import SentenceTransformer
 
-from general.books import Book
-from config import config
-
-from chunking import split_text_into_chunks
+from src.config import config
+from src.indexing import PineconeAPI
 
 
-def query_embeddings(query: str):
+def query_embeddings(query: str, multi_index: bool, book_file_name: str | None) -> list[dict]:
    
-    api = PineconeAPI()
-    index = api.get_index(name=config.pinecone_index)
+    api = PineconeAPI(multi_index=multi_index)
+    index = api.get_index(book_file_name=book_file_name)
 
     device = "gpu" if torch.cuda.is_available() else "cpu"
     model = SentenceTransformer(config.sentence_transformer_name, device=device)
 
     query_vector = model.encode(query).tolist()
     xc = index.query(vector=query_vector, top_k=5, include_metadata=True)
+    
+    return xc["matches"]
 
-    breakpoint()
 
 if __name__ == "__main__":
-    query_embeddings(query="What is neocolonialism?")
+    parser = ArgumentParser()
+    _ = parser.add_argument("--multi_index", action="store_true")
+    _ = parser.add_argument("-o", "--book_file_name", nargs="?")
+    args = parser.parse_args()    
+
+    results = query_embeddings(
+            query="What is neocolonialism?", 
+            multi_index=args.multi_index, 
+            book_file_name=args.book_file_name
+    )
 

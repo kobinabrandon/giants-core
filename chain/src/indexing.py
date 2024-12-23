@@ -2,7 +2,7 @@ import time
 from loguru import logger 
 from argparse import ArgumentParser, BooleanOptionalAction
 
-from pinecone import  Pinecone, ServerlessSpec
+from pinecone import  Index, Pinecone, ServerlessSpec
 
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_pinecone.vectorstores import PineconeVectorStore
@@ -51,12 +51,26 @@ class PineconeAPI:
                 else:
                     logger.warning(f"There is already an index called {name}")
 
-                # Wait till the index is ready
-                while not self.pc.describe_index(name=name).status["ready"]:
-                    time.sleep(1)
+            # Wait till the index is ready
+            while not self.pc.describe_index(name=name).status["ready"]:
+                        time.sleep(1)
 
         except Exception as error:
             logger.error(error)
+
+    def get_index(self, book_file_name: str | None) -> Index:
+        
+        if self.multi_index or book_file_name != None:
+            name =  book_file_name.replace("_", "-")
+            return self.pc.Index(name=name)
+
+        elif self.multi_index or book_file_name == None:
+            raise Exception("You must specify a book if you're dealing with a mult-index setup")
+        
+        else:
+            return self.pc.Index(name="nkrumah")
+
+
        
     def push_vectors(self) -> None:
 
