@@ -46,14 +46,14 @@ class PineconeAPI:
             for name in self.index_names:
 
                 if name not in existing_indexes:
-                    logger.info(f"Creating a pinecone index called {name} and pushing data to it")
+                    logger.info(f"Creating a pinecone index called {name}")
                     self.pc.create_index(name=name, dimension=dimension, metric=metric, spec=spec)
                 else:
                     logger.warning(f"There is already an index called {name}")
 
-            # Wait till the index is ready
-            while not self.pc.describe_index(name=name).status["ready"]:
-                        time.sleep(1)
+                # Wait till the index is ready
+                while not self.pc.describe_index(name=name).status["ready"]:
+                    time.sleep(1)
 
         except Exception as error:
             logger.error(error)
