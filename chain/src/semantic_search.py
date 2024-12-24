@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from sentence_transformers import SentenceTransformer
 
 from src.config import config
-from src.indexing import PineconeAPI
+from src.vector_db import PineconeAPI
 
 
 def query_embeddings(query: str, multi_index: bool, book_file_name: str | None, top_k: int) -> list[dict]:

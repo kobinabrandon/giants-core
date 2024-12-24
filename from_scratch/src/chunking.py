@@ -16,17 +16,16 @@ def perform_sentence_chunking(book: Book, details_of_all_pages: list[dict[str, s
     """
     Produce a dataframe of descriptive statistics for the entire book. In this  case, both the list of page details,
     and the dataframe of descriptives will be returned. 
-
+                                            
     Args:
-        books (list[Book]): list of book objects 
-        details_of_all_pages (dict[str, str|int]):
+        book: list of book objects 
 
-        book_details (BooksAndDetails): a dictionary whose keys are the titles of the books in question, and each 
-                                            of whose values is a list of dictionaries of page details and/or the same 
-                                            list which contains either a list of dictionaries (each dictionary of 
-                                            those dictionary provides the details of each page)    
+        details_of_all_pages: a dictionary whose keys are the titles of the books in question, and each of whose 
+                              values is a list of dictionaries of page details and/or the same list which contains 
+                              either a list of dictionaries (each dictionary of those dictionary provides the 
+                              details of each page)    
     Returns:
-        : _description_
+        list[dict[str, str|int]]: a list of dictionaries that contains chunks of text. 
     """
     CHUNK_DETAILS_DIR = config.paths["chunk_details"]
 
@@ -75,13 +74,16 @@ def collect_chunk_info(details_of_all_pages: list[dict[str, str|int]]) -> list[d
     Then, we collect various metrics about the newly merged chunk (including itself) and append those 
     details to a list.
 
+    Args:
+        details_of_all_pages: list of dictionaries containing te details of each page. 
+
     Returns:
         list[dict[str, str | int]]: a list of dictionaries containing merged chunks and their details.
     """
     all_chunk_details = []
     for details_per_page in tqdm(iterable=details_of_all_pages, desc="Scouring the pages for the details of each chunk of sentences"):
        
-        # The iterable here is a list which contains lists of strings, each of which is a 
+        # The iterable here is a list which contains lists of strings, each of which is a bunch of chunks of sentences 
         for sentence_chunk in details_per_page["chunks_of_sentences"]:
 
             chunk_details = {}
@@ -123,10 +125,10 @@ def split_sentences(sentences: list[str], split_size: int) -> list[list[str]]:
 
     Args:
         split_size (int): the preferred length of the splits 
-        sentences (list[str]): 
+        sentences (list[str]): the list of sentences to be divided into sub-lists.
 
     Returns:
-        list[list[str]]: a list of sub-lists of sentences
+        list[list[str]]: a list of sub-lists of sentences.
     """
     return [
         sentences[i:i+split_size] for i in range(0, len(sentences), split_size)

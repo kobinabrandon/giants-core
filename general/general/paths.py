@@ -2,7 +2,7 @@ import os
 from pathlib import Path 
 
 
-def set_module_root(from_scratch: bool, general: bool):
+def set_module_root(from_scratch: bool, general: bool) -> Path:
         
     if general:
         return Path("__file__").parent.resolve().parent.resolve() / "general"

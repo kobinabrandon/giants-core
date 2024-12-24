@@ -1,6 +1,5 @@
 from loguru import logger
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.text_splitter import 
 
 from src.config import config
 from general.books import Book

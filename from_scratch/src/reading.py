@@ -13,17 +13,107 @@ import pandas as pd
 from tqdm import tqdm 
 from pathlib import Path
 from loguru import logger
-from pymupdf import Document
 
 from src.segmentation import get_tokens_with_spacy, segment_with_spacy, add_spacy_pipeline_component
 
-from general.books import Book
-from general.reading import remove_new_line_marker
+from general.books import Book 
+from general.paths import make_data_directories, set_paths
+
+
+def read_pdf(book: Book) -> pymupdf.Document:
+    """
+    Read the contents of the specified book.
+
+    Args:
+        book: the book to be read.
+
+    Returns:
+        pymupdf.Document: the document
+    """
+    logger.info(f"Reading '{book.title}'")
+    return pymupdf.open(filename=book.file_path)
+
+
+def remove_new_line_marker(text: str) -> str:
+    """
+    Remove the commonly used new line marker "\n" from the raw text 
+
+    Args:
+        text: the raw text 
+
+    Returns:
+        str: the text with the new line marker removed
+    """
+    return text.replace("\n", " ").strip()
+
+
+def merge_books(books: list[Book], from_scratch: bool, general: bool) -> str:
+    """
+    Extract the raw text for each of the provided books, take the raw strings that constitute their contents,
+    merge them together, and return the merged string.
+
+    Args:
+        books: a list of book objects
+
+        from_scratch: a boolean that indicates whether or not we will be sourcing the books from within the dataframe
+                      folders of the "from_scratch" module
+        
+        general: a boolean that indicates whether or not we will be sourcing the books from within the dataframe
+                      folders of the "general" module
+
+    Returns:
+        str: the merged contents of the books 
+    """
+    make_data_directories(from_scratch=from_scratch, general=general)  # Just to ensure that the directories are present.
+    paths = set_paths(from_scratch=from_scratch, general=general) 
+    
+    CLEANED_TEXT_DIR = paths["cleaned_text"] 
+
+    if len(books) == 1:
+        raw_text_file_name = f"raw_text_{[book.file_name for book in books][0]}.txt"
+    else:
+        raw_text_file_name = "merged_books.txt"
+
+    file_path: Path = CLEANED_TEXT_DIR / raw_text_file_name
+
+    if Path(file_path).is_file():
+       logger.success("The file containing the raw text is already present")
+       with open(file_path, mode="r") as text_file:
+           return text_file.read()
+    else:
+       logger.warning("There is no file that contains the raw text -> Generating it")
+       book_contents: list[str] = []
+
+       for book in books:
+           logger.warning(f"Checking for the presence of {book.title}...")
+           book.download(upload=False)
+          
+           intro_page, end_page = book.non_core_pages  
+           document = read_pdf(book=book)    
+       
+           for page_number, page in tqdm(iterable=enumerate(document), desc=f"Extracting the raw text of {book.title}"):
+               
+               if page_number in range(intro_page, end_page+1):
+                   raw_text: str = page.get_text()
+                   cleaned_text: str = remove_new_line_marker(text=raw_text)
+                   book_contents.append(cleaned_text) 
+       
+       if len(books) > 1:
+           logger.warning("Merging the books into a single string")
+        
+       else:
+           logger.warning(f'Saving the raw text of {[book.title for book in books][0]}')
+
+       merged_text = " ".join(book_contents)
+       with open(file_path, mode="w") as text_file:
+           _  = text_file.write(merged_text)
+       
+       return merged_text
 
 
 def scan_pages_for_details(
     book: Book, 
-    document: Document, 
+    document: pymupdf.Document, 
     save_path: Path, 
     use_spacy: bool, 
     describe: bool
@@ -36,12 +126,12 @@ def scan_pages_for_details(
     Args:
         book (Book): the Book object to get the details from.
         save_path (Path): the directory where the details are to be saved.
-        document (Document): the document file obtained from reading the PDF.
         use_spacy (bool): whether to use spacy to perform sentence segmentation.
-        describe (bool):
+        document (pymupdf.Document): the document file obtained from reading the PDF.
+        describe (bool): whether we want to save a dataframe containing descriptives statistics 
 
     Returns:
-        list[dict[str, str|int]]:
+        list[dict[str, str|int]]: a dictionary of details about each page.
     """
     path_to_book_details = save_path / f"{book.title}_page_details.json"
 
@@ -85,8 +175,15 @@ def scan_pages_for_details(
     return details_of_all_pages
 
 
-def save_descriptives(book: Book, details_of_all_pages: list[dict[str, str|int]], save_path: Path) -> None:
+def save_descriptives(book: Book, save_path: Path, details_of_all_pages: list[dict[str, str|int]]) -> None:
+    """
+    Construct and save a datframe using the details of all the pages of the specific book. 
 
+    Args:
+        book: the book whose details are being tabulated. 
+        save_path: the path where the dataframe of details is to be saved.
+        details_of_all_pages: a list of dictionaries that contains the details of each page.
+    """
     descriptives_path = save_path/f"{book.file_name}_descriptives.parquet"    
     
     # Retrieve the descriptives if we already have them
