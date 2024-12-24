@@ -18,6 +18,7 @@ transformers = "^4.47.0"
 python-dotenv = "^1.0.1"
 langchain-huggingface = "^0.1.2"
 general = {path = "../general"}
+pypdf = "^5.1.0"
 
 [build-system]
 requires = ["poetry-core"]

@@ -2,10 +2,10 @@ import os
 from pathlib import Path 
 
 
-def set_parent(from_scratch: bool, general: bool):
+def set_module_root(from_scratch: bool, general: bool):
         
     if general:
-        return Path("__file__").parent.resolve()
+        return Path("__file__").parent.resolve().parent.resolve() / "general"
     elif from_scratch:
         return Path("__file__").parent.resolve().parent.resolve() / "from_scratch"
     else:
@@ -13,10 +13,10 @@ def set_parent(from_scratch: bool, general: bool):
 
 
 def set_paths(from_scratch: bool, general: bool) -> dict[str, Path]:
-    
-    PARENT_DIR = set_parent(from_scratch=from_scratch, general=general)
+     
+    MODULE_ROOT = set_module_root(from_scratch=from_scratch, general=general)
    
-    DATA_DIR = PARENT_DIR / "data"
+    DATA_DIR = MODULE_ROOT / "data"
     CLEANED_TEXT_DIR = DATA_DIR / "cleaned_text"
 
     paths: dict[str, Path] = {
@@ -32,7 +32,7 @@ def set_paths(from_scratch: bool, general: bool) -> dict[str, Path]:
         )
     
     if from_scratch:
-        MODELS_DIR = PARENT_DIR / "models"
+        MODELS_DIR = MODULE_ROOT / "models"
         BOOK_STATS = DATA_DIR / "book_stats"
         PAGE_DETAILS_DIR = DATA_DIR/"page_details"
 
