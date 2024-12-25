@@ -21,10 +21,10 @@ def query_pinecone(query: str, multi_index: bool, book_file_name: str | None, to
     return xc["matches"]
 
 
-def query_chroma(query: str, top_k: int):
+def query_chroma(query: str, top_k: int):   
 
     chroma = ChromaAPI()
-    results = chroma.store.similarity_search_with_score(query="What is neocolonialism", k=top_k)
+    results = chroma.store.similarity_search_with_score(query=query, k=top_k)
     
     for res, score in results:
         print(f" [Score = {score:3f}] {res.page_content} [{res.metadata}] ")
@@ -33,16 +33,26 @@ def query_chroma(query: str, top_k: int):
 if __name__ == "__main__":
 
     parser = ArgumentParser()
+
+    _ = parser.add_argument("--pinecone", action="store_true")
+    _ = parser.add_argument("--chroma", action="store_true")
+
     _ = parser.add_argument("--multi_index", action="store_true")
     _ = parser.add_argument("-o", "--book_file_name", nargs="?")
     _ = parser.add_argument("--top_k", type=int)
     args = parser.parse_args()    
 
-    results = query_vector_db(
-            query="What happened on the way to China?", 
-            multi_index=args.multi_index, 
-            book_file_name=args.book_file_name,
-            top_k=args.top_k
-    )
+
+    if args.pinecone:
+        results = query_vector_db(
+                query="What happened on the way to China?", 
+                multi_index=args.multi_index, 
+                book_file_name=args.book_file_name,
+                top_k=args.top_k
+        )
+
+    else:
+        query_chroma(query="What is neocolonialism?", top_k=args.top_k)
 
     breakpoint()
+

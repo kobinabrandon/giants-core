@@ -27,6 +27,7 @@ def choose_embedding_model() -> HuggingFaceEmbeddings:
 class ChromaAPI:
     def __init__(self) -> None:
         self.persist_directory: Path = set_paths(from_scratch=False, general=False)["chroma"]
+        self.books: list[Book] = [neo_colonialism, dark_days, africa_unite]
 
         self.store: Chroma = Chroma(
             collection_name="nkrumah",
@@ -34,12 +35,10 @@ class ChromaAPI:
             embedding_function=choose_embedding_model()
         ) 
 
-    def add_text_to_store(self) -> list[str]:
-        documents: list[Document] = read_books(book=None)         
+    def add_documents(self) -> list[str]:
+        documents: list[Document] = read_books(books=self.books)         
         ids = self.store.add_documents(documents=documents)
         return ids
-
-
 
 
 class PineconeAPI:
@@ -63,8 +62,6 @@ class PineconeAPI:
 
         # Pinecone does not allow underscores in index names 
         self.index_names: list[str] = ["nkrumah"] if not self.multi_index else [book.file_name.replace("_", "-") for book in self.books]         
-
-
     def start_indexing(
         self,
         cloud: str = "aws", 
@@ -120,7 +117,7 @@ class PineconeAPI:
             Exception: raised when a book's file name is not provided even though the multi_index approach has 
                        been specified.
         """
-        if self.multi_index or book_file_name != None:
+        if self.multi_index or isinstance(book_file_name, str):
             name =  book_file_name.replace("_", "-")
             return self.store.Index(name=name)
 
@@ -130,8 +127,6 @@ class PineconeAPI:
         else:
             return self.store.Index(name="nkrumah")
 
-
-       
     def push_vectors(self) -> None:
         """
         Make embeddings of the chunks of text, and push them to Pinecone.
@@ -150,10 +145,19 @@ class PineconeAPI:
 if __name__ == "__main__": 
 
     parser = ArgumentParser()
+    _ = parser.add_argument("--pinecone", action="store_true")
+    _ = parser.add_argument("--chroma", action="store_true")
     _ = parser.add_argument("--multi_index", action="store_true")
-    args = parser.parse_args()
     
-    api = PineconeAPI(multi_index=args.multi_index)
-    api.start_indexing()
-    _ = api.push_vectors() 
+    args = parser.parse_args()
+   
+    if args.pinecone:
+        api = PineconeAPI(multi_index=args.multi_index)
+        api.start_indexing()
+        _ = api.push_vectors() 
+
+    else:
+        api = ChromaAPI()
+        ids = api.add_documents()
+        breakpoint()
 

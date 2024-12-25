@@ -1,13 +1,16 @@
 from loguru import logger
+from langchain_core.documents import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from src.config import config
 from general.books import Book
-from general.reading import merge_books
+
+from src.reading import read_books
 
 
-def split_text_into_chunks(books: list[Book]) -> list[str]:
-    text = merge_books(books=books, from_scratch=False, general=True)
+def split_text_into_chunks(books: list[Book]) -> list[Document]:
+    
+    documents = read_books(books=books)
 
     splitter = RecursiveCharacterTextSplitter(
        chunk_size=config.chunk_size,
@@ -16,8 +19,8 @@ def split_text_into_chunks(books: list[Book]) -> list[str]:
        add_start_index=config.add_start_index,
        separators=["\n\n", "\n", ".", " "]
     )
-    
-    chunks = splitter.split_text(text=text)
+
+    chunks = splitter.split_documents(documents=documents)
     logger.success(f"Split the combined text of our books into {len(chunks)} chunks")     
     return chunks
 

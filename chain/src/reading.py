@@ -1,19 +1,17 @@
 from langchain_core.documents import Document 
-from langchain.document_loaders import PyPDFLoader, PyPDFDirectoryLoader 
+from langchain.document_loaders import PyPDFLoader
 
 from general.books import Book 
 from general.paths import set_paths
 
 
-def read_books(book: Book | None) -> list[Document]:
-    
-    module_paths = set_paths(from_scratch=False, general=False)
-    books_root = module_paths["raw_data"]
+def read_books(books: list[Book]) -> list[Document]:
 
-    if book == None: 
-        loader = PyPDFDirectoryLoader(path=books_root)    
-    else:
-        loader = PyPDFLoader(file_path=book.file_path)
+    loader_list = []
+    for book in books:
+        book.download()
+        loader = PyPDFLoader(file_path=str(book.file_path))
+        loader_list.extend(loader.load())
 
-    return loader.load()
+    return loader_list 
 
