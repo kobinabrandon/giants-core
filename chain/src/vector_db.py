@@ -1,19 +1,22 @@
 """
 Contains code for embedding chunks of text into selected vector databases.
 """
-
 import time 
+from pathlib import Path
 from loguru import logger 
 from argparse import ArgumentParser 
 
-from pinecone import  Index, Pinecone, ServerlessSpec
-
+from langchain_core.documents import Document
 from langchain_chroma.vectorstores import Chroma
+from pinecone import Index, Pinecone, ServerlessSpec
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_pinecone.vectorstores import PineconeVectorStore
 
 from config import config
+from src.reading import read_books 
 from chunking import split_text_into_chunks 
+
+from general.paths import set_paths
 from general.books import Book, neo_colonialism, dark_days, africa_unite
     
 
@@ -23,7 +26,18 @@ def choose_embedding_model() -> HuggingFaceEmbeddings:
 
 class ChromaAPI:
     def __init__(self) -> None:
-        self.chroma: Chroma = Chroma(embedding_function=choose_embedding_model()) 
+        self.persist_directory: Path = set_paths(from_scratch=False, general=False)["chroma"]
+
+        self.store: Chroma = Chroma(
+            collection_name="nkrumah",
+            persist_directory=str(self.persist_directory),
+            embedding_function=choose_embedding_model()
+        ) 
+
+    def add_text_to_store(self) -> list[str]:
+        documents: list[Document] = read_books(book=None)         
+        ids = self.store.add_documents(documents=documents)
+        return ids
 
 
 

@@ -3,10 +3,11 @@ from argparse import ArgumentParser
 from sentence_transformers import SentenceTransformer
 
 from src.config import config
+from src.vector_db import ChromaAPI
 from src.vector_db import PineconeAPI
 
 
-def query_embeddings(query: str, multi_index: bool, book_file_name: str | None, top_k: int) -> list[dict]:
+def query_pinecone(query: str, multi_index: bool, book_file_name: str | None, top_k: int) -> list[dict]:
    
     api = PineconeAPI(multi_index=multi_index)
     index = api.get_index(book_file_name=book_file_name)
@@ -20,6 +21,15 @@ def query_embeddings(query: str, multi_index: bool, book_file_name: str | None, 
     return xc["matches"]
 
 
+def query_chroma(query: str, top_k: int):
+
+    chroma = ChromaAPI()
+    results = chroma.store.similarity_search_with_score(query="What is neocolonialism", k=top_k)
+    
+    for res, score in results:
+        print(f" [Score = {score:3f}] {res.page_content} [{res.metadata}] ")
+
+
 if __name__ == "__main__":
 
     parser = ArgumentParser()
@@ -28,7 +38,7 @@ if __name__ == "__main__":
     _ = parser.add_argument("--top_k", type=int)
     args = parser.parse_args()    
 
-    results = query_embeddings(
+    results = query_vector_db(
             query="What happened on the way to China?", 
             multi_index=args.multi_index, 
             book_file_name=args.book_file_name,

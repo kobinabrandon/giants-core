@@ -31,7 +31,7 @@ def set_paths(from_scratch: bool, general: bool) -> dict[str, Path]:
 
         )
     
-    if from_scratch:
+    elif from_scratch:
         MODELS_DIR = MODULE_ROOT / "models"
         BOOK_STATS = DATA_DIR / "book_stats"
         PAGE_DETAILS_DIR = DATA_DIR/"page_details"
@@ -50,6 +50,13 @@ def set_paths(from_scratch: bool, general: bool) -> dict[str, Path]:
             } 
         )
     
+    else:
+        CHROMA_DIR = MODULE_ROOT / "chroma_langchain_db"
+        
+        paths.update(
+            {"chroma": CHROMA_DIR}
+        )
+
     paths.update(
         {
             "embeddings": DATA_DIR / "embeddings",
@@ -61,7 +68,12 @@ def set_paths(from_scratch: bool, general: bool) -> dict[str, Path]:
 
 
 def make_data_directories(from_scratch: bool, general: bool) -> None: 
-    
+    """
+
+    Args:
+        from_scratch: 
+        general: 
+    """
     paths = set_paths(from_scratch=from_scratch, general=general)
     for path in paths.values():
         if not Path(path).exists():

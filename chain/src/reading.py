@@ -5,7 +5,7 @@ from general.books import Book
 from general.paths import set_paths
 
 
-def read_text(book: Book | None) -> list[Document]:
+def read_books(book: Book | None) -> list[Document]:
     
     module_paths = set_paths(from_scratch=False, general=False)
     books_root = module_paths["raw_data"]
