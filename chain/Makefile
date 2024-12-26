@@ -1,11 +1,17 @@
+read:
+	poetry run python src/reading.py 
+
 pinecone-multi:
 	poetry run python src/vector_db.py --multi_index
 
 pinecone-single:
 	poetry run python src/vector_db.py --no-multi_index
 
-chroma:
-	poetry run python src/vector_db.py --chroma
+chroma-chunk:
+	poetry run python src/vector_db.py --chroma --chunk
+
+chroma-no-chunk:
+	poetry run python src/vector_db.py --chroma 
 
 query-chroma:
 	poetry run python src/similarity_search.py --chroma --top_k 10 

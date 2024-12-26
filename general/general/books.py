@@ -19,7 +19,7 @@ class Book:
 
     def download(self) -> None:
         
-        logger.warning(f"Checking for the presence of {self.title}...")
+        logger.warning(f'Checking for the presence of "{self.title}"...')
         
         if Path(self.file_path).exists():
             logger.success(f'"{self.title}" is already saved to disk')

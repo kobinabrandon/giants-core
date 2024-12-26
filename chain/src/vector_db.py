@@ -11,10 +11,11 @@ from langchain_chroma.vectorstores import Chroma
 from pinecone import Index, Pinecone, ServerlessSpec
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_pinecone.vectorstores import PineconeVectorStore
+from torch import chunk
 
-from config import config
-from reading import read_books
-from chunking import split_text_into_chunks 
+from src.config import config
+from src.reading import read_books
+from src.chunking import split_text_into_chunks
 
 from general.paths import set_paths
 from general.books import Book, neo_colonialism, dark_days, africa_unite
@@ -35,9 +36,17 @@ class ChromaAPI:
             embedding_function=choose_embedding_model()
         ) 
 
-    def add_documents(self) -> list[str]:
+    def add_documents(self, chunk: bool) -> list[str]:
         documents: list[Document] = read_books(books=self.books)         
-        ids = self.store.add_documents(documents=documents)
+        logger.success(f"Successfully embedded the {"chunks of " if chunk else ""} text and saved the results to ChromaDB.")
+
+        if chunk:
+            chunks = split_text_into_chunks(documents=documents)
+            ids = self.store.add_documents(documents=chunks)
+        else:
+            ids = self.store.add_documents(documents=documents)
+
+
         return ids
 
 
@@ -137,19 +146,19 @@ class PineconeAPI:
 
         for index_name in index_names_and_their_books.keys():
             book = index_names_and_their_books[index_name]
-            chunks = split_text_into_chunks(books=[book])
+            documents = read_books(books=[book])
+            chunks = split_text_into_chunks(documents=documents)
 
             logger.info(f'Pushing chunks of text and their embeddings from "{book.title}"')
             _ = PineconeVectorStore.from_texts(index_name=index_name, texts=chunks, embedding=embedding_model)
 
 
 if __name__ == "__main__": 
-
     parser = ArgumentParser()
     _ = parser.add_argument("--pinecone", action="store_true")
     _ = parser.add_argument("--chroma", action="store_true")
+    _ = parser.add_argument("--chunk", action="store_true")
     _ = parser.add_argument("--multi_index", action="store_true")
-    
     args = parser.parse_args()
    
     if args.pinecone:
@@ -159,5 +168,5 @@ if __name__ == "__main__":
 
     else:
         api = ChromaAPI()
-        ids = api.add_documents()
+        ids = api.add_documents(chunk=args.chunk)
 

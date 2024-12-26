@@ -31,20 +31,17 @@ def query_chroma(query: str, top_k: int):
 
   
 if __name__ == "__main__":
-
     parser = ArgumentParser()
 
     _ = parser.add_argument("--pinecone", action="store_true")
     _ = parser.add_argument("--chroma", action="store_true")
-
     _ = parser.add_argument("--multi_index", action="store_true")
     _ = parser.add_argument("-o", "--book_file_name", nargs="?")
     _ = parser.add_argument("--top_k", type=int)
+
     args = parser.parse_args()    
 
-
     if args.pinecone:
-
         results = query_pinecone(
                 query="What happened on the way to China?", 
                 multi_index=args.multi_index, 
