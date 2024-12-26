@@ -5,7 +5,7 @@ from langchain_core.documents import Document
 from langchain_community.document_loaders import PyPDFLoader
 
 from general.books import Book
-from cleaning import remove_non_core_pages, remove_new_line_from_documents
+from src.cleaning import remove_non_core_pages, remove_new_line_from_documents
 
 
 def read_books(books: list[Book]) -> list[Document]:

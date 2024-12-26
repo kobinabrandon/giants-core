@@ -11,11 +11,10 @@ from langchain_chroma.vectorstores import Chroma
 from pinecone import Index, Pinecone, ServerlessSpec
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_pinecone.vectorstores import PineconeVectorStore
-from torch import chunk
 
 from src.config import config
 from src.reading import read_books
-from src.chunking import split_text_into_chunks
+from src.chunking import split_documents_into_chunks 
 
 from general.paths import set_paths
 from general.books import Book, neo_colonialism, dark_days, africa_unite
@@ -38,15 +37,14 @@ class ChromaAPI:
 
     def add_documents(self, chunk: bool) -> list[str]:
         documents: list[Document] = read_books(books=self.books)         
-        logger.success(f"Successfully embedded the {"chunks of " if chunk else ""} text and saved the results to ChromaDB.")
 
         if chunk:
-            chunks = split_text_into_chunks(documents=documents)
+            chunks = split_documents_into_chunks(documents=documents)
             ids = self.store.add_documents(documents=chunks)
         else:
             ids = self.store.add_documents(documents=documents)
 
-
+        logger.success(f"Successfully embedded the {"chunks of " if chunk else ""} text and saved the results to ChromaDB.")
         return ids
 
 
@@ -127,14 +125,14 @@ class PineconeAPI:
             Exception: raised when a book's file name is not provided even though the multi_index approach has 
                        been specified.
         """
-        if self.multi_index or isinstance(book_file_name, str):
+        if self.multi_index and isinstance(book_file_name, str):
             name =  book_file_name.replace("_", "-")
             return self.store.Index(name=name)
 
-        elif self.multi_index or book_file_name == None:
+        elif self.multi_index and book_file_name == None:
             raise Exception("You must specify a book if you're dealing with a mult-index setup")
         
-        else:
+        else: 
             return self.store.Index(name="nkrumah")
 
     def push_vectors(self) -> None:
@@ -147,7 +145,7 @@ class PineconeAPI:
         for index_name in index_names_and_their_books.keys():
             book = index_names_and_their_books[index_name]
             documents = read_books(books=[book])
-            chunks = split_text_into_chunks(documents=documents)
+            chunks = split_documents_into_chunks(documents=documents)
 
             logger.info(f'Pushing chunks of text and their embeddings from "{book.title}"')
             _ = PineconeVectorStore.from_texts(index_name=index_name, texts=chunks, embedding=embedding_model)

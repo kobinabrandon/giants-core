@@ -39,6 +39,6 @@ def remove_new_line_from_documents(documents: list[Document]) -> list[Document]:
     """
     for document in documents:
         document.page_content = remove_new_line_marker(text=document.page_content)
-    
+
     return documents
 

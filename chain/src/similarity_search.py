@@ -50,7 +50,7 @@ if __name__ == "__main__":
         )
 
     else:
-        results = query_chroma(query="What is neocolonialism?", top_k=args.top_k)
+        results = query_chroma(query="How does neocolonialism affect development?", top_k=args.top_k)
 
     breakpoint()
 

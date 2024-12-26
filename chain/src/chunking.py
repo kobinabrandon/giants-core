@@ -3,12 +3,9 @@ from langchain_core.documents import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from src.config import config
-from general.books import Book
-
-from reading import read_books
 
 
-def split_text_into_chunks(documents: list[Document]) -> list[Document]:
+def split_documents_into_chunks(documents: list[Document]) -> list[Document]:
     
     splitter = RecursiveCharacterTextSplitter(
        chunk_size=config.chunk_size,
