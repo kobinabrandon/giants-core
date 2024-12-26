@@ -1,5 +1,5 @@
-read:
-	poetry run python src/reading.py 
+generate:
+	poetry run python src/generation.py
 
 pinecone-multi:
 	poetry run python src/vector_db.py --multi_index
