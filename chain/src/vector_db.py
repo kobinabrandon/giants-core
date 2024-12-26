@@ -13,7 +13,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_pinecone.vectorstores import PineconeVectorStore
 
 from config import config
-from src.reading import read_books 
+from reading import read_books
 from chunking import split_text_into_chunks 
 
 from general.paths import set_paths
@@ -62,12 +62,13 @@ class PineconeAPI:
 
         # Pinecone does not allow underscores in index names 
         self.index_names: list[str] = ["nkrumah"] if not self.multi_index else [book.file_name.replace("_", "-") for book in self.books]         
+
     def start_indexing(
         self,
         cloud: str = "aws", 
         region: str = "us-east-1", 
         metric: str = "cosine",
-        dimension: int = config.vector_dim
+        dimension: int = 768 
         ) -> None: 
         """
         Create the desired Pinecone indices if they have not already been made. 
@@ -159,5 +160,4 @@ if __name__ == "__main__":
     else:
         api = ChromaAPI()
         ids = api.add_documents()
-        breakpoint()
 

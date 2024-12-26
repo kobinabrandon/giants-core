@@ -1,5 +1,7 @@
 import torch
 from argparse import ArgumentParser
+
+from langchain_core.documents import Document
 from sentence_transformers import SentenceTransformer
 
 from src.config import config
@@ -24,12 +26,10 @@ def query_pinecone(query: str, multi_index: bool, book_file_name: str | None, to
 def query_chroma(query: str, top_k: int):   
 
     chroma = ChromaAPI()
-    results = chroma.store.similarity_search_with_score(query=query, k=top_k)
-    
-    for res, score in results:
-        print(f" [Score = {score:3f}] {res.page_content} [{res.metadata}] ")
+    results: list[tuple[Document, float]] = chroma.store.similarity_search_with_score(query=query, k=top_k)
+    breakpoint()   
 
-
+  
 if __name__ == "__main__":
 
     parser = ArgumentParser()
@@ -44,7 +44,8 @@ if __name__ == "__main__":
 
 
     if args.pinecone:
-        results = query_vector_db(
+
+        results = query_pinecone(
                 query="What happened on the way to China?", 
                 multi_index=args.multi_index, 
                 book_file_name=args.book_file_name,
@@ -52,7 +53,7 @@ if __name__ == "__main__":
         )
 
     else:
-        query_chroma(query="What is neocolonialism?", top_k=args.top_k)
+        results = query_chroma(query="What is neocolonialism?", top_k=args.top_k)
 
     breakpoint()
 

@@ -5,7 +5,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from src.config import config
 from general.books import Book
 
-from src.reading import read_books
+from reading import read_books
 
 
 def split_text_into_chunks(books: list[Book]) -> list[Document]:

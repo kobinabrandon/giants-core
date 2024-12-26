@@ -16,7 +16,6 @@ class SectionConfig(BaseSettings):
     sentence_transformer_name: str = "all-mpnet-base-v2"
     pinecone_api_key: str = os.environ["PINECONE_API_KEY"]
     pinecone_embedding_model: str = "multilingual-e5-large"
-    vector_dim: int = 768
 
 
 config = SectionConfig()

@@ -12,7 +12,6 @@ from sentence_transformers import SentenceTransformer
 from src.config import config 
 from src.processing import process_book
 
-from general.config import general_config 
 from general.paths import make_data_directories
 from general.books import Book, neo_colonialism, africa_unite, dark_days
 

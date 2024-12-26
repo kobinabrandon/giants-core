@@ -1,3 +1,6 @@
+read:
+	poetry run python src/reading.py 
+
 pinecone-multi:
 	poetry run python src/vector_db.py --multi_index
 
