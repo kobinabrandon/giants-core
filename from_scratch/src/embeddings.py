@@ -22,7 +22,8 @@ device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cp
 def get_embedding_model(model_name: str) -> SentenceTransformer:
     return SentenceTransformer(model_name_or_path=model_name, device=device)
 
-def make_embeddings_of_chunks(book: Book, model_name: str = config.sentence_transformer_name) -> None:
+
+def make_embeddings_of_chunks(book: Book, model_name: str = config.embedding_model_name) -> None:
     
     logger.info(f"Creating embeddings from chunks of text in '{book.title}'") 
     embedding_model = get_embedding_model(model_name=model_name)
@@ -51,7 +52,7 @@ def set_embeddings_path(book: Book) -> Path:
     return EMBEDDINGS_DIR / f"{book.file_name}.csv"  
 
 
-def retrieve_embeddings_of_chunks(book: Book, model_name: str = config.sentence_transformer_name):
+def retrieve_embeddings_of_chunks(book: Book, model_name: str = config.embedding_model_name):
 
     embedding_path = set_embeddings_path(book=book) 
     

@@ -15,7 +15,6 @@ def make_prompt(context: str, query: str) -> PromptTemplate:
     Based on the following context: {context}, answer the following question: 
     {query}
     """
-
     return PromptTemplate(input_variables=[context, query], template=template)
 
 

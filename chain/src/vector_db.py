@@ -20,8 +20,8 @@ from general.paths import set_paths
 from general.books import Book, neo_colonialism, dark_days, africa_unite
     
 
-def choose_embedding_model() -> HuggingFaceEmbeddings:
-    return HuggingFaceEmbeddings(model_name=config.sentence_transformer_name)
+def get_embedding_model() -> HuggingFaceEmbeddings:
+    return HuggingFaceEmbeddings(model_name=config.embedding_model_name)
 
 
 class ChromaAPI:
@@ -32,7 +32,7 @@ class ChromaAPI:
         self.store: Chroma = Chroma(
             collection_name="nkrumah",
             persist_directory=str(self.persist_directory),
-            embedding_function=choose_embedding_model()
+            embedding_function=get_embedding_model()
         ) 
 
     def add_documents(self, chunk: bool) -> list[str]:
@@ -139,7 +139,7 @@ class PineconeAPI:
         """
         Make embeddings of the chunks of text, and push them to Pinecone.
         """
-        embedding_model = choose_embedding_model()
+        embedding_model = get_embedding_model()
         index_names_and_their_books = {index_name: book for index_name, book in zip(self.index_names, self.books)}
 
         for index_name in index_names_and_their_books.keys():

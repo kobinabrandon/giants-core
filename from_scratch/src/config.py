@@ -13,7 +13,7 @@ class SectionConfig(BaseSettings):
     vocab_size: int = 14297
     spacy_max_length: int = 1400000 
     sentences_per_chunk: int = 30
-    sentence_transformer_name: str = "all-mpnet-base-v2"
+    embedding_model_name: str = "all-mpnet-base-v2"
     batch_size_for_embedding: int = 32
 
     paths: dict[str, Path] = set_paths(from_scratch=True, general=False) 

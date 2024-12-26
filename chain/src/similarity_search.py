@@ -15,7 +15,7 @@ def query_pinecone(query: str, multi_index: bool, book_file_name: str | None, to
     index = api.get_index(book_file_name=book_file_name)
 
     device = "gpu" if torch.cuda.is_available() else "cpu"
-    model = SentenceTransformer(config.sentence_transformer_name, device=device)
+    model = SentenceTransformer(config.embedding_model_name, device=device)
 
     query_vector = model.encode(query).tolist()
     xc = index.query(vector=query_vector, top_k=top_k, include_metadata=True)
