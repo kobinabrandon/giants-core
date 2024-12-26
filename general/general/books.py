@@ -1,6 +1,5 @@
 import requests
 from pathlib import Path
-
 from loguru import logger
 
 from general.paths import set_paths, make_data_directories
@@ -13,12 +12,14 @@ class Book:
         self.file_name: str = file_name
 
         self.file_path: Path =  self.__get_file_path__() / f"{file_name}.pdf"
-        self.non_core_pages: tuple[int, int] = self.__find_non_core_pages__()
+        self.core_pages: range = self.__find_core_pages__()
     
     def __get_file_path__(self) -> Path:
         return set_paths(from_scratch=False, general=True)["raw_data"]
 
     def download(self) -> None:
+        
+        logger.warning(f"Checking for the presence of {self.title}...")
         
         if Path(self.file_path).exists():
             logger.success(f'"{self.title}" is already saved to disk')
@@ -38,16 +39,16 @@ class Book:
                 logger.error(error)
                 logger.error(f"Unable to download {self.title}.")
 
-    def __find_non_core_pages__(self) -> tuple[int, int]: 
+    def __find_core_pages__(self) -> range: 
         
-        book_and_non_core_pages = {
-            "neo_colonialism": (4, 201),
-            "africa_must_unite": (5, 236),
-            "dark_days": (7, 162)
+        book_and_core_pages = {
+            "neo_colonialism": range(4, 202),
+            "africa_must_unite": range(5, 237),
+            "dark_days": range(7, 163)
         }
         
-        assert self.file_name in book_and_non_core_pages.keys()
-        return book_and_non_core_pages[self.file_name]
+        assert self.file_name in book_and_core_pages.keys()
+        return book_and_core_pages[self.file_name]
 
 
 neo_colonialism = Book(

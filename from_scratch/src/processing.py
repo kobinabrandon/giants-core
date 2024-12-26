@@ -7,8 +7,8 @@ from src.reading import scan_pages_for_details
 from src.chunking import perform_sentence_chunking
 
 from general.reading import read_pdf
-from general.books import Book, neo_colonialism, africa_unite, dark_days
 from general.paths import make_data_directories
+from general.books import Book, neo_colonialism, africa_unite, dark_days
 
 
 def process_book(book: Book, use_spacy: bool, describe: bool) -> list[dict[str, str|int]]:
@@ -34,7 +34,7 @@ def process_book(book: Book, use_spacy: bool, describe: bool) -> list[dict[str, 
 
 
 def choose_core_pages(details_of_all_pages: list[dict[str, str|int]], book: Book) -> list[dict[str, str|int]]:
-    intro_pages, end_pages = book.non_core_pages 
+    intro_pages, end_pages = book.core_pages[0], book.core_pages[1] 
     return details_of_all_pages[intro_pages: end_pages]
 
 

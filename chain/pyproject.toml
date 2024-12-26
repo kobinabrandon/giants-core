@@ -20,6 +20,7 @@ langchain-huggingface = "^0.1.2"
 pypdf = "^5.1.0"
 langchain-chroma = "^0.1.4"
 chromadb = "0.5"
+general = {path = "../general"}
 
 [build-system]
 requires = ["poetry-core"]

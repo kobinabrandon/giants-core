@@ -751,6 +751,25 @@ test-full = ["adlfs", "aiohttp (!=4.0.0a0,!=4.0.0a1)", "cloudpickle", "dask", "d
 tqdm = ["tqdm"]
 
 [[package]]
+name = "general"
+version = "0.1.0"
+description = ""
+optional = false
+python-versions = "<3.13, >=3.9"
+files = []
+develop = false
+
+[package.dependencies]
+loguru = "^0.7.3"
+pydantic-settings = "^2.6.1"
+python-dotenv = "^1.0.1"
+requests = "^2.32.3"
+
+[package.source]
+type = "directory"
+url = "../general"
+
+[[package]]
 name = "google-auth"
 version = "2.37.0"
 description = "Google Authentication Library"
@@ -4392,4 +4411,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "<3.13, >=3.9"
-content-hash = "b0be221dfefacc9861d678da3484ae99e37793411d19792d75c437564a212262"
+content-hash = "4cd2b01ff89e94afadb42a840aa33fc1ab69396bde8a894ba328ac390440a220"

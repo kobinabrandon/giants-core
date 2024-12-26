@@ -72,15 +72,12 @@ def merge_books(books: list[Book], from_scratch: bool, general: bool) -> str:
        book_contents: list[str] = []
 
        for book in books:
-           logger.warning(f"Checking for the presence of {book.title}...")
-           book.download(upload=False)
-          
-           intro_page, end_page = book.non_core_pages  
+           book.download()
            document = read_pdf(book=book)    
        
            for page_number, page in tqdm(iterable=enumerate(document), desc=f"Extracting the raw text of {book.title}"):
                
-               if page_number in range(intro_page, end_page+1):
+                if page_number in book.core_pages: 
                    raw_text: str = page.get_text()
                    cleaned_text: str = remove_new_line_marker(text=raw_text)
                    book_contents.append(cleaned_text) 
