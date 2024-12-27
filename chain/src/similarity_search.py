@@ -29,6 +29,7 @@ def query_chroma(query: str, top_k: int):
     results: list[tuple[Document, float]] = chroma.store.similarity_search_with_score(query=query, k=top_k)
     breakpoint()   
 
+
   
 if __name__ == "__main__":
     parser = ArgumentParser()

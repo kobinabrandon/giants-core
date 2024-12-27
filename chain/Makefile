@@ -1,3 +1,6 @@
+chunks:
+	poetry run python src/chunking.py
+
 generate:
 	poetry run python src/generation.py
 
