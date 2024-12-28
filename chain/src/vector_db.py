@@ -14,7 +14,7 @@ from langchain_pinecone.vectorstores import PineconeVectorStore
 
 from src.config import config
 from src.reading import read_books
-from src.chunking import split_documents_into_chunks 
+from src.chunking import split_documents 
 
 from general.paths import set_paths
 from general.books import Book, neo_colonialism, dark_days, africa_unite
@@ -39,12 +39,12 @@ class ChromaAPI:
         documents: list[Document] = read_books(books=self.books)         
 
         if chunk:
-            chunks = split_documents_into_chunks(documents=documents)
+            chunks = split_documents(documents=documents)
             ids = self.store.add_documents(documents=chunks)
         else:
             ids = self.store.add_documents(documents=documents)
 
-        logger.success(f"Successfully embedded the {"chunks of " if chunk else ""} text and saved the results to ChromaDB.")
+        logger.success(f"Successfully embedded the {'chunks of ' if chunk else ''} text and saved the results to ChromaDB.")
         return ids
 
 

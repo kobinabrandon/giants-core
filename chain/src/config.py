@@ -9,8 +9,11 @@ _  = load_dotenv()
 class SectionConfig(BaseSettings):
     _ = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
-    chunk_size: int = 800
-    chunk_overlap: int = 30
+    number_of_characters_per_chunk: int = 800
+    overlapping_characters_per_chunk: int = 30
+
+    ratio_of_tokens_in_overlap: float = 0.2
+
     add_start_index: bool = True 
     length_function: object = len
     embedding_model_name: str = "thenlper/gte-large"
