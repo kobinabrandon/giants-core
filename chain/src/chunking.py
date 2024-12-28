@@ -10,7 +10,17 @@ from general.books import neo_colonialism, africa_unite, dark_days
 
 
 def split_documents(documents: list[Document]) -> list[Document]:
+    """
+    Split the texts (supplied in Langchain's Document format) into chunks using either the 
+    number of characters or the number of tokens. The latter choice will be made if there is 
+    at least one page whose tokens exceed the maximum sequence length of the embedding model.
     
+    Args:
+        documents: the documents to be split into chunks 
+
+    Returns:
+        list[Document]: the resulting chunks of text
+    """
     separators = ["\n\n", "\n", ".", " "]
     max_seq_length = get_max_sequence_length()
 
@@ -45,7 +55,14 @@ def split_documents(documents: list[Document]) -> list[Document]:
 
 
 def get_max_sequence_length(embedding_model_name: str = config.embedding_model_name) -> int:
+    """
+    Determine the maximum sequence length of the embedding model and return it 
     
+    Args:
+        embedding_model_name: the name of the embedding model.
+    Returns:
+        int: the maximum number of tokens that the embedding model can handle.
+    """
     embedding_model = SentenceTransformer(model_name_or_path=embedding_model_name)
     max_seq_length = embedding_model.max_seq_length
     logger.warning(f"The embedding model has a maximum sequence length of {max_seq_length}")     
@@ -53,7 +70,17 @@ def get_max_sequence_length(embedding_model_name: str = config.embedding_model_n
 
 
 def some_pages_too_big_for_embedding(max_seq_length: int, documents: list[Document]) -> bool:
+    """
+    Uses the embedding model to tokenize the pages of each text, counts the number of tokens, and checks whether any 
+    of the pages has more tokens than the embedding model can handle.
 
+    Args:
+        max_seq_length: the maximum number of tokens that can be accommodated by the embedding model. 
+        documents: the number of documents to be processed.
+
+    Returns:
+        bool: whether or not there is a page with more tokens than the embedding model's capacity.
+    """
     tokenizer = get_tokenizer() 
     lengths = [len(tokenizer.encode(document.page_content)) for document in documents]
     lengths_beyond_max = [length for length in lengths if length > max_seq_length]

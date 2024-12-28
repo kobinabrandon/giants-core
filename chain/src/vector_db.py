@@ -44,7 +44,7 @@ class ChromaAPI:
         else:
             ids = self.store.add_documents(documents=documents)
 
-        logger.success(f"Successfully embedded the {'chunks of ' if chunk else ''} text and saved the results to ChromaDB.")
+        logger.success(f"Successfully embedded the {'chunks of' if chunk else ''} text and saved the results to ChromaDB.")
         return ids
 
 
