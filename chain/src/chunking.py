@@ -101,4 +101,3 @@ def get_tokenizer(name: str = config.embedding_model_name):
 if __name__ == "__main__":
     documents = read_books(books=[neo_colonialism, africa_unite, dark_days])
     chunks = split_documents(documents=documents)
-    breakpoint()

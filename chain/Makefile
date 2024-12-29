@@ -1,3 +1,6 @@
+llm:
+	poetry run python src/llm.py
+
 chunks:
 	poetry run python src/chunking.py
 

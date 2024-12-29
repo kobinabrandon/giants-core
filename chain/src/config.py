@@ -14,13 +14,14 @@ class SectionConfig(BaseSettings):
 
     ratio_of_tokens_in_overlap: float = 0.2
 
+    reading_model_name: str = "HuggingFaceH4/zephyr-7b-beta"
     add_start_index: bool = True 
     length_function: object = len
     embedding_model_name: str = "thenlper/gte-large"
-    pinecone_api_key: str = os.environ["PINECONE_API_KEY"]
+    pinecone_api_key: str = "" #os.environ["PINECONE_API_KEY"]
     pinecone_embedding_model: str = "multilingual-e5-large"
     llm_api_url: str = "https://api-inference.huggingface.co/models/timpal0l/mdeberta-v3-base-squad2"
-    hugging_face_tokens: str = os.environ["HUGGING_FACE_TOKEN"]
+    #hugging_face_tokens: str = os.environ["HUGGING_FACE_TOKEN"]
 
 config = SectionConfig()
 
