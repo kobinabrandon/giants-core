@@ -8,3 +8,6 @@ sp_model.vocab
 **/chroma/
 **/models/
 **/__pycache__/
+
+**/chroma_langchain_db/
+
