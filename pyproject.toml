@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "general"
+name = "src"
 version = "0.1.0"
 description = ""
 authors = ["Kobina Brandon <kobinabrandon@proton.me>"]
@@ -7,10 +7,20 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "<3.13, >=3.9"
-requests = "^2.32.3"
+langchain = "^0.3.10"
 loguru = "^0.7.3"
+requests = "^2.32.3"
+langchain-community = "^0.3.11"
 pydantic-settings = "^2.6.1"
+sentence-transformers = "^3.3.1"
+langchain-pinecone = "^0.2.0"
+transformers = "^4.47.0"
 python-dotenv = "^1.0.1"
+langchain-huggingface = "^0.1.2"
+pypdf = "^5.1.0"
+langchain-chroma = "^0.1.4"
+chromadb = "0.5"
+accelerate = "^1.2.1"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,4 +1,3 @@
-from numpy import who
 import torch 
 from transformers import PreTrainedTokenizer
 from transformers.pipelines.base import Pipeline
@@ -46,20 +45,11 @@ def make_prompt(question: str, context: str, tokenizer: PreTrainedTokenizer):
         }
     ]
 
-    RAG_PROMPT_TEMPLATE = tokenizer.apply_chat_template(
-        prompt_format, tokenize=False, add_generation_prompt=True
-    )
-
+    RAG_PROMPT_TEMPLATE = tokenizer.apply_chat_template(prompt_format, tokenize=False, add_generation_prompt=True)
     print(RAG_PROMPT_TEMPLATE)
 
 
 def get_tokenizer(reading_model_name: str = config.reading_model_name) -> PreTrainedTokenizer:
     return AutoTokenizer.from_pretrained(pretrained_model_name_or_path=reading_model_name)
-
-
-
-
-
-
 
 

@@ -1,5 +1,5 @@
-llm:
-	poetry run python src/llm.py
+books:
+	poetry run python src/books.py
 
 chunks:
 	poetry run python src/chunking.py
@@ -33,4 +33,7 @@ query-africa-unite:
 
 query-neocolonialism:
 	poetry run python src/similarity_search.py --multi_index --book_file_name neo_colonialism --top_k 10
+
+llm:
+	poetry run python src/llm.py
 

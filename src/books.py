@@ -2,7 +2,7 @@ import requests
 from pathlib import Path
 from loguru import logger
 
-from general.paths import set_paths, make_data_directories
+from src.paths import set_paths, make_data_directories
 
 
 class Book:
@@ -15,7 +15,7 @@ class Book:
         self.core_pages: range = self.__find_core_pages__()
     
     def __get_file_path__(self) -> Path:
-        return set_paths(from_scratch=False, general=True)["raw_data"]
+        return set_paths()["raw_data"]
 
     def download(self) -> None:
         
@@ -71,7 +71,7 @@ africa_unite = Book(
 
 
 if __name__ == "__main__":
-    make_data_directories(from_scratch=False, general=True)
+    make_data_directories()
     for book in [neo_colonialism, dark_days, africa_unite]:
         book.download()
 

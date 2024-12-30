@@ -2,7 +2,19 @@
 Contains code that cleans text using by interacting with object's of Langchain's Document class.
 """
 from langchain_core.documents import Document
-from general.cleaning import remove_new_line_marker
+
+
+def remove_new_line_marker(text: str) -> str:
+    """
+    Remove the commonly used new line marker "\n" from the raw text 
+
+    Args:
+        text: the raw text 
+
+    Returns:
+        str: the text with the new line marker removed
+    """
+    return text.replace("\n", " ").strip()
 
 
 def remove_non_core_pages(documents: list[Document], core_pages: range) -> list[Document]:

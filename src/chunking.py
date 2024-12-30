@@ -1,12 +1,12 @@
 from loguru import logger
-from transformers import AutoTokenizer
 from langchain_core.documents import Document
 from sentence_transformers import SentenceTransformer    
+from transformers import AutoTokenizer, PreTrainedTokenizer
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from src.config import config
 from src.reading import read_books
-from general.books import neo_colonialism, africa_unite, dark_days
+from src.books import neo_colonialism, africa_unite, dark_days
 
 
 def split_documents(documents: list[Document]) -> list[Document]:
@@ -93,11 +93,11 @@ def some_pages_too_big_for_embedding(max_seq_length: int, documents: list[Docume
         return False 
 
 
-def get_tokenizer(name: str = config.embedding_model_name):
+def get_tokenizer(name: str = config.embedding_model_name) -> PreTrainedTokenizer:
     return AutoTokenizer.from_pretrained(pretrained_model_name_or_path=name)
-
 
 
 if __name__ == "__main__":
     documents = read_books(books=[neo_colonialism, africa_unite, dark_days])
     chunks = split_documents(documents=documents)
+

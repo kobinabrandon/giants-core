@@ -3,9 +3,6 @@ from langchain.prompts import PromptTemplate
 from langchain.vectorstores import Chroma, Pinecone
 from langchain_core.vectorstores import VectorStoreRetriever
 
-from langchain_huggingface.llms import HuggingFaceEndpoint
-from langchain_community.chat_models import ChatHuggingFace
-
 from src.config import config
 
 

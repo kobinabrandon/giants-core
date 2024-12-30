@@ -13,11 +13,10 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_pinecone.vectorstores import PineconeVectorStore
 
 from src.config import config
+from src.paths import set_paths
 from src.reading import read_books
 from src.chunking import split_documents 
-
-from general.paths import set_paths
-from general.books import Book, neo_colonialism, dark_days, africa_unite
+from src.books import Book, neo_colonialism, dark_days, africa_unite
     
 
 def get_embedding_model() -> HuggingFaceEmbeddings:
@@ -26,7 +25,7 @@ def get_embedding_model() -> HuggingFaceEmbeddings:
 
 class ChromaAPI:
     def __init__(self) -> None:
-        self.persist_directory: Path = set_paths(from_scratch=False, general=False)["chroma"]
+        self.persist_directory: Path = set_paths()["chroma"]
         self.books: list[Book] = [neo_colonialism, dark_days, africa_unite]
 
         self.store: Chroma = Chroma(
