@@ -1,10 +1,11 @@
 import torch 
 from transformers import PreTrainedTokenizer
+from langchain_core.documents import Document
 from transformers.pipelines.base import Pipeline
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig, pipeline
 
 from src.config import config 
-
+from src.similarity_search import query_chroma
 
 # bnb_config = BitsAndBytesConfig(
 #     load_in_4bit=True,
@@ -15,7 +16,9 @@ from src.config import config
 #
 
 
-def make_reader_llm(reading_model_name: str = config.reading_model_name, tokenizer: PreTrainedTokenizer) -> Pipeline:
+def make_reader_llm(reading_model_name: str = config.reading_model_name ) -> Pipeline:
+
+    tokenizer = get_tokenizer()
 
     llm = AutoModelForCausalLM.from_pretrained(
         pretrained_model_name_or_path=reading_model_name,
@@ -26,15 +29,15 @@ def make_reader_llm(reading_model_name: str = config.reading_model_name, tokeniz
     return pipeline(model=llm, tokenizer=tokenizer, task="text-generation")
 
 
-def make_prompt(question: str, context: str, tokenizer: PreTrainedTokenizer):
+def make_prompt_template(question: str, context: str, tokenizer: PreTrainedTokenizer):
     
     prompt_format = [
         {
             "role": "system",
-            "content": """ Using the information contained in the context, give a comprehensive answer to the question.
-                           Respond only to the question asked, response should be concise and relevant to the question.
-                           Provide the number of the source document when relevant. If the answer cannot be deduced 
-                           from the context, do not give an answer.""",
+            "content": """ Using the information contained in the context, 
+give a comprehensive answer to the question. 
+Respond only to the question asked, response should be concise and relevant to the question.
+Provide the number of the source document when relevant. If the answer cannot be deduced from the context, do not give an answer.""",
         },
         {
            "role": "user",
@@ -45,11 +48,28 @@ def make_prompt(question: str, context: str, tokenizer: PreTrainedTokenizer):
         }
     ]
 
-    RAG_PROMPT_TEMPLATE = tokenizer.apply_chat_template(prompt_format, tokenize=False, add_generation_prompt=True)
-    print(RAG_PROMPT_TEMPLATE)
+    return tokenizer.apply_chat_template(prompt_format, tokenize=False, add_generation_prompt=True)
 
 
-def get_tokenizer(reading_model_name: str = config.reading_model_name) -> PreTrainedTokenizer:
-    return AutoTokenizer.from_pretrained(pretrained_model_name_or_path=reading_model_name)
+def test_reader(query: str = "What is neo-colonialism?"):
 
+    query_results: list[tuple[Document, float]] = query_chroma(query=query)
+    retrieved_results = [result[0].page_content for result in query_results]
+
+    context = "\n Extracted documents: \n"
+    context += "".join(
+        [f"Document {str(i)}:::\n" + doc for i, doc in enumerate(retrieved_results)]
+    )
+
+    final_prompt = make_prompt_template(question=query, context=context, tokenizer=get_tokenizer()) 
+    reader_llm = make_reader_llm()
+    answer = reader_llm(final_prompt)[0]["generated_text"]
+    breakpoint()
+
+
+def get_tokenizer() -> PreTrainedTokenizer:
+    return AutoTokenizer.from_pretrained(pretrained_model_name_or_path=config.reading_model_name)
+
+
+test_reader()
 

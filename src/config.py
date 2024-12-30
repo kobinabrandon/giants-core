@@ -21,7 +21,7 @@ class SectionConfig(BaseSettings):
     pinecone_api_key: str = "" #os.environ["PINECONE_API_KEY"]
     pinecone_embedding_model: str = "multilingual-e5-large"
     llm_api_url: str = "https://api-inference.huggingface.co/models/timpal0l/mdeberta-v3-base-squad2"
-    #hugging_face_tokens: str = os.environ["HUGGING_FACE_TOKEN"]
+    hugging_face_tokens: str = os.environ["HUGGING_FACE_TOKEN"]
 
 config = SectionConfig()
 
