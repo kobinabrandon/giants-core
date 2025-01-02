@@ -1,75 +1,75 @@
-import torch 
-from transformers import PreTrainedTokenizer
+import requests
+from openai import OpenAI
 from langchain_core.documents import Document
-from transformers.pipelines.base import Pipeline
-from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig, pipeline
+
 
 from src.config import config 
 from src.similarity_search import query_chroma
 
-# bnb_config = BitsAndBytesConfig(
-#     load_in_4bit=True,
-#     bnb_4bit_use_double_quant=True,
-#     bnb_4bit_quant_type="nf4",
-#     bnb_4bit_compute_dtype=torch.bfloat16,
+
+class Generator:
+    def __init__(self)
+
+# headers = {
+# 	"Accept" : "application/json",
+# 	"Authorization": f"Bearer {config.hugging_face_token}",
+# 	"Content-Type": "application/json" 
+# }
+
+# client = OpenAI(base_url=config.reading_model_name, api_key=config.hugging_face_token)
+#
+# chat_completion = client.chat.completions.create(
+#     model="tgi",
+#     top_p=None,
+#     temperature=None,
+#     max_tokens=500,
+#     stream=True,
+#     messages=[
+#         {
+#             "role": "user",
+#             "content": "What is neo-colonialism?"
+#         }
+#     ]
 # )
 #
+# for message in chat_completion:
+#     print(message.choices[0].delta.content, end="")
+#
 
-
-def make_reader_llm(reading_model_name: str = config.reading_model_name ) -> Pipeline:
-
-    tokenizer = get_tokenizer()
-
-    llm = AutoModelForCausalLM.from_pretrained(
-        pretrained_model_name_or_path=reading_model_name,
-        torch_dtype=torch.bfloat16,
-        low_cpu_mem_usage=True
-    )
-
-    return pipeline(model=llm, tokenizer=tokenizer, task="text-generation")
-
-
-def make_prompt_template(question: str, context: str, tokenizer: PreTrainedTokenizer):
-    
-    prompt_format = [
-        {
-            "role": "system",
-            "content": """ Using the information contained in the context, 
-give a comprehensive answer to the question. 
-Respond only to the question asked, response should be concise and relevant to the question.
-Provide the number of the source document when relevant. If the answer cannot be deduced from the context, do not give an answer.""",
-        },
-        {
-           "role": "user",
-            "content": f"""Context: {context}
-            ---
-            Now here is the question you need to answer.
-            Question: {question}""",
-        }
-    ]
-
-    return tokenizer.apply_chat_template(prompt_format, tokenize=False, add_generation_prompt=True)
-
-
-def test_reader(query: str = "What is neo-colonialism?"):
+def get_context(query: str = "What is neo-colonialism?"):
 
     query_results: list[tuple[Document, float]] = query_chroma(query=query)
     retrieved_results = [result[0].page_content for result in query_results]
 
     context = "\n Extracted documents: \n"
     context += "".join(
-        [f"Document {str(i)}:::\n" + doc for i, doc in enumerate(retrieved_results)]
+        [doc for doc in retrieved_results]
     )
 
-    final_prompt = make_prompt_template(question=query, context=context, tokenizer=get_tokenizer()) 
-    reader_llm = make_reader_llm()
-    answer = reader_llm(final_prompt)[0]["generated_text"]
-    breakpoint()
+    return context 
+
+headers = {
+	"Accept" : "application/json",
+	"Authorization": f"Bearer {config.hugging_face_token}",
+	"Content-Type": "application/json" 
+}
+
+def query(payload):
+	response = requests.post(config.llm_endpoint_url, headers=headers, json=payload)
+	return response.json()
 
 
-def get_tokenizer() -> PreTrainedTokenizer:
-    return AutoTokenizer.from_pretrained(pretrained_model_name_or_path=config.reading_model_name)
+output = query(
+    {
+        "inputs": {
+           "context": get_context(), 
+           "question": "What is neo-colonialism?",
+           "parameters": {}
+        }
 
+    }
+)
 
-test_reader()
+print(output)
 
+breakpoint()

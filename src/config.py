@@ -6,22 +6,29 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 _  = load_dotenv()
 
 
-class SectionConfig(BaseSettings):
+class Parameters(BaseSettings):
     _ = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
-
+    
+    # Chunking hyperparameters
+    ratio_of_tokens_in_overlap: float = 0.2
     number_of_characters_per_chunk: int = 800
     overlapping_characters_per_chunk: int = 30
-
-    ratio_of_tokens_in_overlap: float = 0.2
-
-    reading_model_name: str = "HuggingFaceH4/zephyr-7b-beta"
+    
+    # Parameters of the recursive text splitter 
     add_start_index: bool = True 
     length_function: object = len
+ 
+    # Embedding models  
     embedding_model_name: str = "thenlper/gte-large"
-    pinecone_api_key: str = "" #os.environ["PINECONE_API_KEY"]
     pinecone_embedding_model: str = "multilingual-e5-large"
-    llm_api_url: str = "https://api-inference.huggingface.co/models/timpal0l/mdeberta-v3-base-squad2"
-    hugging_face_tokens: str = os.environ["HUGGING_FACE_TOKEN"]
+    
+    # API Keys
+    pinecone_api_key: str = "" #os.environ["PINECONE_API_KEY"]
+    hugging_face_token: str = os.environ["HUGGING_FACE_TOKEN"]
 
-config = SectionConfig()
+    # Endpoints
+    llm_endpoint_url: str = os.environ["LLM_ENDPOINT_URL"] 
+
+
+config = Parameters()
 

@@ -23,7 +23,7 @@ def query_pinecone(query: str, multi_index: bool, book_file_name: str | None, to
     return xc["matches"]
 
 
-def query_chroma(query: str, top_k: int = 5) -> list[tuple[Document, float]]:   
+def query_chroma(query: str, top_k: int = 1) -> list[tuple[Document, float]]:   
 
     chroma = ChromaAPI()
     results: list[tuple[Document, float]] = chroma.store.similarity_search_with_score(query=query, k=top_k)

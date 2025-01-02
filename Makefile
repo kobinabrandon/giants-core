@@ -37,3 +37,7 @@ query-neocolonialism:
 llm:
 	poetry run python src/llm.py
 
+
+client:
+	poetry run python src/client.py
+
