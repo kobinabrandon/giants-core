@@ -9,5 +9,5 @@ sp_model.vocab
 **/models/
 **/__pycache__/
 
-**/chroma_langchain_db/
+**/chroma_db/
 

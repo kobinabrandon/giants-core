@@ -19,7 +19,7 @@ def set_paths() -> dict[str, Path]:
         "book_stats": BOOK_STATS,
         "page_details": PAGE_DETAILS_DIR,
         "cleaned_text": CLEANED_TEXT_DIR,
-        "chroma": MODULE_ROOT / "chroma_langchain_db",
+        "chroma": MODULE_ROOT / "chroma_db",
         "chunk_details": DATA_DIR / "chunk_details",
         "embeddings": DATA_DIR / "embeddings",
         "non_core_sections": DATA_DIR / "non_core_sections",
