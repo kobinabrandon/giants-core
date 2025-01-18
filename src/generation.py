@@ -45,7 +45,6 @@ class ViaClient:
         self, 
         method: str, 
         use_open_ai: bool, 
-        max_length: int | None = None, 
         temperature: float | None = None
     ):
         context = get_context(question=self.question)
@@ -55,7 +54,7 @@ class ViaClient:
 
         elif method.lower() == "generation" and not use_open_ai:
             prompt = make_prompt_template(question=self.question, context=context)
-            response = self.client.text_generation(prompt=prompt, max_length=max_length, temperature=temperature)
+            response = self.client.text_generation(prompt=prompt, temperature=temperature)
 
         elif method.lower() == "generation" and use_open_ai:
             client = OpenAI(base_url=config.llm_endpoint_url, api_key=config.hugging_face_token)
@@ -77,10 +76,17 @@ class ViaClient:
             for message in chat_completion:
                 print(message.choices[0].delta.content, end="")
 
-            breakpoint()
-
 
 def get_context(question: str) -> str:
+    """
+    Query the VectorDB(Chroma for now) to perform a similarity search,  
+
+    Args:
+        question: 
+
+    Returns:
+        
+    """
     query_results: list[tuple[Document, float]] = query_chroma(question=question)
     retrieved_results = [result[0].page_content for result in query_results]
 
@@ -106,14 +112,14 @@ def make_prompt_template(question: str, context: str) -> str:
             """
 
 
-def get_retriever(top_k: int, vector_db: str = "Chroma") -> VectorStoreRetriever:
-    
-    if vector_db.lower() == "chroma":
-        return Chroma.as_retriever(search_type="similarity", search_kwargs={"k": top_k})
-    elif vector_db.lower() == "pinecone":
-        return Pinecone.as_retriever(search_type="similarity", search_kwargs={"k": top_k})
-    else:
-        return NotImplemented("The requested vector base has not been used.")
+# def get_retriever(top_k: int, vector_db: str = "Chroma") -> VectorStoreRetriever:
+#
+#     if vector_db.lower() == "chroma":
+#         return Chroma.as_retriever(search_type="similarity", search_kwargs={"k": top_k})
+#     elif vector_db.lower() == "pinecone":
+#         return Pinecone.as_retriever(search_type="similarity", search_kwargs={"k": top_k})
+#     else:
+#         return NotImplemented("The requested vector base has not been used.")
 
 
 if __name__ == "__main__":

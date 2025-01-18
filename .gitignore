@@ -2,6 +2,7 @@
 .env
 sp_model.model 
 sp_model.vocab
+.python-version
 
 # Directories 
 **/data/

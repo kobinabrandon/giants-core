@@ -2,6 +2,10 @@ import requests
 from pathlib import Path
 from loguru import logger
 
+from langchain_core.documents import Document 
+from langchain_community.document_loaders import PyPDFLoader
+
+from src.cleaning import clean_book
 from src.paths import set_paths, make_data_directories
 
 
@@ -9,14 +13,10 @@ class Book:
     def __init__(self, url: str, title: str, file_name: str) -> None:
         self.url: str = url 
         self.title: str = title
+
         self.file_name: str = file_name
-
         self.file_path: Path =  self.__get_file_path__() / f"{file_name}.pdf"
-        self.core_pages: range = self.__find_core_pages__()
     
-    def __get_file_path__(self) -> Path:
-        return set_paths()["raw_data"]
-
     def download(self) -> None:
         
         logger.warning(f'Checking for the presence of "{self.title}"...')
@@ -38,17 +38,35 @@ class Book:
             except Exception as error:
                 logger.error(error)
                 logger.error(f"Unable to download {self.title}.")
+        
+    @staticmethod
+    def __get_file_path__() -> Path:
+        return set_paths()["raw_data"]
+      
 
-    def __find_core_pages__(self) -> range: 
-        
-        book_and_core_pages = {
-            "neo_colonialism": range(4, 202),
-            "africa_must_unite": range(5, 237),
-            "dark_days": range(7, 163)
-        }
-        
-        assert self.file_name in book_and_core_pages.keys()
-        return book_and_core_pages[self.file_name]
+def read_and_clean_books(books: list[Book]) -> list[Document]:
+    """
+    Loads each book using Langchain's PDF loader, resulting in a list of instances of Langchain's Document
+    class. The function then removes pages that aren't core to the text. It also removes the new line 
+    markers that are littered throughout the contents of each page.
+
+    Args:
+        books: a list of Books to be read and processed.
+
+    Returns:
+        list[Document]: list of Document objects containing the cleaned contents of each page from each book.
+    """
+    loader_list: list[Document] = []
+
+    for book in books:
+        book.download()
+        loader = PyPDFLoader(file_path=str(book.file_path))
+        documents: list[Document] = loader.load()
+
+        cleaned_documents: list[Document] = clean_book(documents=documents, book_file_name=book.file_name)
+        loader_list.extend(cleaned_documents)
+
+    return loader_list 
 
 
 neo_colonialism = Book(

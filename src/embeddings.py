@@ -14,9 +14,8 @@ from langchain_pinecone.vectorstores import PineconeVectorStore
 
 from src.config import config
 from src.paths import set_paths
-from src.reading import read_books
 from src.chunking import split_documents 
-from src.books import Book, neo_colonialism, dark_days, africa_unite
+from src.books import Book, neo_colonialism, dark_days, africa_unite, read_and_clean_books
     
 
 class ChromaAPI:
@@ -31,7 +30,7 @@ class ChromaAPI:
         ) 
 
     def embed(self, chunk: bool) -> list[str]:
-        documents: list[Document] = read_books(books=self.books)         
+        documents: list[Document] = read_and_clean_books(books=self.books)         
 
         if chunk:
             chunks = split_documents(documents=documents)
@@ -139,7 +138,7 @@ class PineconeAPI:
 
         for index_name in index_names_and_their_books.keys():
             book = index_names_and_their_books[index_name]
-            documents = read_books(books=[book])
+            documents = read_and_clean_books(books=[book])
             chunks = split_documents(documents=documents)
 
             logger.info(f'Pushing chunks of text and their embeddings from "{book.title}"')

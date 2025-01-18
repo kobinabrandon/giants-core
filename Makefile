@@ -42,12 +42,12 @@ query-neocolonialism:
 http_request:
 	poetry run python src/generation.py --request_type http_request 
 
-qa:
-	poetry run python src/generation.py --request_type client --method qa 
+# qa:
+# 	poetry run python src/generation.py --request_type client --method qa 
 
-generate_no_open_ai:
-	poetry run python src/generation.py --client --method generation --no-use_open_ai
+# generate_no_open_ai:
+# 	poetry run python src/generation.py --request_type client --method generation
 
 generate_open_ai:
-	poetry run python src/generation.py --client --method generation --use_open_ai
+	poetry run python src/generation.py --request_type client --method generation --use_open_ai
 

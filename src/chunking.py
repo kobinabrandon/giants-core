@@ -5,8 +5,7 @@ from transformers import AutoTokenizer, PreTrainedTokenizer
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from src.config import config
-from src.reading import read_books
-from src.books import neo_colonialism, africa_unite, dark_days
+from src.books import read_and_clean_books, neo_colonialism, africa_unite, dark_days
 
 
 def split_documents(documents: list[Document]) -> list[Document]:
@@ -21,7 +20,7 @@ def split_documents(documents: list[Document]) -> list[Document]:
     Returns:
         list[Document]: the resulting chunks of text
     """
-    separators = ["\n\n", "\n", ".", " "]
+    separators = [r"\n\n", r"\n", ".", " "]
     max_seq_length = get_max_sequence_length()
 
     if some_pages_too_big_for_embedding(max_seq_length=max_seq_length, documents=documents):
@@ -97,6 +96,6 @@ def get_tokenizer(name: str = config.embedding_model_name) -> PreTrainedTokenize
 
 
 if __name__ == "__main__":
-    documents = read_books(books=[neo_colonialism, africa_unite, dark_days])
+    documents = read_and_clean_books(books=[neo_colonialism, africa_unite, dark_days])
     chunks = split_documents(documents=documents)
 
