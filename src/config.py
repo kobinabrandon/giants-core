@@ -28,6 +28,7 @@ class Parameters(BaseSettings):
 
     # Endpoints
     llm_endpoint_url: str = os.environ["LLM_ENDPOINT_URL"] 
+    llms_under_consideration: list[str] = ["wayfarer-12b-gguf-hva"] 
 
 
 config = Parameters()
