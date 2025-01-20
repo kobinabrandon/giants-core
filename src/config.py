@@ -27,9 +27,16 @@ class Parameters(BaseSettings):
     hugging_face_token: str = os.environ["HUGGING_FACE_TOKEN"]
 
     # Endpoints
-    llm_endpoint_url: str = os.environ["LLM_ENDPOINT_URL"] 
-    llms_under_consideration: list[str] = ["wayfarer-12b-gguf-hva"] 
+    endpoints_under_consideration: dict[str, str] = {                           
+        "wayfarer-12b-gguf-hva": os.environ["ENDPOINT_URL_OF_PREFERRED_LLM"],  # In order of preference 
+        "phi-4-gguf-dej": os.environ["PHI_4_GGUF_ENDPOINT_URL"] 
+    }  
 
+    # Rejected models
+    eliminated_models_with_reasons: dict[str, str] = {
+        "llama-3-2-1b-mdj": "more expensive than wayfarer-12b-gguf-hva", 
+        "readerlm-v2-fnd": "404 Error"
+    }
 
 config = Parameters()
 

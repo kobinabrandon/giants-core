@@ -40,14 +40,14 @@ query-neocolonialism:
 
 # Generation 
 generate:
-	poetry run python src/generation.py --task text_generation 
+	poetry run python src/generation.py
 
-# qa:
-# 	poetry run python src/generation.py --request_type client --method qa 
+qa:
+	poetry run python src/experimental_generation.py request_type client --method qa 
 
-# generate_no_open_ai:
-# 	poetry run python src/generation.py --request_type client --method generation
+generate_no_open_ai:
+	poetry run python src/experimental_generation.py request_type client --method generation
 
-# generate_open_ai:
-# 	poetry run python src/generation.py --request_type client --method generation --use_open_ai
+generate_open_ai:
+	poetry run python src/experimental_generation.py request_type client --method generation --use_open_ai
 
