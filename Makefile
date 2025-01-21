@@ -39,15 +39,15 @@ query-neocolonialism:
 
 
 # Generation 
-http_request:
-	poetry run python src/generation.py --request_type http_request 
+generate:
+	poetry run python src/generation.py --top_p 0 
 
-# qa:
-# 	poetry run python src/generation.py --request_type client --method qa 
+qa:
+	poetry run python src/experimental_generation.py request_type client --method qa 
 
-# generate_no_open_ai:
-# 	poetry run python src/generation.py --request_type client --method generation
+generate_no_open_ai:
+	poetry run python src/experimental_generation.py request_type client --method generation
 
 generate_open_ai:
-	poetry run python src/generation.py --request_type client --method generation --use_open_ai
+	poetry run python src/experimental_generation.py request_type client --method generation --use_open_ai
 

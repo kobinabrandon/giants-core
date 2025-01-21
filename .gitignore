@@ -5,7 +5,14 @@ sp_model.vocab
 .python-version
 
 # Directories 
-**/data/
+**/data/book_stats/
+**/data/chunk_details/
+**/data/cleaned_text/
+**/data/embeddings/
+**/data/non_core_sections/
+**/data/page_details/
+**/data/raw/
+
 **/chroma/
 **/models/
 **/__pycache__/
