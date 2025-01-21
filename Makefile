@@ -40,7 +40,7 @@ query-neocolonialism:
 
 # Generation 
 generate:
-	poetry run python src/generation.py
+	poetry run python src/generation.py --top_p 0 
 
 qa:
 	poetry run python src/experimental_generation.py request_type client --method qa 

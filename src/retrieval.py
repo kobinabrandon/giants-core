@@ -24,7 +24,7 @@ def query_pinecone(question: str, multi_index: bool, book_file_name: str | None,
     return xc["matches"]
 
 
-def query_chroma(question: str, top_k: int = 4) -> list[tuple[Document, float]]:   
+def query_chroma(question: str, top_k: int = 5) -> list[tuple[Document, float]]:   
 
     logger.info("Quering ChromaDB...")
     chroma = ChromaAPI()
