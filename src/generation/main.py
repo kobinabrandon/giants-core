@@ -3,11 +3,10 @@ import json
 from pathlib import Path
 from loguru import logger
 from openai import OpenAI
-from langchain_core.documents import Document
 
-from src.config import config 
-from src.paths import set_paths
-from src.retrieval import query_chroma
+from src.setup.config import config 
+from src.setup.paths import set_paths
+from src.generation.appendix import get_prompt 
 
 
 class PrimaryGenerator:
@@ -46,7 +45,7 @@ class PrimaryGenerator:
 
         logger.info(f"Question: {self.question}")
         logger.info("Creating prompt..")
-        prompt: str = self.construct_prompt()
+        prompt: str = get_prompt(context=self.context, question=self.question)
         
         endpoint_url: str = config.endpoints_under_consideration[self.model_name] 
         client = OpenAI(base_url=endpoint_url, api_key=config.hugging_face_token)
@@ -82,40 +81,6 @@ class PrimaryGenerator:
                 full_response += i
 
             self.record_responses(response=full_response) 
-
-    def get_context(self) -> str:
-        """
-        Query the VectorDB(Chroma for now) to perform a similarity search,  
-
-        Args:
-            question: the question being asked of the model. 
-
-        Returns:
-           str: the text retrieved from the vector database based on a certain similarity metric 
-        """
-        logger.info("Getting context:")
-        query_results: list[tuple[Document, float]] = query_chroma(question=self.question)
-        retrieved_results = [result[0].page_content for result in query_results]
-
-        return "".join(
-            [doc for doc in retrieved_results]
-        )
-
-    def construct_prompt(self) -> str:
-
-        return f""" 
-                You are a helpful chatbot whose job is to answer questions based on the context given to you. 
-                Using the information contained in the context, give a comprehensive answer to the question, without mentioning the context with wording like "Based on the context...".
-                Respond only to the question asked, but try to make the response as detailed as you can, while staying within the bounds of the context provided. 
-                If the answer cannot be deduced from the context, say that you do not know. Where you make reference to specific statements from the context, quote those statements first. 
-                Try to avoid repetition.
-                    
-                Context: 
-                {self.context}
-
-                Now here is the question you need to answer: 
-                {self.question}
-                """  
 
     def record_responses(self, response: str) -> None:
         """

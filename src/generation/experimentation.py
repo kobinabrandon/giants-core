@@ -5,8 +5,8 @@ from huggingface_hub import InferenceClient
 from langchain_community.vectorstores import Chroma, Pinecone
 from langchain_core.vectorstores import VectorStoreRetriever
 
-from src.config import config 
-from src.generation import make_prompt_template, get_context
+from src.setup.config import config 
+from src.generation.appendix import get_context, get_prompt
 
 
 class ExperimentalGeneration:
@@ -14,7 +14,7 @@ class ExperimentalGeneration:
         self.task: str = task 
         self.question: str = question
         self.context: str = get_context(question=question)
-        self.prompt: str = make_prompt_template(question=self.question, context=self.context)
+        self.prompt: str = get_prompt(question=self.question, context=self.context)
 
     def send_request(self, max_tokens: int, use_client: bool, use_open_ai: bool, temperature: float | None = None):
         

@@ -5,8 +5,8 @@ from argparse import ArgumentParser
 from langchain_core.documents import Document
 from sentence_transformers import SentenceTransformer
 
-from src.config import config
-from src.embeddings import ChromaAPI, PineconeAPI
+from src.setup.config import config
+from src.indexing.embeddings import ChromaAPI, PineconeAPI
 
 
 def query_pinecone(question: str, multi_index: bool, book_file_name: str | None, top_k: int) -> list[dict]:

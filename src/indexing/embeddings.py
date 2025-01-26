@@ -12,10 +12,10 @@ from pinecone import Index, Pinecone, ServerlessSpec
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_pinecone.vectorstores import PineconeVectorStore
 
-from src.config import config
-from src.paths import set_paths
-from src.chunking import split_documents 
-from src.books import Book, neo_colonialism, dark_days, africa_unite, read_and_clean_books
+from src.setup.config import config
+from src.setup.paths import set_paths
+from src.data_preparation.chunking import split_documents 
+from src.data_preparation.books import Book, neo_colonialism, dark_days, africa_unite, read_and_clean_books
     
 
 class ChromaAPI:
