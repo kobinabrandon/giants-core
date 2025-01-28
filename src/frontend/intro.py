@@ -3,7 +3,7 @@ from streamlit_extras.colored_header import colored_header
 
 
 colored_header(
-    label=":red[Nk]:yellow[ru]:green[mah]",
+    label=":red[Nk]:orange[ru]:green[mah]",
     description="Learning about a legendary African leader using LLMs"
 )
 
@@ -22,6 +22,3 @@ _ = st.markdown(
 )
 
 
-st.video(
-    data=
-)
