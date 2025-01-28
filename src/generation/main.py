@@ -4,9 +4,9 @@ from pathlib import Path
 from loguru import logger
 from openai import OpenAI
 
-from src.setup.config import config 
 from src.setup.paths import set_paths
 from src.generation.appendix import get_prompt 
+from src.setup.config import env_config, llm_config  
 
 
 class PrimaryGenerator:
@@ -41,14 +41,14 @@ class PrimaryGenerator:
     def query_llm(self) -> None:
         """Gets the context, and uses it (as well as the question) to construct a prompt."""
         
-        assert self.model_name in config.endpoints_under_consideration.keys()
+        assert self.model_name in llm_config.endpoints_under_consideration.keys()
 
         logger.info(f"Question: {self.question}")
         logger.info("Creating prompt..")
         prompt: str = get_prompt(context=self.context, question=self.question)
         
-        endpoint_url: str = config.endpoints_under_consideration[self.model_name] 
-        client = OpenAI(base_url=endpoint_url, api_key=config.hugging_face_token)
+        endpoint_url: str = llm_config.endpoints_under_consideration[self.model_name] 
+        client = OpenAI(base_url=endpoint_url, api_key=env_config.hugging_face_token)
 
         logger.info("Prompting model...")
         chat_completion = client.chat.completions.create(

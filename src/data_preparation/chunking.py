@@ -4,8 +4,8 @@ from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer, PreTrainedTokenizer
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-from src.config import config
-from src.books import read_and_clean_books, neo_colonialism, africa_unite, dark_days
+from src.setup.config import chunk_config, embed_config 
+from src.data_preparation.books import read_and_clean_books, neo_colonialism, africa_unite, dark_days
 
 
 def split_documents(documents: list[Document]) -> list[Document]:
@@ -30,7 +30,7 @@ def split_documents(documents: list[Document]) -> list[Document]:
         splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
             tokenizer=get_tokenizer(), 
             chunk_size=max_seq_length,
-            chunk_overlap=int(max_seq_length * config.ratio_of_tokens_in_overlap),
+            chunk_overlap=int(max_seq_length * chunk_config.ratio_of_tokens_in_overlap),
             add_start_index=True,
             separators=separators
         )
@@ -39,10 +39,10 @@ def split_documents(documents: list[Document]) -> list[Document]:
         logger.warning("Splitting into chunks by the character")
 
         splitter = RecursiveCharacterTextSplitter(
-           chunk_size=config.number_of_characters_per_chunk,
-           chunk_overlap=config.overlapping_characters_per_chunk,
-           length_function=config.length_function,
-           add_start_index=config.add_start_index,
+           chunk_size=chunk_config.number_of_characters_per_chunk,
+           chunk_overlap=chunk_config.overlapping_characters_per_chunk,
+           length_function=chunk_config.length_function,
+           add_start_index=chunk_config.add_start_index,
            separators=separators
         )
 
@@ -52,7 +52,7 @@ def split_documents(documents: list[Document]) -> list[Document]:
     return chunks
 
 
-def get_max_sequence_length(embedding_model_name: str = config.embedding_model_name) -> int:
+def get_max_sequence_length(embedding_model_name: str = embed_config.embedding_model_name) -> int:
     """
     Determine the maximum sequence length of the embedding model and return it 
     
@@ -91,7 +91,7 @@ def some_pages_too_big_for_embedding(max_seq_length: int, documents: list[Docume
         return False 
 
 
-def get_tokenizer(name: str = config.embedding_model_name) -> PreTrainedTokenizer:
+def get_tokenizer(name: str = embed_config.embedding_model_name) -> PreTrainedTokenizer:
     return AutoTokenizer.from_pretrained(pretrained_model_name_or_path=name)
 
 
