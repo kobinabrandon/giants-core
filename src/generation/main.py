@@ -39,7 +39,7 @@ class PrimaryGenerator:
         self.context: str = get_context(question=question)
         self.truncated_question: str = self.shorten_question()
             
-    def query_llm(self) -> Generator[str|None] | None:
+    def query_llm(self, to_frontend: bool) -> Generator[str|None] | None:
         """Gets the context, and uses it (as well as the question) to construct a prompt."""
         
         assert self.model_name in llm_config.endpoints_under_consideration.keys()
@@ -68,14 +68,19 @@ class PrimaryGenerator:
         logger.success("Answering query. Stand by:")
 
         response_characters: list[str] = [""]
+
         for message in chat_completion:
-            if "choices" in message:
+            if "choices" in message: # Prevents repetition
                 letters_in_the_response: str | None = chat_completion.choices[0].message.content 
 
-                print(letters_in_the_response, end="")
                 if isinstance(letters_in_the_response, str) :
                     response_characters.append(letters_in_the_response)
-                
+
+                if not to_frontend:
+                    print(letters_in_the_response, end="")
+                else:
+                    return response_characters
+
         if self.save_data:
             full_response = "" 
             for i in response_characters:
@@ -145,19 +150,22 @@ class PrimaryGenerator:
             str: the truncated question    
         """
         index: list[str] = []
-        for character in self.question:
-            if character in ["?", "."]:
-                truncated_question = self.question[: self.question.index(character) + 1] 
-                index.append(truncated_question)
-                break
-        
-        return index[0] 
 
+        if ("?" not in self.question) and ("." not in self.question):
+            return self.question
 
+        else:
+            for character in self.question:
+                if character in ["?", "."]:
+                    truncated_question = self.question[: self.question.index(character) + 1] 
+                    index.append(truncated_question)
+                    return index[0] 
+            
+         
 if __name__ == "__main__":
     generator = PrimaryGenerator(
-        question="How did Nkrumah describe the workings of neo-colonialism? "
+        question="How did Nkrumah's fall affect Ghana's development?"
     )
 
-    generator.query_llm()
+    generator.query_llm(to_frontend=False)
 

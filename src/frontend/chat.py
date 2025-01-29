@@ -44,18 +44,14 @@ if (prompt := st.chat_input(placeholder="Your question")):
                 {"role": m["role"], "content": m["content"]} for m in st.session_state.messages
             ],
         )
+        
+    generator = PrimaryGenerator(question=prompt) 
 
+    with st.chat_message(name=frontend_config.bot_name, avatar="🤖"): 
+        response = st.write_stream(generator.query_llm(to_frontend=True))
 
+    _ = st.session_state.messages.append(
+        {"role": "assistant", "content": response}
+    )
 
-# def response_generator()
-#
-# generator = PrimaryGenerator(question=question) 
-#
-# with st.chat_message(name=frontend_config.bot_name, avatar="🤖"): 
-#     response = st.write_stream(generator.query_llm(to_frontend=True))
-#
-# st.session_state.messages.append(
-#     {"role": "assistant", "content": response}
-# )
-#
 
