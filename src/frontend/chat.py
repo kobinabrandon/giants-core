@@ -26,7 +26,7 @@ if (prompt := st.chat_input(placeholder="Your question")):
 
     # Add the user's message to the chat history
     st.session_state.messages.append(
-        {"role": "user", "context": prompt}
+        {"role": "user", "content": prompt}
     )
 
     # Write the user's input into a chat message container 

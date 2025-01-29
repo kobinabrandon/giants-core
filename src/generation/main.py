@@ -1,5 +1,4 @@
 import os
-import time
 import json
 from pathlib import Path
 from loguru import logger
@@ -70,13 +69,13 @@ class PrimaryGenerator:
 
         response_characters: list[str] = [""]
         for message in chat_completion:
-            breakpoint()
-            letters_in_the_response: str | None = message.choices[0].delta.content
+            if "choices" in message:
+                letters_in_the_response: str | None = chat_completion.choices[0].message.content 
 
-            print(letters_in_the_response, end="")
-            if isinstance(letters_in_the_response, str) :
-                response_characters.append(letters_in_the_response)
-             
+                print(letters_in_the_response, end="")
+                if isinstance(letters_in_the_response, str) :
+                    response_characters.append(letters_in_the_response)
+                
         if self.save_data:
             full_response = "" 
             for i in response_characters:
@@ -111,7 +110,6 @@ class PrimaryGenerator:
                 "response": response
             }
         ]   
-
 
         attempt = 0 
         name_of_file_to_save: str = f"{self.truncated_question}.json" 
@@ -158,7 +156,7 @@ class PrimaryGenerator:
 
 if __name__ == "__main__":
     generator = PrimaryGenerator(
-        question="How did Nkrumah describe the workings of neo-colonialism? Provide me with quotes to support your case"
+        question="How did Nkrumah describe the workings of neo-colonialism? "
     )
 
     generator.query_llm()
