@@ -22,7 +22,6 @@ def get_context(question: str) -> str:
         [doc for doc in retrieved_results]
     )
 
-`
 
 
 

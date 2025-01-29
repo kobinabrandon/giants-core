@@ -1,12 +1,14 @@
 import os
+import time
 import json
 from pathlib import Path
 from loguru import logger
 from openai import OpenAI
+from collections.abc import Generator
 
 from src.setup.paths import set_paths
-from src.generation.appendix import get_prompt 
 from src.setup.config import env_config, llm_config  
+from src.generation.appendix import get_prompt, get_context 
 
 
 class PrimaryGenerator:
@@ -17,7 +19,7 @@ class PrimaryGenerator:
             temperature: int | None = 0, 
             max_tokens: int = 2000,
             save_data: bool = True,
-            model_name: str = "wayfarer-12b-gguf-hva"
+            model_name: str = llm_config.preferred_model
     ) -> None:
         """
 
@@ -34,11 +36,11 @@ class PrimaryGenerator:
         self.max_tokens: int = max_tokens
         self.save_data: bool = save_data
         self.model_name: str = model_name
-        self.context: str = self.get_context()
         self.temperature: int | None = temperature
+        self.context: str = get_context(question=question)
         self.truncated_question: str = self.shorten_question()
             
-    def query_llm(self) -> None:
+    def query_llm(self) -> Generator[str|None] | None:
         """Gets the context, and uses it (as well as the question) to construct a prompt."""
         
         assert self.model_name in llm_config.endpoints_under_consideration.keys()
@@ -56,7 +58,6 @@ class PrimaryGenerator:
             top_p=self.top_p,
             temperature=self.temperature,
             max_tokens=self.max_tokens,
-            stream=True,
             messages=[
                 {
                     "role": "user",
@@ -69,18 +70,20 @@ class PrimaryGenerator:
 
         response_characters: list[str] = [""]
         for message in chat_completion:
+            breakpoint()
             letters_in_the_response: str | None = message.choices[0].delta.content
-            print(letters_in_the_response, end="")
 
+            print(letters_in_the_response, end="")
             if isinstance(letters_in_the_response, str) :
                 response_characters.append(letters_in_the_response)
-               
+             
         if self.save_data:
             full_response = "" 
             for i in response_characters:
                 full_response += i
 
             self.record_responses(response=full_response) 
+
 
     def record_responses(self, response: str) -> None:
         """
@@ -108,6 +111,7 @@ class PrimaryGenerator:
                 "response": response
             }
         ]   
+
 
         attempt = 0 
         name_of_file_to_save: str = f"{self.truncated_question}.json" 
@@ -154,7 +158,7 @@ class PrimaryGenerator:
 
 if __name__ == "__main__":
     generator = PrimaryGenerator(
-        question="Why was Nkrumah so insistent that Africa must unite? Provide me with quotes to support your case"
+        question="How did Nkrumah describe the workings of neo-colonialism? Provide me with quotes to support your case"
     )
 
     generator.query_llm()

@@ -35,8 +35,8 @@ class Tokens(BaseSettings):
 class LLMConfig(BaseSettings):
        
     if env_file_present:
-        # Endpoints
-        
+
+        preferred_model: str = "wayfarer-12b-gguf-hva"
         url_of_preferred_llm_endpoint: str = os.environ["URL_OF_ENDPOINT_FOR_PREFERRED_LLM"] 
 
         endpoints_under_consideration: dict[str, str] = {                           
@@ -51,6 +51,10 @@ class LLMConfig(BaseSettings):
         }
 
 
+class FrontendConfig:
+    bot_name: str = "Historian" 
+
+
 class VideoConfig(BaseSettings):
     feared_by_the_west: str = "https://www.youtube.com/watch?v=AgE30BXdKVY"
     why_he_was_a_threat: str = "https://www.youtube.com/watch?v=uUkYDavkm40&pp=ygUHbmtydW1haA%3D%3D" 
@@ -63,6 +67,7 @@ class VideoConfig(BaseSettings):
 
 chunk_config = ChunkingSettings()
 embed_config = EmbedddingSettings()
+frontend_config = FrontendConfig()
 videos = VideoConfig()
 llm_config = LLMConfig()
 env_config = Tokens()
