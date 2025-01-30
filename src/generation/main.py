@@ -39,14 +39,14 @@ class PrimaryGenerator:
         self.context: str = get_context(question=question)
         self.truncated_question: str = self.shorten_question()
             
-    def query_llm(self, to_frontend: bool) -> Generator[str|None] | None:
+    def query_llm(self, to_frontend: bool, history: str) -> Generator[str|None] | None:
         """Gets the context, and uses it (as well as the question) to construct a prompt."""
         
         assert self.model_name in llm_config.endpoints_under_consideration.keys()
 
         logger.info(f"Question: {self.question}")
         logger.info("Creating prompt..")
-        prompt: str = get_prompt(context=self.context, question=self.question)
+        prompt: str = get_prompt(context=self.context, question=self.question, history=history)
         
         endpoint_url: str = llm_config.endpoints_under_consideration[self.model_name] 
         client = OpenAI(base_url=endpoint_url, api_key=env_config.hugging_face_token)
@@ -86,10 +86,10 @@ class PrimaryGenerator:
             for i in response_characters:
                 full_response += i
 
-            self.record_responses(response=full_response) 
+            self.record_responses(response=full_response, history=history) 
 
 
-    def record_responses(self, response: str) -> None:
+    def record_responses(self, response: str, history: str) -> None:
         """
         Create directories where the responses for and associated data will be kept, and then store that information 
         for later review. 
@@ -112,7 +112,8 @@ class PrimaryGenerator:
                 "temperature": self.temperature,
                 "question": self.question, 
                 "context": self.context,
-                "response": response
+                "response": response,
+                "history": history
             }
         ]   
 
@@ -159,7 +160,9 @@ class PrimaryGenerator:
                 if character in ["?", "."]:
                     truncated_question = self.question[: self.question.index(character) + 1] 
                     index.append(truncated_question)
-                    return index[0] 
+                    break
+
+            return index[0] 
             
          
 if __name__ == "__main__":

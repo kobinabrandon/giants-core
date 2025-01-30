@@ -48,7 +48,7 @@ if (prompt := st.chat_input(placeholder="Your question")):
     generator = PrimaryGenerator(question=prompt) 
 
     with st.chat_message(name=frontend_config.bot_name, avatar="🤖"): 
-        response = st.write_stream(generator.query_llm(to_frontend=True))
+        response = st.write_stream(generator.query_llm(to_frontend=True, history=prompt))
 
     _ = st.session_state.messages.append(
         {"role": "assistant", "content": response}
