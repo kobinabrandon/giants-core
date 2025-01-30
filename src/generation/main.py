@@ -75,19 +75,18 @@ class PrimaryGenerator:
 
                 if isinstance(letters_in_the_response, str) :
                     response_characters.append(letters_in_the_response)
+                
+                if self.save_data:
+                    full_response = "" 
+                    for i in response_characters:
+                        full_response += i
+
+                    self.record_responses(response=full_response, history=history) 
 
                 if not to_frontend:
                     print(letters_in_the_response, end="")
                 else:
                     return response_characters
-
-        if self.save_data:
-            full_response = "" 
-            for i in response_characters:
-                full_response += i
-
-            self.record_responses(response=full_response, history=history) 
-
 
     def record_responses(self, response: str, history: str) -> None:
         """
@@ -170,5 +169,5 @@ if __name__ == "__main__":
         question="How did Nkrumah's fall affect Ghana's development?"
     )
 
-    generator.query_llm(to_frontend=False)
+    generator.query_llm(to_frontend=False, history=None)
 
