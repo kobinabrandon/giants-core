@@ -5,8 +5,8 @@ from argparse import ArgumentParser
 from langchain_core.documents import Document
 from sentence_transformers import SentenceTransformer
 
-from src.config import config
-from src.embeddings import ChromaAPI, PineconeAPI
+from src.setup.config import embed_config 
+from src.indexing.embeddings import ChromaAPI, PineconeAPI
 
 
 def query_pinecone(question: str, multi_index: bool, book_file_name: str | None, top_k: int) -> list[dict]:
@@ -16,7 +16,7 @@ def query_pinecone(question: str, multi_index: bool, book_file_name: str | None,
     index = api.get_index(book_file_name=book_file_name)
 
     device = "gpu" if torch.cuda.is_available() else "cpu"
-    model = SentenceTransformer(config.embedding_model_name, device=device)
+    model = SentenceTransformer(embed_config.embedding_model_name, device=device)
 
     query_vector = model.encode(question).tolist()
     xc = index.query(vector=query_vector, top_k=top_k, include_metadata=True)

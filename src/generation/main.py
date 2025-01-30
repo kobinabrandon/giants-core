@@ -3,11 +3,11 @@ import json
 from pathlib import Path
 from loguru import logger
 from openai import OpenAI
-from langchain_core.documents import Document
+from collections.abc import Generator
 
-from src.config import config 
-from src.paths import set_paths
-from src.retrieval import query_chroma
+from src.setup.paths import set_paths
+from src.setup.config import env_config, llm_config  
+from src.generation.appendix import get_prompt, get_context 
 
 
 class PrimaryGenerator:
@@ -18,7 +18,7 @@ class PrimaryGenerator:
             temperature: int | None = 0, 
             max_tokens: int = 2000,
             save_data: bool = True,
-            model_name: str = "wayfarer-12b-gguf-hva"
+            model_name: str = llm_config.preferred_model
     ) -> None:
         """
 
@@ -35,21 +35,21 @@ class PrimaryGenerator:
         self.max_tokens: int = max_tokens
         self.save_data: bool = save_data
         self.model_name: str = model_name
-        self.context: str = self.get_context()
         self.temperature: int | None = temperature
+        self.context: str = get_context(question=question)
         self.truncated_question: str = self.shorten_question()
             
-    def query_llm(self) -> None:
+    def query_llm(self, to_frontend: bool) -> Generator[str|None] | None:
         """Gets the context, and uses it (as well as the question) to construct a prompt."""
         
-        assert self.model_name in config.endpoints_under_consideration.keys()
+        assert self.model_name in llm_config.endpoints_under_consideration.keys()
 
         logger.info(f"Question: {self.question}")
         logger.info("Creating prompt..")
-        prompt: str = self.construct_prompt()
+        prompt: str = get_prompt(context=self.context, question=self.question)
         
-        endpoint_url: str = config.endpoints_under_consideration[self.model_name] 
-        client = OpenAI(base_url=endpoint_url, api_key=config.hugging_face_token)
+        endpoint_url: str = llm_config.endpoints_under_consideration[self.model_name] 
+        client = OpenAI(base_url=endpoint_url, api_key=env_config.hugging_face_token)
 
         logger.info("Prompting model...")
         chat_completion = client.chat.completions.create(
@@ -57,7 +57,6 @@ class PrimaryGenerator:
             top_p=self.top_p,
             temperature=self.temperature,
             max_tokens=self.max_tokens,
-            stream=True,
             messages=[
                 {
                     "role": "user",
@@ -69,13 +68,19 @@ class PrimaryGenerator:
         logger.success("Answering query. Stand by:")
 
         response_characters: list[str] = [""]
-        for message in chat_completion:
-            letters_in_the_response: str | None = message.choices[0].delta.content
-            print(letters_in_the_response, end="")
 
-            if isinstance(letters_in_the_response, str) :
-                response_characters.append(letters_in_the_response)
-               
+        for message in chat_completion:
+            if "choices" in message: # Prevents repetition
+                letters_in_the_response: str | None = chat_completion.choices[0].message.content 
+
+                if isinstance(letters_in_the_response, str) :
+                    response_characters.append(letters_in_the_response)
+
+                if not to_frontend:
+                    print(letters_in_the_response, end="")
+                else:
+                    return response_characters
+
         if self.save_data:
             full_response = "" 
             for i in response_characters:
@@ -83,39 +88,6 @@ class PrimaryGenerator:
 
             self.record_responses(response=full_response) 
 
-    def get_context(self) -> str:
-        """
-        Query the VectorDB(Chroma for now) to perform a similarity search,  
-
-        Args:
-            question: the question being asked of the model. 
-
-        Returns:
-           str: the text retrieved from the vector database based on a certain similarity metric 
-        """
-        logger.info("Getting context:")
-        query_results: list[tuple[Document, float]] = query_chroma(question=self.question)
-        retrieved_results = [result[0].page_content for result in query_results]
-
-        return "".join(
-            [doc for doc in retrieved_results]
-        )
-
-    def construct_prompt(self) -> str:
-
-        return f""" 
-                You are a helpful chatbot whose job is to answer questions based on the context given to you. 
-                Using the information contained in the context, give a comprehensive answer to the question, without mentioning the context with wording like "Based on the context...".
-                Respond only to the question asked, but try to make the response as detailed as you can, while staying within the bounds of the context provided. 
-                If the answer cannot be deduced from the context, say that you do not know. Where you make reference to specific statements from the context, quote those statements first. 
-                Try to avoid repetition.
-                    
-                Context: 
-                {self.context}
-
-                Now here is the question you need to answer: 
-                {self.question}
-                """  
 
     def record_responses(self, response: str) -> None:
         """
@@ -178,19 +150,22 @@ class PrimaryGenerator:
             str: the truncated question    
         """
         index: list[str] = []
-        for character in self.question:
-            if character in ["?", "."]:
-                truncated_question = self.question[: self.question.index(character) + 1] 
-                index.append(truncated_question)
-                break
-        
-        return index[0] 
 
+        if ("?" not in self.question) and ("." not in self.question):
+            return self.question
 
+        else:
+            for character in self.question:
+                if character in ["?", "."]:
+                    truncated_question = self.question[: self.question.index(character) + 1] 
+                    index.append(truncated_question)
+                    return index[0] 
+            
+         
 if __name__ == "__main__":
     generator = PrimaryGenerator(
-        question="Why was Nkrumah so insistent that Africa must unite? Provide me with quotes to support your case"
+        question="How did Nkrumah's fall affect Ghana's development?"
     )
 
-    generator.query_llm()
+    generator.query_llm(to_frontend=False)
 

@@ -5,8 +5,8 @@ from loguru import logger
 from langchain_core.documents import Document 
 from langchain_community.document_loaders import PyPDFLoader
 
-from src.cleaning import clean_book
-from src.paths import set_paths, make_data_directories
+from src.data_preparation.cleaning import clean_book
+from src.setup.paths import set_paths, make_data_directories
 
 
 class Book:

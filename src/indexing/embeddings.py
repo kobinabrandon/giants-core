@@ -12,10 +12,10 @@ from pinecone import Index, Pinecone, ServerlessSpec
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_pinecone.vectorstores import PineconeVectorStore
 
-from src.config import config
-from src.paths import set_paths
-from src.chunking import split_documents 
-from src.books import Book, neo_colonialism, dark_days, africa_unite, read_and_clean_books
+from src.setup.paths import set_paths
+from src.setup.config import embed_config, env_config
+from src.data_preparation.chunking import split_documents 
+from src.data_preparation.books import Book, neo_colonialism, dark_days, africa_unite, read_and_clean_books
     
 
 class ChromaAPI:
@@ -55,7 +55,7 @@ class PineconeAPI:
         index_names: the names of the indices that we want to create or access. It is determined by the 
                      value of the multi_index attribute.
     """
-    def __init__(self, multi_index: bool = False, api_key: str = config.pinecone_api_key) -> None:
+    def __init__(self, multi_index: bool = False, api_key: str = env_config.pinecone_api_key) -> None:
         self.api_key: str = api_key 
         self.multi_index: bool = multi_index 
         self.store: Pinecone =  Pinecone(api=api_key)
@@ -146,7 +146,7 @@ class PineconeAPI:
 
 
 def get_embedding_model() -> HuggingFaceEmbeddings:
-    return HuggingFaceEmbeddings(model_name=config.embedding_model_name)
+    return HuggingFaceEmbeddings(model_name=embed_config.embedding_model_name)
 
 
 if __name__ == "__main__": 

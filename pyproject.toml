@@ -6,7 +6,7 @@ authors = ["Kobina Brandon <kobinabrandon@proton.me>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "<3.13, >=3.9"
+python = "3.12.8"
 langchain = "^0.3.10"
 loguru = "^0.7.3"
 requests = "^2.32.3"
@@ -22,6 +22,8 @@ langchain-chroma = "^0.1.4"
 chromadb = "0.5"
 accelerate = "^1.2.1"
 openai = "^1.58.1"
+streamlit = "^1.41.1"
+streamlit-extras = "^0.5.0"
 
 [build-system]
 requires = ["poetry-core"]
