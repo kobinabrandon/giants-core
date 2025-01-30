@@ -20,7 +20,7 @@ from src.data_preparation.books import Book, neo_colonialism, dark_days, africa_
 
 class ChromaAPI:
     def __init__(self) -> None:
-        self.persist_directory: Path = set_paths()["chroma"]
+        self.persist_directory: Path = set_paths()["text_embeddings"]
         self.books: list[Book] = [neo_colonialism, dark_days, africa_unite]
 
         self.store: Chroma = Chroma(
