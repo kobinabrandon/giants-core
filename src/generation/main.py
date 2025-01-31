@@ -36,7 +36,6 @@ class PrimaryGenerator:
         self.save_data: bool = save_data
         self.model_name: str = model_name
         self.temperature: int | None = temperature
-        self.context: str = get_context(question=question)
         self.truncated_question: str = self.shorten_question()
             
     def query_llm(self, to_frontend: bool, history: str) -> Generator[str|None] | None:
@@ -46,6 +45,8 @@ class PrimaryGenerator:
 
         logger.info(f"Question: {self.question}")
         logger.info("Creating prompt..")
+        context: str = get_context(question=question)
+
         prompt: str = get_prompt(context=self.context, question=self.question, history=history)
         
         endpoint_url: str = llm_config.endpoints_under_consideration[self.model_name] 

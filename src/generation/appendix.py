@@ -4,7 +4,7 @@ from langchain_core.documents import Document
 from src.retrieval.query import query_chroma
 
 
-def get_context(question: str) -> str:
+def get_context(question: str, is_memory: bool) -> str:
     """
     Query the VectorDB(Chroma for now) to perform a similarity search,  
 
@@ -15,7 +15,7 @@ def get_context(question: str) -> str:
        str: the text retrieved from the vector database based on a certain similarity metric 
     """
     logger.info("Getting context:")
-    query_results: list[tuple[Document, float]] = query_chroma(question=question)
+    query_results: list[tuple[Document, float]] = query_chroma(question=question, is_memory=is_memory)
     retrieved_results = [result[0].page_content for result in query_results]
 
     return "".join(
