@@ -167,7 +167,7 @@ class PrimaryGenerator:
          
 if __name__ == "__main__":
     generator = PrimaryGenerator(
-        question="How did Nkrumah's fall affect Ghana's development?"
+        question="How is international finance involved in neocolonialism?"
     )
 
     generator.query_llm(to_frontend=False, history=None)

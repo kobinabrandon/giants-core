@@ -30,16 +30,16 @@ def clean_book(documents: list[Document], book_file_name: str) -> list[Document]
         "19 66": "1966",
         "I 966": "1966"
     }
-    #
-    # for document in cleaner_pages:
-    #     if "the" in document.page_content:
-    #         breakpoint()
-    #         document.page_content = fix_known_spelling_issues(
-    #             text=document.page_content, 
-    #             target_strings_and_replacements=target_strings_and_replacements
-    #         )
-    #
-    #         breakpoint()
+
+    for document in cleaner_pages:
+        if "the" in document.page_content:
+            # breakpoint()
+            document.page_content = fix_known_spelling_issues(
+                text=document.page_content, 
+                target_strings_and_replacements=target_strings_and_replacements
+            )
+
+            # breakpoint()
 
     return cleaner_pages
 

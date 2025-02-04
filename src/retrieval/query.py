@@ -3,6 +3,10 @@ import torch
 from loguru import logger
 from argparse import ArgumentParser
 
+from langchain_core import tools
+from langchain_chroma import Chroma
+from langchain_huggingface import HuggingFaceEmbeddings 
+
 from langchain_core.documents import Document
 from sentence_transformers import SentenceTransformer
 
@@ -32,7 +36,20 @@ def query_chroma(question: str, is_memory: bool, top_k: int = 5) -> list[tuple[D
     results: list[tuple[Document, float]] = chroma.store.similarity_search_with_score(query=question, k=top_k)
     return results
 
-  
+ 
+def new_query_func(embedding_function: HuggingFaceEmbeddings, top_k: int) -> tuple[str, list[tuple[Document, float]]]:   
+
+    logger.info("Quering ChromaDB...")
+    chroma = Chroma(embedding_function=embedding_function) 
+    retrieved_docs: list[tuple[Document, float]] = chroma.similarity_search_with_score(query=question, k=top_k)
+    
+    serialized = "\n\n".join(
+        (f"Source: {doc.metadata}\n" f"Content: {doc.page_content}") for doc in retrieved_docs
+    )
+
+    return serialized, retrieved_docs 
+
+ 
 if __name__ == "__main__":
     parser = ArgumentParser()
 

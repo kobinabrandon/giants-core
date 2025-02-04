@@ -2,6 +2,9 @@
 books:
 	poetry run python src/data_preparation/books.py
 
+chat:
+	poetry run python src/generation/graph.py
+
 
 # Indexing with Pinecone
 pinecone-multi:
