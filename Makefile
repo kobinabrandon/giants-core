@@ -1,12 +1,7 @@
-# Downloading raw data 
-books:
-	poetry run python src/data_preparation/books.py
+# chat:
+# 	poetry run python src/generation/graph.py
 
-chat:
-	poetry run python src/generation/graph.py
-
-
-# Indexing with Pinecone
+# Embed into Pinecone
 pinecone-multi:
 	poetry run python src/indexing/embeddings.py --multi_index
 
@@ -14,11 +9,11 @@ pinecone-single:
 	poetry run python src/indexing/embeddings.py --no-multi_index
 
 
-# Embeddings with ChromaDB
+# Embeddings into ChromaDB
 chroma-chunk:
 	poetry run python src/indexing/embeddings.py --chroma --chunk
 
-croma-no-chunk:
+chroma-no-chunk:
 	poetry run python src/indexing/embeddings.py --chroma 
 
 

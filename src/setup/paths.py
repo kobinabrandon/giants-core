@@ -20,6 +20,7 @@ def set_paths() -> dict[str, Path]:
         "book_stats": BOOK_STATS,
         "page_details": PAGE_DETAILS_DIR,
         "cleaned_text": CLEANED_TEXT_DIR,
+        "chroma": CHROMA_DIR,
         "chunk_details": DATA_DIR / "chunk_details",
         "chroma_memory": CHROMA_DIR / "chroma_memory",
         "text_embeddings": CHROMA_DIR / "text_embeddings",

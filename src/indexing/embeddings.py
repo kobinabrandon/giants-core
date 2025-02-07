@@ -14,14 +14,15 @@ from langchain_pinecone.vectorstores import PineconeVectorStore
 
 from src.setup.paths import set_paths
 from src.setup.config import embed_config, env_config
+from src.data_preparation.books import Book, get_books
+from src.data_preparation.cleaning import clean_books
 from src.data_preparation.chunking import split_documents 
-from src.data_preparation.books import Book, neo_colonialism, dark_days, africa_unite, read_and_clean_books
     
 
 class ChromaAPI:
     def __init__(self, is_memory: bool) -> None:
         self.is_memory: bool = is_memory
-        self.books: list[Book] = [neo_colonialism, dark_days, africa_unite]
+        self.books: list[Book] = get_books() 
         self.persist_directory: Path = set_paths()["text_embeddings"] if not is_memory else set_paths()["chroma_memory"]
 
         self.store: Chroma = Chroma(
@@ -33,7 +34,7 @@ class ChromaAPI:
     def embed_books(self, chunk: bool) -> list[str]:
 
         assert not self.is_memory
-        documents: list[Document] = read_and_clean_books(books=self.books)         
+        documents: list[Document] = clean_books(books=self.books)         
 
         if chunk:
             chunks = split_documents(documents=documents)
@@ -67,7 +68,7 @@ class PineconeAPI:
         self.api_key: str = api_key 
         self.multi_index: bool = multi_index 
         self.store: Pinecone =  Pinecone(api=api_key)
-        self.books: list[Book] = [neo_colonialism, dark_days, africa_unite]
+        self.books: list[Book] = get_books() 
 
         # Pinecone does not allow underscores in index names 
         self.index_names: list[str] = ["nkrumah"] if not self.multi_index else [book.file_name.replace("_", "-") for book in self.books]         
@@ -146,7 +147,7 @@ class PineconeAPI:
 
         for index_name in index_names_and_their_books.keys():
             book = index_names_and_their_books[index_name]
-            documents = read_and_clean_books(books=[book])
+            documents = clean_books(books=[book])
             chunks = split_documents(documents=documents)
 
             logger.info(f'Pushing chunks of text and their embeddings from "{book.title}"')
@@ -158,6 +159,7 @@ def get_embedding_model() -> HuggingFaceEmbeddings:
 
 
 if __name__ == "__main__": 
+
     parser = ArgumentParser()
     _ = parser.add_argument("--pinecone", action="store_true")
     _ = parser.add_argument("--chroma", action="store_true")
