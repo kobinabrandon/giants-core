@@ -26,7 +26,7 @@ class EmbeddingBased:
     def store_interaction(self, user_message: str, bot_response: list[str] | str) -> None:
 
         text = f"User: {user_message} | Bot: {bot_response}"
-        chroma = ChromaAPI(is_memory=True)
+        chroma = ChromaAPI()
         chroma.embed_memory(text=text)
 
     def retrieve_interaction(self, query: str) -> str:

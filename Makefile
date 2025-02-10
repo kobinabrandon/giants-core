@@ -1,5 +1,5 @@
-# chat:
-# 	poetry run python src/generation/graph.py
+chat:
+	poetry run python src/graph/graph.py
 
 # Embed into Pinecone
 pinecone-multi:

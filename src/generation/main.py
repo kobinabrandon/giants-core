@@ -31,6 +31,8 @@ class PrimaryGenerator:
             model_name: the name of the model being accessed via the endpoint URL 
         """
         self.question: str = question
+        self.context: str = get_context(question=self.question)
+
         self.top_p: float | None = top_p
         self.max_tokens: int = max_tokens
         self.save_data: bool = save_data
@@ -38,16 +40,14 @@ class PrimaryGenerator:
         self.temperature: int | None = temperature
         self.truncated_question: str = self.shorten_question()
             
-    def query_llm(self, to_frontend: bool, history: str) -> Generator[str|None] | None:
+    def query_llm(self, to_frontend: bool) -> Generator[str|None] | None:
         """Gets the context, and uses it (as well as the question) to construct a prompt."""
         
         assert self.model_name in llm_config.endpoints_under_consideration.keys()
 
         logger.info(f"Question: {self.question}")
         logger.info("Creating prompt..")
-        context: str = get_context(question=question)
-
-        prompt: str = get_prompt(context=self.context, question=self.question, history=history)
+        prompt: str = get_prompt(context=self.context, question=self.question)
         
         endpoint_url: str = llm_config.endpoints_under_consideration[self.model_name] 
         client = OpenAI(base_url=endpoint_url, api_key=env_config.hugging_face_token)
@@ -170,5 +170,5 @@ if __name__ == "__main__":
         question="How is international finance involved in neocolonialism?"
     )
 
-    generator.query_llm(to_frontend=False, history=None)
+    generator.query_llm(to_frontend=False)
 

@@ -1,6 +1,7 @@
 import requests
 from argparse import ArgumentParser
 
+from openai import OpenAI
 from huggingface_hub import InferenceClient
 from langchain_community.vectorstores import Chroma, Pinecone
 from langchain_core.vectorstores import VectorStoreRetriever
@@ -28,7 +29,7 @@ class ExperimentalGeneration:
                 "Content-Type": "application/json" 
             }
 
-            payload: dict[str, dict[str, str]] = {
+            payload: dict[str, str | dict[str, int]] = {
                "inputs": self.prompt, 
                 "parameters":{
                     "max_new_tokens": max_tokens

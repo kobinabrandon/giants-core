@@ -1,11 +1,18 @@
 import os
+from typing import TypedDict
 
 from dotenv import find_dotenv, load_dotenv
+from langchain_core.documents import Document
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 
 env_file_present: bool = load_dotenv(find_dotenv()) 
 env_vars = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+
+
+class State(TypedDict):
+    question: str
+    context: list[Document]
+    answer: str
 
 
 class ChunkingSettings:

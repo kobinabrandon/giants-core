@@ -19,28 +19,27 @@ from src.data_preparation.cleaning import clean_books
 from src.data_preparation.chunking import split_documents 
     
 
-class ChromaAPI:
-    def __init__(self, is_memory: bool) -> None:
-        self.is_memory: bool = is_memory
+class ChromaAPI: 
+    def __init__(self) -> None: 
         self.books: list[Book] = get_books() 
-        self.persist_directory: Path = set_paths()["text_embeddings"] if not is_memory else set_paths()["chroma_memory"]
+        self.embeddings_directory: Path = set_paths()["text_embeddings"] 
+        self.memory_directory: Path = set_paths()["chroma_memory"]
 
-        self.store: Chroma = Chroma(
-            collection_name="nkrumah" if not is_memory else "nkrumah_memories",
-            persist_directory=str(self.persist_directory),
+        self.main_store: Chroma = Chroma(
+            collection_name="nkrumah", 
+            persist_directory=str(self.embeddings_directory),
             embedding_function=get_embedding_model()
         ) 
 
     def embed_books(self, chunk: bool) -> list[str]:
 
-        assert not self.is_memory
         documents: list[Document] = clean_books(books=self.books)         
 
         if chunk:
             chunks = split_documents(documents=documents)
-            ids = self.store.add_documents(documents=chunks)
+            ids = self.main_store.add_documents(documents=chunks)
         else:
-            ids = self.store.add_documents(documents=documents)
+            ids = self.main_store.add_documents(documents=documents)
 
         logger.success(f"Successfully embedded the {'chunks of' if chunk else ''} text and saved the results to ChromaDB.")
         return ids
@@ -173,6 +172,6 @@ if __name__ == "__main__":
         _ = api.push_vectors() 
 
     else:
-        api = ChromaAPI(is_memory=False)
+        api = ChromaAPI()
         ids = api.embed_books(chunk=args.chunk)
 
