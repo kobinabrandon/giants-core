@@ -11,7 +11,7 @@ env_vars = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 class State(TypedDict):
     question: str
-    context: list[Document]
+    context: str 
     answer: str
 
 

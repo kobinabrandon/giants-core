@@ -1178,6 +1178,25 @@ docs = ["Sphinx", "furo"]
 test = ["objgraph", "psutil"]
 
 [[package]]
+name = "groq"
+version = "0.18.0"
+description = "The official Python library for the groq API"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "groq-0.18.0-py3-none-any.whl", hash = "sha256:81d5ac00057a45d8ce559d23ab5d3b3893011d1f12c35187ab35a9182d826ea6"},
+    {file = "groq-0.18.0.tar.gz", hash = "sha256:8e2ccfea406d68b3525af4b7c0e321fcb3d2a73fc60bb70b4156e6cd88c72f03"},
+]
+
+[package.dependencies]
+anyio = ">=3.5.0,<5"
+distro = ">=1.7.0,<2"
+httpx = ">=0.23.0,<1"
+pydantic = ">=1.9.0,<3"
+sniffio = "*"
+typing-extensions = ">=4.10,<5"
+
+[[package]]
 name = "grpcio"
 version = "1.68.1"
 description = "HTTP/2-based RPC framework"
@@ -1836,23 +1855,38 @@ tenacity = ">=8.1.0,<8.4.0 || >8.4.0,<10"
 
 [[package]]
 name = "langchain-core"
-version = "0.3.28"
+version = "0.3.34"
 description = "Building applications with LLMs through composability"
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "langchain_core-0.3.28-py3-none-any.whl", hash = "sha256:a02f81ca53a8eed757133797e5a602ca80c1324bbecb0c5d86ef7bd3d6625372"},
-    {file = "langchain_core-0.3.28.tar.gz", hash = "sha256:407f7607e6b3c0ebfd6094da95d39b701e22e59966698ef126799782953e7f2c"},
+    {file = "langchain_core-0.3.34-py3-none-any.whl", hash = "sha256:a057ebeddd2158d3be14bde341b25640ddf958b6989bd6e47160396f5a8202ae"},
+    {file = "langchain_core-0.3.34.tar.gz", hash = "sha256:26504cf1e8e6c310adad907b890d4e3c147581cfa7434114f6dc1134fe4bc6d3"},
 ]
 
 [package.dependencies]
 jsonpatch = ">=1.33,<2.0"
-langsmith = ">=0.1.125,<0.3"
+langsmith = ">=0.1.125,<0.4"
 packaging = ">=23.2,<25"
 pydantic = {version = ">=2.7.4,<3.0.0", markers = "python_full_version >= \"3.12.4\""}
 PyYAML = ">=5.3"
 tenacity = ">=8.1.0,<8.4.0 || >8.4.0,<10.0.0"
 typing-extensions = ">=4.7"
+
+[[package]]
+name = "langchain-groq"
+version = "0.2.4"
+description = "An integration package connecting Groq and LangChain"
+optional = false
+python-versions = "<4.0,>=3.9"
+files = [
+    {file = "langchain_groq-0.2.4-py3-none-any.whl", hash = "sha256:ef02923b780486e1f9799ad156a2a6078581e43c4b80a334a88589f99f977eaf"},
+    {file = "langchain_groq-0.2.4.tar.gz", hash = "sha256:90d76ca59679c021858112440de732de3d780675cc2dbd9572cbf011c0e2afe8"},
+]
+
+[package.dependencies]
+groq = ">=0.4.1,<1"
+langchain-core = ">=0.3.33,<0.4.0"
 
 [[package]]
 name = "langchain-huggingface"
@@ -5969,4 +6003,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "3.12.8"
-content-hash = "9f4d255a60018ad8d39b94ba91d35f41a676ffbc02edee4cd340a32b5575bfac"
+content-hash = "37042de8d1fd656baf077b27115596e18865b0d7a33def23c4aee3b697190d54"

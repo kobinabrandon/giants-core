@@ -35,18 +35,6 @@ def query_chroma(question: str, top_k: int = 5) -> list[tuple[Document, float]]:
     return results
 
  
-def new_query_func(embedding_function: HuggingFaceEmbeddings, top_k: int) -> tuple[str, list[tuple[Document, float]]]:   
-
-    logger.info("Quering ChromaDB...")
-    chroma = Chroma(embedding_function=embedding_function) 
-    retrieved_docs: list[tuple[Document, float]] = chroma.similarity_search_with_score(query=question, k=top_k)
-    
-    serialized = "\n\n".join(
-        (f"Source: {doc.metadata}\n" f"Content: {doc.page_content}") for doc in retrieved_docs
-    )
-
-    return serialized, retrieved_docs 
-
  
 if __name__ == "__main__":
     parser = ArgumentParser()
