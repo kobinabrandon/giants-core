@@ -1,9 +1,7 @@
-from operator import is_
 import torch
 from loguru import logger
 from argparse import ArgumentParser
 
-from langchain_core import tools
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings 
 
@@ -14,7 +12,7 @@ from src.setup.config import embed_config
 from src.indexing.embeddings import ChromaAPI, PineconeAPI
 
 
-def query_pinecone(question: str, multi_index: bool, book_file_name: str | None, top_k: int) -> list[dict]:
+def query_pinecone(question: str, multi_index: bool, book_file_name: str | None, top_k: int) -> list[dict[str, str]]:
     
     logger.info("Quering Pinecone...")
     api = PineconeAPI(multi_index=multi_index)

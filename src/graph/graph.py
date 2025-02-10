@@ -15,4 +15,8 @@ def initiate_llm(model_id: str = "LatitudeGames/Wayfarer-12B-GGUF", task: str = 
     return ChatHuggingFace(llm=hf_pipeline)
 
 
-initiate_llm()
+# def retrieval_node():
+
+
+
+# initiate_llm()
