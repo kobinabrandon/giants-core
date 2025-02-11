@@ -64,7 +64,7 @@ def get_max_sequence_length(embedding_model_name: str = embed_config.embedding_m
     """
     embedding_model = SentenceTransformer(model_name_or_path=embedding_model_name)
     max_seq_length = embedding_model.max_seq_length
-    logger.warning(f"The embedding model has a maximum sequence length of {max_seq_length}")     
+    logger.info(f"The embedding model has a maximum sequence length of {max_seq_length} tokens")     
     return max_seq_length
 
 

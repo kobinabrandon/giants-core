@@ -80,18 +80,21 @@ def get_books(correct_double_pages: bool = False) -> list[Book]:
         title="Class Struggle In Africa",
         file_name="class_struggle_in_africa",
         url="https://ia601208.us.archive.org/22/items/class-struggle-in-africa/Class%20Struggle%20in%20Africa_text.pdf",
+        core_pages=range(3, 69)
     )
 
     handbook = Book(
         title="Handbook of Revolutionary Warefare: A Guide to the Armed Phase of the African Revolution",
         file_name="handbook_of_revolutionary_warfare",
         url="http://www.itsuandi.org/itsui/downloads/Itsui_Materials/handbook-of-revolutionary-warfare-a-guide-to-the-armed-phase-of-the-african-revolution.pdf",
+        core_pages=range(8, 71)
     )
 
     revolutionary_path = Book(
         title="Revolutionary Path", 
         file_name="revolutionary_path",
         url="https://www.sahistory.org.za/file/426894/download?token=t2k1HcFY",
+        core_pages=range(7, 267)
     )
 
     make_data_directories()
@@ -111,7 +114,6 @@ def get_books(correct_double_pages: bool = False) -> list[Book]:
 def make_single_page_layouts(books: list[Book], right_shift: int = 50) -> None:
 
     for book in books:
-        logger.info(f'Rendering "{book.title}" in single page form')
         with open(book.file_path, "rb") as opened_book:
 
             reader = PdfReader(book.file_path)
@@ -119,12 +121,9 @@ def make_single_page_layouts(books: list[Book], right_shift: int = 50) -> None:
 
             for page in tqdm(
                 iterable=reader.pages,
-                desc="Splitting pages..."
+                desc=f'Rendering "{book.title}" in single page form'
             ):
-                
-                # breakpoint()
                 new_page = copy.copy(page)
-
                 for split in ["left", "right"]:
 
                     if split == "left":

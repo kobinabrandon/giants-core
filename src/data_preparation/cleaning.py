@@ -52,11 +52,12 @@ def remove_non_core_pages(documents: list[Document], book: Book) -> list[Documen
        list[Document]: list of Document objects that contain the information of the core pages of the book. 
     """
      
-    # For some reason, running the inner loop once isn't removing all the qualified pages. 
-    for document in documents:
-        metadata: dict[str, str | int] = document.metadata
-        if metadata["page"] not in book.core_pages: 
-            documents.remove(document)
+    if book.core_pages != None:
+        # For some reason, running the inner loop once isn't removing all the qualified pages. 
+        for document in documents:
+            metadata: dict[str, str | int] = document.metadata
+            if metadata["page"] not in book.core_pages: 
+                documents.remove(document)
 
     return documents 
 
