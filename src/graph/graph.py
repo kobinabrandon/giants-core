@@ -1,4 +1,3 @@
-from langchain import hub
 from langchain_core.documents import Document
 from langchain_chroma.vectorstores import Chroma
 from langchain_core.language_models.chat_models import BaseChatModel

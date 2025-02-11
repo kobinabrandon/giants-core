@@ -1,6 +1,11 @@
+import os
+import copy
 import requests
+
+from tqdm import tqdm
 from pathlib import Path
 from loguru import logger
+from pypdf import PdfReader, PdfWriter
 
 from src.setup.paths import set_paths, make_data_directories
 
@@ -15,10 +20,10 @@ class Book:
         file_name: 
         file_path: 
     """
-    def __init__(self, url: str, title: str, file_name: str, core_pages: range) -> None:
+    def __init__(self, url: str, title: str, file_name: str, core_pages: range | None = None) -> None:
         self.url: str = url 
         self.title: str = title
-        self.core_pages: range = core_pages
+        self.core_pages: range | None = core_pages
         
         self.file_name: str = file_name
         self.file_path: Path =  self.__get_file_path__() / f"{file_name}.pdf"
@@ -48,9 +53,7 @@ class Book:
         return set_paths()["raw_data"]
       
 
-
-
-def get_books() -> list[Book]: 
+def get_books(correct_double_pages: bool = False) -> list[Book]: 
 
     neo_colonialism = Book(
         file_name="neo_colonialism", 
@@ -77,21 +80,67 @@ def get_books() -> list[Book]:
         title="Class Struggle In Africa",
         file_name="class_struggle_in_africa",
         url="https://ia601208.us.archive.org/22/items/class-struggle-in-africa/Class%20Struggle%20in%20Africa_text.pdf",
-        core_pages=range(4, 69)
     )
 
     handbook = Book(
         title="Handbook of Revolutionary Warefare: A Guide to the Armed Phase of the African Revolution",
         file_name="handbook_of_revolutionary_warfare",
         url="http://www.itsuandi.org/itsui/downloads/Itsui_Materials/handbook-of-revolutionary-warfare-a-guide-to-the-armed-phase-of-the-african-revolution.pdf",
-        core_pages=range(2, 71)
+    )
+
+    revolutionary_path = Book(
+        title="Revolutionary Path", 
+        file_name="revolutionary_path",
+        url="https://www.sahistory.org.za/file/426894/download?token=t2k1HcFY",
     )
 
     make_data_directories()
-    books: list[Book] = [neo_colonialism, dark_days, africa_unite, class_struggle, handbook] 
+    books: list[Book] = [neo_colonialism, dark_days, africa_unite, class_struggle, handbook, revolutionary_path] 
 
     for book in books:
         book.download()
+    
+    if correct_double_pages:
+        make_single_page_layouts(
+            books=[class_struggle, handbook, revolutionary_path]
+        )
 
     return books 
 
+
+def make_single_page_layouts(books: list[Book], right_shift: int = 50) -> None:
+
+    for book in books:
+        logger.info(f'Rendering "{book.title}" in single page form')
+        with open(book.file_path, "rb") as opened_book:
+
+            reader = PdfReader(book.file_path)
+            writer = PdfWriter()
+
+            for page in tqdm(
+                iterable=reader.pages,
+                desc="Splitting pages..."
+            ):
+                
+                # breakpoint()
+                new_page = copy.copy(page)
+
+                for split in ["left", "right"]:
+
+                    if split == "left":
+                        new_page.mediabox.upper_left = (page.mediabox.left, page.mediabox.top) 
+                        new_page.mediabox.upper_right = ((page.mediabox.right / 2) + right_shift, page.mediabox.top) 
+                    else:
+                        new_page.mediabox.upper_left = (page.mediabox.right / right_shift, page.mediabox.top) 
+                        new_page.mediabox.upper_right = (page.mediabox.right, page.mediabox.top) 
+                    
+                    # new_page.mediabox.lower_right = (page.mediabox.right, page.mediabox.bottom) 
+                    # new_page.mediabox.lower_left = (page.mediabox.left, page.mediabox.bottom) 
+                    
+                    writer.add_page(new_page)
+
+        with open(book.file_path, "wb") as new_book:
+            os.remove(book.file_path)
+            writer.write(book.file_path)
+
+get_books()
