@@ -4,13 +4,13 @@ from loguru import logger
 
 from src.generation.main import PrimaryGenerator 
 from src.generation.memory import EmbeddingBased
-from src.setup.config import frontend_config, env_config, llm_config 
+from src.setup.config import frontend_config, env_config, hf_config 
 
 
 st.title("Chat")
 
 
-endpoint_url: str = llm_config.endpoints_under_consideration[llm_config.preferred_model] 
+endpoint_url: str = hf_config.endpoints_under_consideration[hf_config.preferred_model] 
 client = OpenAI(base_url=endpoint_url, api_key=env_config.hugging_face_token)
 
 # Initialise chat history

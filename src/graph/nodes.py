@@ -64,7 +64,9 @@ tools = ToolNode([make_retrieval_node])
 
 
 def generate(state: MessagesState, llm: BaseChatModel) -> dict[str, list[BaseMessage]]: 
+
     recent_tool_messages = [] 
+
     for message in reversed(state["messages"]):
         if message.type == "tool":
             recent_tool_messages.append(message)
@@ -92,10 +94,4 @@ def generate(state: MessagesState, llm: BaseChatModel) -> dict[str, list[BaseMes
     return {
         "message": [response]
     }
-
-
-
-
-
-
 

@@ -6,7 +6,7 @@ from huggingface_hub import InferenceClient
 from langchain_community.vectorstores import Chroma, Pinecone
 from langchain_core.vectorstores import VectorStoreRetriever
 
-from src.setup.config import env_config, llm_config 
+from src.setup.config import env_config, hf_config 
 from src.generation.appendix import get_context, get_prompt
 
 
@@ -19,7 +19,7 @@ class ExperimentalGeneration:
 
     def send_request(self, max_tokens: int, use_client: bool, use_open_ai: bool, temperature: float | None = None):
 
-        endpoint_url = llm_config.url_of_preferred_llm_endpoint
+        endpoint_url = hf_config.url_of_preferred_llm_endpoint
         
         if self.task == "text_generation" and not use_client and not use_open_ai:
 
