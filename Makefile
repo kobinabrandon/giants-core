@@ -1,8 +1,12 @@
 books:
 	poetry run python src/data_preparation/books.py
 
-chat:
-	poetry run python src/graph/graph.py
+chat-remember:
+	poetry run python src/graph/graph.py --memory
+
+chat-forget:
+	poetry run python src/graph/graph.py 
+
 
 # Embed into Pinecone
 pinecone-multi:

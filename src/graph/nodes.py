@@ -18,7 +18,7 @@ def establish_state(question: str) -> tuple[str, str]:
     return question, get_context(question=question)
 
 
-@tool(response_format="content_and_artifact")
+# @tool(response_format="content_and_artifact")
 def make_retrieval_node(state: State) -> dict[str, list[Document]]:
     """
 

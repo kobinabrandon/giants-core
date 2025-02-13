@@ -2,9 +2,6 @@ import torch
 from loguru import logger
 from argparse import ArgumentParser
 
-from langchain_chroma import Chroma
-from langchain_huggingface import HuggingFaceEmbeddings 
-
 from langchain_core.documents import Document
 from sentence_transformers import SentenceTransformer
 
