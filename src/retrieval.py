@@ -6,7 +6,26 @@ from langchain_core.documents import Document
 from sentence_transformers import SentenceTransformer
 
 from src.setup.config import embed_config 
-from src.indexing.embeddings import ChromaAPI, PineconeAPI
+from src.embeddings import ChromaAPI, PineconeAPI
+
+
+def get_context(question: str) -> str:
+    """
+    Query the VectorDB(Chroma for now) to perform a similarity search,  
+
+    Args:
+        question: the question being asked of the model. 
+
+    Returns:
+       str: the text retrieved from the vector database based on a certain similarity metric 
+    """
+    logger.info("Getting context:")
+    query_results: list[tuple[Document, float]] = query_chroma(question=question)
+    retrieved_results = [result[0].page_content for result in query_results]
+
+    return "".join(
+        [doc for doc in retrieved_results]
+    )
 
 
 def query_pinecone(question: str, multi_index: bool, book_file_name: str | None, top_k: int) -> list[dict[str, str]]:
@@ -24,13 +43,12 @@ def query_pinecone(question: str, multi_index: bool, book_file_name: str | None,
     return xc["matches"]
 
 
-def query_chroma(question: str, top_k: int = 5) -> list[tuple[Document, float]]:   
+def query_chroma(question: str, top_k: int = 10) -> list[tuple[Document, float]]:   
 
     logger.info("Quering ChromaDB...")
     chroma = ChromaAPI()
     results: list[tuple[Document, float]] = chroma.main_store.similarity_search_with_score(query=question, k=top_k)
     return results
-
  
  
 if __name__ == "__main__":

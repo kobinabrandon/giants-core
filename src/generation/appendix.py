@@ -2,30 +2,7 @@ import os
 import json
 from pathlib import Path
 
-from loguru import logger
-from langchain_core.documents import Document
-
 from src.setup.paths import set_paths
-from src.retrieval.query import query_chroma
-
-
-def get_context(question: str) -> str:
-    """
-    Query the VectorDB(Chroma for now) to perform a similarity search,  
-
-    Args:
-        question: the question being asked of the model. 
-
-    Returns:
-       str: the text retrieved from the vector database based on a certain similarity metric 
-    """
-    logger.info("Getting context:")
-    query_results: list[tuple[Document, float]] = query_chroma(question=question)
-    retrieved_results = [result[0].page_content for result in query_results]
-
-    return "".join(
-        [doc for doc in retrieved_results]
-    )
 
 
 def get_prompt(context: str, question: str) -> str:

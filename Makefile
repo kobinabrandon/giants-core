@@ -10,18 +10,18 @@ chat-forget:
 
 # Embed into Pinecone
 pinecone-multi:
-	poetry run python src/indexing/embeddings.py --multi_index
+	poetry run python src/embeddings.py --multi_index
 
 pinecone-single:
-	poetry run python src/indexing/embeddings.py --no-multi_index
+	poetry run python src/embeddings.py --no-multi_index
 
 
 # Embeddings into ChromaDB
 chroma-chunk:
-	poetry run python src/indexing/embeddings.py --chroma --chunk
+	poetry run python src/embeddings.py --chroma --chunk
 
 chroma-no-chunk:
-	poetry run python src/indexing/embeddings.py --chroma 
+	poetry run python src/embeddings.py --chroma 
 
 
 # Querying Chroma
@@ -34,13 +34,13 @@ query-single-index:
 	poetry run python src/retrieval/query.py --top_k 10 
 
 query-dark-days:
-	poetry run python src/retrieval/query.py --multi_index --book_file_name dark_days --top_k 10 
+	poetry run python src/query.py --multi_index --book_file_name dark_days --top_k 10 
 
 query-africa-unite:
-	poetry run python src/retrieval/query.py --multi_index --book_file_name africa_unite --top_k 10 
+	poetry run python src/query.py --multi_index --book_file_name africa_unite --top_k 10 
 
 query-neocolonialism:
-	poetry run python src/retrieval/query.py --multi_index --book_file_name neo_colonialism --top_k 10
+	poetry run python src/query.py --multi_index --book_file_name neo_colonialism --top_k 10
 
 
 generate:

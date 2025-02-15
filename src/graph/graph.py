@@ -4,9 +4,12 @@ from langgraph.graph.state import CompiledStateGraph
 from langgraph.graph import END, StateGraph, START
 from langgraph.checkpoint.memory import MemorySaver
 
-from src.setup.config import State, groq_config
-from src.generation.appendix import get_context, record_responses 
-from src.graph.nodes import tools, make_retrieval_node, generate, make_generator_node, query_or_response_node
+
+from src.retrieval import get_context
+from src.graph.state import ChatState
+from src.setup.config import groq_config
+from src.generation.appendix import record_responses 
+from src.graph.nodes import tools, make_retrieval_node, generate, make_generator_node
 
 
 class Graph:
@@ -28,9 +31,9 @@ class Graph:
         self.name_of_generator_node: str = "make_generator_node" if not self.with_memory else "generate"
 
         self.nodes: list[object] = [make_retrieval_node, make_generator_node] if not with_memory else [make_retrieval_node, generate] 
-        self.builder: StateGraph = StateGraph(state_schema=State).add_sequence(nodes=self.nodes) 
+        self.builder: StateGraph = StateGraph(state_schema=ChatState).add_sequence(nodes=self.nodes) 
        
-    def build(self) -> str | CompiledStateGraph:
+    def build(self) -> str: 
 
         if not self.with_memory:
             self.builder = self.builder.add_edge(start_key=START, end_key=self.name_of_retrieval_node)
@@ -40,26 +43,40 @@ class Graph:
                 input={"question": self.question}
             )
 
-            answer = response["answer"]
-            record_responses(
-                model_name=groq_config.preferred_model,
-                question=self.question,
-                context=self.context,
-                response=answer
-            )
-                
-            return response["answer"]
-
         else:
+            initial_state: ChatState = {
+                "question": self.question,
+                "context": self.context,
+                "answer": "",
+                "messages": [""] 
+            } 
+            
+            memory = MemorySaver()
+
+            config = {
+                "configurable": {"thread_id": "abc123"}
+            }
+
             self.builder = self.add_nodes_to_graph()
             self.builder = self.set_entry_point()
             self.builder = self.add_edges_to_graph()
-            memory = MemorySaver()
-            return self.builder.compile(checkpointer=memory)
 
+            compiled_graph = self.builder.compile(checkpointer=memory)
+            response = compiled_graph.invoke(input=initial_state, config=config)
+
+        answer: str = response["answer"]
+
+        record_responses(
+            model_name=groq_config.preferred_model,
+            question=self.question,
+            context=self.context,
+            response=answer
+        )
+            
+        return answer 
 
     def add_nodes_to_graph(self) -> StateGraph:
-        self.builder.add_node(tools)
+        self.builder = self.builder.add_node(tools)
         return self.builder 
 
 
@@ -84,24 +101,21 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     _ = parser.add_argument("--memory", action="store_true")
     args = parser.parse_args()
-    question="How did the coup affect Ghana's development?"
-    
+    question="What reasons could the West have had for wanting Nkrumah out of the way?"
+
     if not args.memory: 
 
         graph_object = Graph(with_memory=False, question=question) 
         answer = graph_object.build()
         print(answer)
-        breakpoint()
-
+       
     else:
-        config = {
-            "configurable": {"thread_id": "abc123"}
-        }
-
         graph_object = Graph(with_memory=True, question=question)
         compiled_graph = graph_object.build()
 
+        breakpoint()
         for input in ["Hello", "Who were the coup plotters?", "What were their motivations?"]:
+            state.question = input
             for step in compiled_graph.stream(
                 input= {
                     "messages": [
