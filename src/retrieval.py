@@ -9,7 +9,7 @@ from src.setup.config import embed_config
 from src.embeddings import ChromaAPI, PineconeAPI
 
 
-def get_context(question: str) -> str:
+def get_context(question: str, raw: bool, top_k: int = 10) -> str | list[Document]:
     """
     Query the VectorDB(Chroma for now) to perform a similarity search,  
 
@@ -20,12 +20,17 @@ def get_context(question: str) -> str:
        str: the text retrieved from the vector database based on a certain similarity metric 
     """
     logger.info("Getting context:")
-    query_results: list[tuple[Document, float]] = query_chroma(question=question)
-    retrieved_results = [result[0].page_content for result in query_results]
+    chroma = ChromaAPI()
+    query_results: list[Document] = chroma.main_store.similarity_search(query=question, k=top_k)
 
-    return "".join(
-        [doc for doc in retrieved_results]
-    )
+    if not raw:
+        return query_results
+    else:
+        retrieved_results = [result.page_content for result in query_results]
+
+        return "".join(
+            [doc for doc in retrieved_results]
+        )
 
 
 def query_pinecone(question: str, multi_index: bool, book_file_name: str | None, top_k: int) -> list[dict[str, str]]:
@@ -42,14 +47,6 @@ def query_pinecone(question: str, multi_index: bool, book_file_name: str | None,
     
     return xc["matches"]
 
-
-def query_chroma(question: str, top_k: int = 10) -> list[tuple[Document, float]]:   
-
-    logger.info("Quering ChromaDB...")
-    chroma = ChromaAPI()
-    results: list[tuple[Document, float]] = chroma.main_store.similarity_search_with_score(query=question, k=top_k)
-    return results
- 
  
 if __name__ == "__main__":
     parser = ArgumentParser()
@@ -72,7 +69,7 @@ if __name__ == "__main__":
         )
 
     else:
-        results = query_chroma(question=question, is_memory=False, top_k=args.top_k)
+        results = get_context(question=question, top_k=args.top_k, raw=True)
 
     breakpoint()
 

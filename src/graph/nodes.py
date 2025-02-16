@@ -1,10 +1,9 @@
 from langchain_core.documents import Document
-
 # from src.embeddings import get_embedding_model
 # from langchain_chroma.vectorstores import Chroma
 
 from langchain_core.tools import tool
-from langgraph.graph.message import BaseMessage
+from langgraph.graph.message import BaseMessage, Messages
 from langgraph.prebuilt import ToolNode
 from langgraph.graph import MessagesState 
 from langchain_core.messages import AIMessage, SystemMessage
@@ -19,8 +18,8 @@ from src.generation.appendix import get_prompt
 llm: BaseChatModel = initiate_llm()
 
 
-# @tool(response_format="content_and_artifact")
-def make_retrieval_node(state: ChatState) -> dict[str, str]:
+@tool(response_format="content_and_artifact")
+def make_retrieval_node(state: ChatState) -> tuple[str,str]:
     """
 
     Args:
@@ -29,14 +28,21 @@ def make_retrieval_node(state: ChatState) -> dict[str, str]:
     Returns:
         
     """
+    retrieved_docs: list[Document] = get_context(question=state["question"], raw=False) 
 
-    retrieved_docs = get_context(question=state["question"])
-    state["context"] = retrieved_docs 
-    # embedding_model = get_embedding_model()
-    # vector_store = Chroma(embedding_function=embedding_model)
-    # retrieved_docs: list[Document] = vector_store.similarity_search(query=state["question"])
-    # breakpoint()
-    return {"context": retrieved_docs}
+    serialized = "\n\n".join(
+        (f"Source: {doc.metadata}\n" f"Content: {doc.page_content}")
+        for doc in retrieved_docs
+    )
+
+    # state["context"] =  
+    return serialized, retrieved_docs 
+
+
+def retrieval_node(state: ChatState) -> dict[str, str]:
+    raw_context : str = get_context(question=state["question"], raw=True) 
+    state["context"] = raw_context 
+    return {"context": raw_context} 
 
 
 tools = ToolNode([make_retrieval_node])

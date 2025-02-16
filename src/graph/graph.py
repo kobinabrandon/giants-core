@@ -9,12 +9,13 @@ from src.retrieval import get_context
 from src.graph.state import ChatState
 from src.setup.config import groq_config
 from src.generation.appendix import record_responses 
-from src.graph.nodes import tools, make_retrieval_node, generate, make_generator_node
+from src.graph.nodes import tools, make_retrieval_node, generate, make_generator_node, retrieval_node
 
 
 class Graph:
     def __init__(
         self, 
+        tool: bool,
         question: str,
         with_memory: bool, 
         name_of_tool_node: str = "tools",
@@ -22,15 +23,16 @@ class Graph:
     ) -> None:
 
         self.question: str = question
-        self.context: str = get_context(question=question)
+        self.context: str = get_context(question=question, raw=True)
 
         self.with_memory: bool = with_memory
         self.name_of_tool_node: str = name_of_tool_node
-        self.name_of_entry_point: str = name_of_entry_point 
-        self.name_of_retrieval_node: str = "make_retrieval_node"
+        self.name_of_retrieval_node: str = "make_retrieval_node" if tool else "retrieval_node"
+        self.name_of_entry_point: str = self.name_of_retrieval_node 
         self.name_of_generator_node: str = "make_generator_node" if not self.with_memory else "generate"
 
-        self.nodes: list[object] = [make_retrieval_node, make_generator_node] if not with_memory else [make_retrieval_node, generate] 
+        retriever = make_retrieval_node if tool else retrieval_node
+        self.nodes: list[object] = [retriever, make_generator_node] if not with_memory else [retriever, generate] 
         self.builder: StateGraph = StateGraph(state_schema=ChatState).add_sequence(nodes=self.nodes) 
        
     def build(self) -> str: 
@@ -104,18 +106,16 @@ if __name__ == "__main__":
     question="What reasons could the West have had for wanting Nkrumah out of the way?"
 
     if not args.memory: 
-
-        graph_object = Graph(with_memory=False, question=question) 
+        graph_object = Graph(with_memory=False, question=question, tool=True) 
         answer = graph_object.build()
         print(answer)
        
     else:
-        graph_object = Graph(with_memory=True, question=question)
+        graph_object = Graph(with_memory=True, question=question, tool=False)
         compiled_graph = graph_object.build()
 
         breakpoint()
         for input in ["Hello", "Who were the coup plotters?", "What were their motivations?"]:
-            state.question = input
             for step in compiled_graph.stream(
                 input= {
                     "messages": [
