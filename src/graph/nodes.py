@@ -19,7 +19,7 @@ llm: BaseChatModel = initiate_llm()
 
 
 @tool(response_format="content_and_artifact")
-def make_retrieval_node(state: ChatState) -> tuple[str,str]:
+def make_retrieval_node(question: str) -> tuple[str,str]:
     """
 
     Args:
@@ -28,7 +28,7 @@ def make_retrieval_node(state: ChatState) -> tuple[str,str]:
     Returns:
         
     """
-    retrieved_docs: list[Document] = get_context(question=state["question"], raw=False) 
+    retrieved_docs: list[Document] = get_context(question=question, raw=False) 
 
     serialized = "\n\n".join(
         (f"Source: {doc.metadata}\n" f"Content: {doc.page_content}")
@@ -39,11 +39,21 @@ def make_retrieval_node(state: ChatState) -> tuple[str,str]:
     return serialized, retrieved_docs 
 
 
-def retrieval_node(state: ChatState) -> dict[str, str]:
-    raw_context : str = get_context(question=state["question"], raw=True) 
-    state["context"] = raw_context 
-    return {"context": raw_context} 
+def query_or_response_node(state: ChatState):
+    llm = initiate_llm() 
+    llm_with_tools = llm.bind_tools([make_retrieval_node])
 
+    response = llm_with_tools.invoke(
+        state["messages"]
+    )
+
+    return {"messages": [response]}
+
+
+# def retrieval_node(question: str) -> dict[str, str]:
+#     raw_context : str = get_context(question=question, raw=True) 
+#     return {"context": raw_context} 
+#
 
 tools = ToolNode([make_retrieval_node])
 
@@ -94,14 +104,4 @@ def generate(state: ChatState) -> dict[str, list[BaseMessage]]:
     }
 
 
-# def query_or_response_node(state: ChatState):
-#     llm = initiate_llm() 
-#     llm_with_tools = llm.bind_tools([make_retrieval_node])
-#
-#     response = llm_with_tools.invoke(
-#         state["messages"]
-#     )
-#
-#     return {"messages": [response]}
-#
 
