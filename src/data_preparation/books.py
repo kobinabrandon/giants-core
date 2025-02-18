@@ -30,10 +30,7 @@ class Book:
     
     def download(self) -> None:
         
-        logger.warning(f'Checking for the presence of "{self.title}"')
-        if Path(self.file_path).exists():
-            logger.success(f'"{self.title}" is already saved to disk')
-        else:
+        if not Path(self.file_path).exists():
             logger.warning(f'Unable to find "{self.title}" on disk -> Downloading it now...')
             try:
                 response = requests.get(url=self.url)
