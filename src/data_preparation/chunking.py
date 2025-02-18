@@ -5,7 +5,8 @@ from transformers import AutoTokenizer, PreTrainedTokenizer
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from src.setup.config import chunk_config, embed_config 
-from src.data_preparation.books import read_and_clean_books, neo_colonialism, africa_unite, dark_days
+from src.data_preparation.cleaning import clean_books
+from src.data_preparation.books import get_books 
 
 
 def split_documents(documents: list[Document]) -> list[Document]:
@@ -63,7 +64,7 @@ def get_max_sequence_length(embedding_model_name: str = embed_config.embedding_m
     """
     embedding_model = SentenceTransformer(model_name_or_path=embedding_model_name)
     max_seq_length = embedding_model.max_seq_length
-    logger.warning(f"The embedding model has a maximum sequence length of {max_seq_length}")     
+    logger.info(f"The embedding model has a maximum sequence length of {max_seq_length} tokens")     
     return max_seq_length
 
 
@@ -96,6 +97,7 @@ def get_tokenizer(name: str = embed_config.embedding_model_name) -> PreTrainedTo
 
 
 if __name__ == "__main__":
-    documents = read_and_clean_books(books=[neo_colonialism, africa_unite, dark_days])
+    books = get_books()
+    documents = clean_books(books=books)
     chunks = split_documents(documents=documents)
 

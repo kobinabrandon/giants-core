@@ -6,10 +6,33 @@ from langchain_core.documents import Document
 from sentence_transformers import SentenceTransformer
 
 from src.setup.config import embed_config 
-from src.indexing.embeddings import ChromaAPI, PineconeAPI
+from src.embeddings import ChromaAPI, PineconeAPI
 
 
-def query_pinecone(question: str, multi_index: bool, book_file_name: str | None, top_k: int) -> list[dict]:
+def get_context(question: str, raw: bool, top_k: int = 3) -> str | list[Document]:
+    """
+    Query the VectorDB(Chroma for now) to perform a similarity search,  
+
+    Args:
+        question: the question being asked of the model. 
+
+    Returns:
+       str: the text retrieved from the vector database based on a certain similarity metric 
+    """
+    chroma = ChromaAPI()
+    query_results: list[Document] = chroma.main_store.similarity_search(query=question, k=top_k)
+
+    if not raw:
+        return query_results
+    else:
+        retrieved_results = [result.page_content for result in query_results]
+
+        return "".join(
+            [doc for doc in retrieved_results]
+        )
+
+
+def query_pinecone(question: str, multi_index: bool, book_file_name: str | None, top_k: int) -> list[dict[str, str]]:
     
     logger.info("Quering Pinecone...")
     api = PineconeAPI(multi_index=multi_index)
@@ -23,15 +46,7 @@ def query_pinecone(question: str, multi_index: bool, book_file_name: str | None,
     
     return xc["matches"]
 
-
-def query_chroma(question: str, top_k: int = 5) -> list[tuple[Document, float]]:   
-
-    logger.info("Quering ChromaDB...")
-    chroma = ChromaAPI()
-    results: list[tuple[Document, float]] = chroma.store.similarity_search_with_score(query=question, k=top_k)
-    return results
-
-  
+ 
 if __name__ == "__main__":
     parser = ArgumentParser()
 
@@ -53,7 +68,7 @@ if __name__ == "__main__":
         )
 
     else:
-        results = query_chroma(question=question, top_k=args.top_k)
+        results = get_context(question=question, top_k=args.top_k, raw=True)
 
     breakpoint()
 
