@@ -55,7 +55,7 @@ class HuggingFaceConfig(BaseSettings):
 class GroqConfig(BaseSettings):
 
     assert env_file_present
-    preferred_model: str = "" 
+    preferred_model: str = "llama-3.3-70b-versatile" 
     api_key: str = os.environ["GROQ_API_KEY"]
        
 

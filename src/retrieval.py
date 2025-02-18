@@ -9,7 +9,7 @@ from src.setup.config import embed_config
 from src.embeddings import ChromaAPI, PineconeAPI
 
 
-def get_context(question: str, raw: bool, top_k: int = 1) -> str | list[Document]:
+def get_context(question: str, raw: bool, top_k: int = 3) -> str | list[Document]:
     """
     Query the VectorDB(Chroma for now) to perform a similarity search,  
 

@@ -1,10 +1,7 @@
 books:
 	poetry run python src/data_preparation/books.py
 
-chat-remember:
-	poetry run python src/graph/graph.py --memory
-
-chat-forget:
+chat:
 	poetry run python src/graph/graph.py 
 
 
