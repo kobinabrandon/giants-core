@@ -12,9 +12,10 @@ class Book:
         core_pages: a range of integers representing the page numbers of all the core pages of the book. 
         file_path: 
     """
-    def __init__(self, url: str, title: str, core_pages: range | None = None) -> None:
+    def __init__(self, url: str, title: str, needs_ocr: bool = False, core_pages: range | None = None) -> None:
         self.url: str = url 
         self.title: str = title
+        self.needs_ocr: bool = needs_ocr
         self.core_pages: range | None = core_pages
         
         self.file_name: str = title.lower().replace(" ", "_") 

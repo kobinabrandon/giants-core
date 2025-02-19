@@ -17,50 +17,163 @@ def get_authors() -> list[Author]:
     nkrumah = Author(
         name="Kwame Nkrumah",
         books= [
-            # Book(
-            #     title="Neo-Colonialism, the Last Stage of imperialism",
-            #     url="https://www.marxists.org/ebooks/nkrumah/nkrumah-neocolonialism.pdf",
-            #     core_pages=range(4, 202)
-            # ),
-            #
-            # Book(
-            #     title="Dark Days in Ghana",
-            #     url="https://www.marxists.org/subject/africa/nkrumah/1968/dark-days.pdf",
-            #     core_pages=range(7, 163)
-            # ), 
-            #
-            # Book(
-            #     title="Africa Must Unite",
-            #     url="https://www.marxists.org/subject/africa/nkrumah/1963/africa-must-unite.pdf",
-            #     core_pages=range(5, 237)
-            # ),
-            #
-            # Book(
-            #     title="Class Struggle In Africa",
-            #     url="https://ia601208.us.archive.org/22/items/class-struggle-in-africa/Class%20Struggle%20in%20Africa_text.pdf",
-            #     core_pages=range(3, 69)
-            # ),
-            #
-            # Book(
-            #     title="Handbook of Revolutionary Warefare: A Guide to the Armed Phase of the African Revolution",
-            #     url="http://www.itsuandi.org/itsui/downloads/Itsui_Materials/handbook-of-revolutionary-warfare-a-guide-to-the-armed-phase-of-the-african-revolution.pdf",
-            #     core_pages=range(8, 71)
-            # ),
-            #
-            # Book(
-            #     title="Revolutionary Path", 
-            #     url="https://www.sahistory.org.za/file/426894/download?token=t2k1HcFY",
-            #     core_pages=range(7, 267)
-            # ),
-            #
+            Book(
+                title="Neo-Colonialism, the Last Stage of imperialism",
+                url="https://www.marxists.org/ebooks/nkrumah/nkrumah-neocolonialism.pdf",
+                core_pages=range(4, 202)
+            ),
+
+            Book(
+                title="Dark Days in Ghana",
+                url="https://www.marxists.org/subject/africa/nkrumah/1968/dark-days.pdf",
+                core_pages=range(7, 163)
+            ), 
+
+            Book(
+                title="Africa Must Unite",
+                url="https://www.marxists.org/subject/africa/nkrumah/1963/africa-must-unite.pdf",
+                core_pages=range(5, 237)
+            ),
+
+            Book(
+                title="Class Struggle In Africa",
+                url="https://ia601208.us.archive.org/22/items/class-struggle-in-africa/Class%20Struggle%20in%20Africa_text.pdf",
+                core_pages=range(3, 69)
+            ),
+
+            Book(
+                title="Handbook of Revolutionary Warefare: A Guide to the Armed Phase of the African Revolution",
+                url="http://www.itsuandi.org/itsui/downloads/Itsui_Materials/handbook-of-revolutionary-warfare-a-guide-to-the-armed-phase-of-the-african-revolution.pdf",
+                core_pages=range(8, 71)
+            ),
+
+            Book(
+                title="Revolutionary Path", 
+                url="https://www.sahistory.org.za/file/426894/download?token=t2k1HcFY",
+                core_pages=range(7, 267)
+            ),
+
             Book(
                 title="Ghana's Policy at Home and Abroad", 
                 url="https://www.marxists.org/subject/africa/nkrumah/1957/ghanas-policy.pdf",
-                core_pages=range(2, 18)
+                core_pages=range(2, 18),
+                needs_ocr=True
             ),
 
 
         ] 
+    )
+
+    che = Author(
+        name='Ernesto "Che" Guevara',
+        books=[
+            Book(
+                title="The Motorcycle Diaries",
+                url=""
+            ),
+
+            Book(
+                title="Guerilla Warfare",
+                url=""
+            ),
+
+            Book(
+                title="The Bolivian Diary: Authorized Edition",
+                url=""
+            ),
+
+            Book(
+                title="Reminiscenses of the Cuban Revolutionary War",
+                url=""
+            ),
+
+            Book(
+                title="Socialism and Man in Cuba",
+                url=""
+            ),
+
+            Book(
+                title="Che Guevara Speaks: Selected Speeches and Writings",
+                url=""
+            ),
+
+            Book(
+                title="Back on the Road: A Journey Through Latin America",
+                url=""
+            ),
+
+            Book(
+                title="The African Dream: The Diaries of the Revolutionary War in the Congo",
+                url=""
+            ),
+
+            Book(
+                title="Self Portrait",
+                url=""
+            ), 
+
+            Book(
+                title="On Revolutionary Medicine",
+                url=""
+            )
+
+        ]
+    )
+
+
+    castro = Author(
+        name="Fidel Castro",
+        books=[
+            Book(
+                title="My Life: A Spoken Autobiography",
+                url=""
+            ),
+            
+            Book(
+                title="History Will Absolve Me",
+                url=""
+            ),
+
+            Book(
+                title="Obama and the Empire",
+                url=""
+            ),
+
+            Book(
+                title="On Imprerialist Globalization",
+                url=""
+            ),
+
+            Book(
+                title="Capitalism in Crisis: Globalization and World Politics Today",
+                url=""
+            ),
+
+            Book(
+                title="Guantánamo: Why the Illegal US Base Should Be Returned to Cuba",
+                url=""
+            ),
+
+            Book(
+                title="Selected Speeches of Fidel Castro",
+                url=""
+            ),
+
+            Book(
+                title="Cuba at the Crossroads",
+                url=""
+            ),
+
+            Book(
+                title="War, Racism and Economic Justice: The Global Ravages of Capitalism",
+                url=""
+            ),
+
+            Book(
+                title="The Second Declaration of Havana",
+                url=""
+            )
+        ]
     )
 
 
@@ -68,7 +181,7 @@ def get_authors() -> list[Author]:
         name="Patrice Émery Lumumba",
         books = [
             Book(
-                title="",
+                title="Congo, My Country",
                 url="",
             )
         ]
@@ -76,7 +189,7 @@ def get_authors() -> list[Author]:
 
 
     sankara =  Author(
-        name="Thomas Isidore Noël Sankara",
+        name="Captain Thomas Isidore Noël Sankara",
         books = [
             Book(
                 title="Thomas Sankara Speaks: The Burkina Faso Revolution",
@@ -95,6 +208,7 @@ def get_authors() -> list[Author]:
 
         ]
     )
+
 
     marx = Author(
         name="Karl Marx",
@@ -129,8 +243,10 @@ def get_authors() -> list[Author]:
                 core_pages=None
             ),
 
-
-
+            Book(
+                title="The Communist Manfesto",
+                url="",
+            ),
         ]
     )
 
@@ -142,13 +258,22 @@ def get_authors() -> list[Author]:
                 title="The Philosophy & Opinions of Marcus Garvey",
                 url="",
             ),
+        ]
+    )
 
+    
+    baldwin = Author(
+        name="James Baldwin",
+        books=[
             Book(
-                title="The Communist Manfesto",
-                url="",
+                title="I Am Not Your Negro",
+                url=""
             ),
 
-
+            Book(
+                title="Notes of a Native Son",
+                url=""
+            )
         ]
     )
 
@@ -184,6 +309,27 @@ def get_authors() -> list[Author]:
                 url="",
             ),
 
+        ]
+    )
+
+
+    blavatsky = Author(
+        name="Helena Pretrovna Blavatsky",
+        books=[
+            Book(
+                title="The Secret Doctrine",
+                url=""
+            ),
+
+            Book(
+                title="Isis Unveiled",
+                url=""
+            ), 
+
+            Book(
+                title="Theosophical Glossary",
+                url=""
+            )
         ]
     )
 
@@ -254,6 +400,22 @@ def get_authors() -> list[Author]:
     )
 
 
+    gandhi = Author(
+        name="Mohandas Karamchand Ghandi",
+        books=[
+            Book(
+                title="Hind Swaraj",
+                url=""
+            ),
+
+            Book(
+                title="The Story of My Experiments with Truth",
+                url=""
+            )
+        ]
+    )
+
+
     king = Author(
         name="Martin Luther King",
         books=[
@@ -271,6 +433,7 @@ def get_authors() -> list[Author]:
         ]
     )
      
+
     rai = Author(
         name="Lala Lajpat Rai",
         books=[
@@ -305,5 +468,69 @@ def get_authors() -> list[Author]:
         ]
     )
 
-    return [nkrumah, sankara, lumumba, vivekananda, malcom, king, rai, rizal, day, fanon, marx, merton, tutu, garvey] 
+
+    lenin = Author(
+        name="Vladimir Lenin",
+        books=[
+            Book(
+                title="What Is to Be Done?",
+                url="",
+            ),
+
+            Book(
+                title="The State and Revolution",
+                url="",
+            ),
+
+        ]
+    )
+
+
+    yat_sen = Author(
+        name="Sun Yat-sen",
+        books=[
+            Book(
+                title="The Three Principles of the People",
+                url="https://chinese.larouchepub.com/wp-content/uploads/2017/05/San-Min-Chu-I_ALL-en.pdf",
+            ),
+
+            Book(
+                title="The International Development of China",
+                url="https://chinese.larouchepub.com/wp-content/uploads/2017/05/sun_IDC-en.pdf",
+                core_pages=range(15, 305)
+            ),
+        ]
+    )
+
+
+    sojourner = Author(
+        name="Sojourner Truth",
+        books=[
+            Book(
+                title="The Narrative of Sojourner Truth",
+                url=""
+            )
+        ]
+    ) 
+
+
+    churchill = Author(
+        name="Winston Churchill",
+        books = [
+            Book(
+                title="The World Crisis",
+                url="",
+            ),
+
+            Book(
+                title="My Early Life",
+                url=""
+            )
+        ]
+    )
+
+    return [
+        nkrumah, sankara, lumumba, che, castro, vivekananda, blavatsky, gandhi, malcom, king, rai, rizal, day, ghaffar_khan, 
+        fanon, marx, lenin, merton, tutu, garvey, baldwin, yat_sen, sojourner, churchill
+    ] 
 
