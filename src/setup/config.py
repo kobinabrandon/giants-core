@@ -22,7 +22,6 @@ class ChunkingSettings:
 
 class EmbedddingSettings:
     embedding_model_name: str = "thenlper/gte-large"
-    pinecone_embedding_model: str = "multilingual-e5-large"
     
 
 class Tokens(BaseSettings):
@@ -52,12 +51,12 @@ class HuggingFaceConfig(BaseSettings):
         }  
 
    
-class GroqConfig(BaseSettings):
-
-    assert env_file_present
-    preferred_model: str = "llama-3.3-70b-versatile" 
-    api_key: str = os.environ["GROQ_API_KEY"]
-       
+# class GroqConfig(BaseSettings):
+#
+#     assert env_file_present
+#     preferred_model: str = "llama-3.3-70b-versatile" 
+#     api_key: str = os.environ["GROQ_API_KEY"]
+#
 
 class FrontendConfig:
     bot_name: str = "Historian" 
@@ -77,7 +76,7 @@ hf_config = HuggingFaceConfig()
 chunk_config = ChunkingSettings()
 embed_config = EmbedddingSettings()
 frontend_config = FrontendConfig()
-groq_config = GroqConfig()
+# groq_config = GroqConfig()
 videos = VideoConfig()
 env_config = Tokens()
 

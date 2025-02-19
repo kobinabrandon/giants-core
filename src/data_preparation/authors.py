@@ -307,8 +307,3 @@ def get_authors() -> list[Author]:
 
     return [nkrumah, sankara, lumumba, vivekananda, malcom, king, rai, rizal, day, fanon, marx, merton, tutu, garvey] 
 
-
-# if __name__ == "__main__":
-#     make_data_directories()
-#     nkrumah = get_authors()[0]
-#     nkrumah.download_books()
