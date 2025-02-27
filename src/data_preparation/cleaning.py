@@ -4,7 +4,7 @@ Contains code that cleans the raw text in the documents of a given book
 from langchain_core.documents import Document
 from langchain_community.document_loaders import PyPDFLoader
 
-from src.data_preparation.books import Book
+from src.data_preparation.sourcing import Book
 
 
 def clean_books(books: list[Book]) -> list[Document]:

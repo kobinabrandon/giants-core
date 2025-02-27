@@ -4,18 +4,17 @@ sp_model.model
 sp_model.vocab
 .python-version
 
-# Directories 
-**/data/book_stats/
-**/data/chunk_details/
-**/data/cleaned_text/
-**/data/embeddings/
-**/data/non_core_sections/
-**/data/page_details/
-**/data/raw/
+# # Directories 
+/data
+
 
 **/chroma/
 **/models/
-**/__pycache__/
+# **/__pycache__/
+#
 
-**/chroma_db/
+
+# /data/authors.json
+**authors.py
+**backup.py
 

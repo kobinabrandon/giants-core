@@ -1,7 +1,8 @@
 import os
 import copy
+from tqdm import tqdm
 from pypdf import PdfReader, PdfWriter
-from src.data_preparation.books import Book
+from src.data_preparation.sourcing import Book
 
 
 def make_single_page_layouts(books: list[Book], right_shift: int = 50) -> None:

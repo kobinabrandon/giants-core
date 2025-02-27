@@ -1,5 +1,5 @@
-# books:
-# 	poetry run python src/data_preparation/authors.py
+books:
+	poetry run python src/authors.py
 
 chat:
 	poetry run python src/graph/graph.py 
