@@ -1,9 +1,12 @@
+import os 
 import asyncio
+import shutil
 import requests
+from tqdm import tqdm
 from pathlib import Path
 from loguru import logger
-from torrentp import TorrentDownloader
 
+from torrentp import TorrentDownloader
 from src.setup.paths import get_author_dir
 
 
@@ -12,6 +15,7 @@ class Book:
         self, 
         title: str, 
         url: str | None, 
+        format: str = "pdf",
         torrent: bool = False,
         needs_ocr: bool = False, 
         magnet: str | None = None,
@@ -20,6 +24,7 @@ class Book:
     ) -> None:
 
         self.title: str = title
+        self.format: str = format
         self.url: str | None = url 
         self.author: str | None = None
         self.needs_ocr: bool = needs_ocr
@@ -38,7 +43,7 @@ class Book:
         
         if not self.torrent and self.url != None:
             if not Path(file_path).exists():
-                logger.warning(f'Unable to find "{self.title}" on disk -> Downloading it now...')
+                logger.warning(f'Unable to find "{self.title}" on disk -> Downloading...')
                 try:
                     response = requests.get(url=self.url)
 
@@ -70,12 +75,34 @@ class Batch:
         author_path: Path = get_author_dir(author_name=author_name) 
         return Path.joinpath(author_path, "raw")
 
+    def extract_texts(self, download_path: str, author_name: str):
+
+        for (root, _, files) in tqdm(
+            iterable=os.walk(download_path), 
+            desc="Moving files"
+        ): 
+            breakpoint()
+            for file in files:
+                if file.lower().endswith("pdf") or file.lower().endswith("epub") or file.lower().endswith("jpg"):
+                    file_path: str = os.path.join(root, file)
+                    immediate_parent: str = os.path.dirname(file_path)
+
+                    if (immediate_parent != download_path) and not Path(download_path+f"/{file}").exists(): 
+                        shutil.move(file_path, download_path)
+                        if download_path == os.path.dirname(os.path.dirname(file_path)):
+                            shutil.rmtree(immediate_parent)
+            
+            for dir in os.listdir(root):
+                path: str = root+f"/{dir}"
+                if os.path.isdir(path):
+                     shutil.rmtree(path)
+            
 
 class Author:
-    def __init__(self, name: str, books: list[Book] | None = None, batch: Batch | None = None) -> None:
+    def __init__(self, name: str, books: list[Book] | None = None, batches: list[Batch] | None = None) -> None:
         self.name: str = name
         self.books: list[Book] | None = books
-        self.batch: Batch | None = batch 
+        self.batches: list[Batch] | None = batches 
 
     def download_individually(self) -> None:
         assert self.books != None
@@ -84,19 +111,21 @@ class Author:
             book.download(file_path=str(file_path))
 
     def download_batch(self) -> None:
-        assert self.batch != None
-        file_path = self.batch.get_save_path(author_name=self.name)
-        self.batch.download(file_path=str(file_path))
+        assert self.batches != None
+        for torrent in self.batches:
+            file_path = torrent.get_save_path(author_name=self.name)
+            torrent.download(file_path=str(file_path))
+            torrent.extract_texts(download_path=str(file_path), author_name=self.name)
 
     def download_books(self) -> None:
 
-        if (self.books != None) and (self.batch != None):
+        if (self.books != None) and (self.batches != None):
             self.download_individually()
             self.download_batch()
 
         elif self.books != None:
             self.download_individually()
 
-        elif self.batch != None:
+        elif self.batches != None:
             self.download_batch()
 
