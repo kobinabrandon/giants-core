@@ -1,4 +1,5 @@
-import os 
+import os
+import json
 import asyncio
 import shutil
 import requests
@@ -8,7 +9,7 @@ from pathlib import Path
 from loguru import logger
 
 from torrentp import TorrentDownloader
-from src.setup.paths import get_author_dir
+from src.setup.paths import CHROMA_DIR, IMAGES_DIR, get_author_dir, make_fundamental_paths
 
 
 class Book:
@@ -34,6 +35,8 @@ class Book:
         self.start_page: int | None = start_page
         self.end_page: int | None = end_page
         self.file_name: str = title.lower().replace(" ", "_") 
+
+        make_fundamental_paths()
     
     def get_save_path(self, author_name: str) -> Path:
         author_path: Path = get_author_dir(author_name=author_name) 
@@ -67,32 +70,65 @@ class Batch:
     def __init__(self, magnet: str) -> None:
         self.magnet: str = magnet 
 
-    def download(self, file_path: str):
-        torrent = TorrentDownloader(file_path=self.magnet, save_path=file_path)
-        asyncio.run(torrent.start_download())
+    def download(self, file_path: str, author_name: str):
+
+        downloaded_files: list[str] = self.find_downloaded_files(author_name)
+        breakpoint()
+        exist: list[str] = []
+
+        for file in downloaded_files:
+            if Path(file).exists():
+                exist.append(file)
+
+        if len(downloaded_files) != 0 and len(exist) == len(downloaded_files):
+            logger.success(f"All of the files associated with {author_name} already exist")
+        else:
+            logger.warning(f"Some of {author_name}'s files are missing.")
+            torrent = TorrentDownloader(file_path=self.magnet, save_path=file_path)
+            asyncio.run(torrent.start_download())
            
     @staticmethod
     def get_save_path(author_name: str) -> Path:
         author_path: Path = get_author_dir(author_name=author_name) 
         return Path.joinpath(author_path, "raw")
 
-    def extract_texts(self, download_path: str):
+    def extract_files(self, download_path: str, author_name: str) -> None:
 
         contents: list[str] = glob(download_path + "/**/*", recursive=True) 
         files: list[str] = [object for object in contents if os.path.isfile(object)]
         directories: list[str] = [object for object in contents if object not in files]
-        extensions_of_interest: tuple[str, str,str,str] = ("txt", "pdf", "epub", "jpg")
+        text_extensions: tuple[str, str, str] = ("txt", "pdf", "epub")
+        image_extensions: tuple[str, str] = ("jpg", "png")
+
+        author_image_dir: Path = IMAGES_DIR.joinpath(author_name)
+        paths_of_downloaded_files: list[str] = []
 
         for file in tqdm(
             iterable=files,
             desc="Extracting files of interest..."
         ):
-            file_has_desired_format: bool = file.lower().endswith(extensions_of_interest) 
             file_base_name: str = os.path.basename(file)
-            if file_has_desired_format and not Path(download_path + f"/{file_base_name}").exists():
-                shutil.move(file, download_path)
+            file_is_text: bool = file.lower().endswith(text_extensions) 
+            file_is_image: bool = file.lower().endswith(image_extensions) 
 
-        # Clean up directories 
+            if file_is_text and not Path(download_path + f"/{file_base_name}").exists():
+                shutil.move(file, download_path)
+                paths_of_downloaded_files.append(
+                    str(Path(download_path + f"/{file_base_name}"))
+                )
+
+            elif file_is_image and not Path(author_image_dir.joinpath(f"{file_base_name}")).exists():
+                shutil.move(file, author_image_dir)
+                paths_of_downloaded_files.append(
+                    str(author_image_dir.joinpath(f"/{file_base_name}"))
+                )
+        
+        self.log_downloaded_files(author_name=author_name, paths_of_downloaded_files=paths_of_downloaded_files)
+        self.remove_book_directories(directories=directories)
+
+    @staticmethod
+    def remove_book_directories(directories: list[str]) -> None:
+
         for directory in tqdm(
             iterable=directories,
             desc="Deleting directories that contained the extracted files..."
@@ -100,9 +136,33 @@ class Batch:
             if Path(directory).exists():
                 shutil.rmtree(directory)
 
+    def log_downloaded_files(self, author_name: str, paths_of_downloaded_files: list[str]) -> None:
+        author_path: Path = get_author_dir(author_name=author_name)
+        log_path: Path = author_path.joinpath("downloaded_files.json")
+
+        with open(log_path, mode="w") as file:
+            json.dump(paths_of_downloaded_files, file)
+
+    def find_downloaded_files(self, author_name: str) -> list[str]: 
+        author_path: Path = get_author_dir(author_name=author_name)
+        log_path: Path = author_path.joinpath("downloaded_files.json")
+        
+        if not Path(log_path).exists():
+            paths: list[str] = []
+        else:
+            with open(log_path, mode="r", encoding="utf-8") as file:
+                paths: list[str] = json.load(file)
+            
+        return paths
+
 
 class Author:
-    def __init__(self, name: str, books: list[Book] | None = None, batches: list[Batch] | None = None) -> None:
+    def __init__(
+        self, 
+        name: str, 
+        books: list[Book] | None = None, 
+        batches: list[Batch] | None = None
+    ) -> None:
         self.name: str = name
         self.books: list[Book] | None = books
         self.batches: list[Batch] | None = batches 
@@ -121,8 +181,8 @@ class Author:
         
         for torrent in self.batches:
             file_path = torrent.get_save_path(author_name=self.name)
-            torrent.download(file_path=str(file_path))
-            torrent.extract_texts(download_path=str(file_path))
+            torrent.download(file_path=str(file_path), author_name=self.name)
+            torrent.extract_files(download_path=str(file_path), author_name=self.name)
 
     def download_books(self) -> None:
 
@@ -139,8 +199,11 @@ class Author:
     def make_paths(self):
 
         AUTHOR_DIR: Path = get_author_dir(author_name=self.name) 
-        paths_to_create: list[Path] = [AUTHOR_DIR] + [
-            Path.joinpath(AUTHOR_DIR, path) for path in ["raw", "chroma_memory", "text_embeddings"]
+        paths_to_create: list[Path] = [
+            AUTHOR_DIR,
+            IMAGES_DIR.joinpath(self.name),
+            Path.joinpath(AUTHOR_DIR, "raw"), 
+            Path.joinpath(CHROMA_DIR, self.name), 
         ] 
 
         for path in paths_to_create:

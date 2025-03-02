@@ -6,6 +6,7 @@ sp_model.vocab
 
 # # Directories 
 /data
+/images
 **/__pycache__
 
 

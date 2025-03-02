@@ -3,22 +3,22 @@ from pathlib import Path
 
 
 PARENT_DIR = Path("__file__").parent.resolve()
-CHROMA_DIR = PARENT_DIR / "./chroma"
 
-DATA_DIR = PARENT_DIR / "data"
-AUTHORS_FILE_DIR = DATA_DIR / "authors.json"
+IMAGES_DIR = PARENT_DIR.joinpath("images") 
+CHROMA_DIR = PARENT_DIR.joinpath("./chroma")
+
+DATA_DIR = PARENT_DIR.joinpath("data")
+AUTHORS_FILE_DIR = DATA_DIR.joinpath("authors.json") 
+# BOOK_IMAGES_DIR = IMAGES_DIR.joinpath("book_images")
 
 
-def make_data_directories(author_name: str) -> None: 
+def make_fundamental_paths():
 
-    AUTHOR_DIR: Path = get_author_dir(author_name=author_name) 
-    paths_to_create: list[Path] = [AUTHOR_DIR] + [
-        Path.joinpath(AUTHOR_DIR, path) for path in ["raw", "chroma_memory", "text_embeddings"]
-    ] 
+    paths_to_create: list[Path] = [IMAGES_DIR, DATA_DIR, CHROMA_DIR]
 
     for path in paths_to_create:
         if not Path(path).exists():
-            os.mkdir(path=path)
+            os.mkdir(path)
 
 
 def get_author_dir(author_name: str) -> Path:
