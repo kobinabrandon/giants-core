@@ -3,6 +3,7 @@ import asyncio
 import shutil
 import requests
 from tqdm import tqdm
+from glob import glob
 from pathlib import Path
 from loguru import logger
 
@@ -75,28 +76,30 @@ class Batch:
         author_path: Path = get_author_dir(author_name=author_name) 
         return Path.joinpath(author_path, "raw")
 
-    def extract_texts(self, download_path: str, author_name: str):
+    def extract_texts(self, download_path: str):
 
-        for (root, _, files) in tqdm(
-            iterable=os.walk(download_path), 
-            desc="Moving files"
+        contents: list[str] = glob(download_path + "/**/*", recursive=True) 
+        files: list[str] = [object for object in contents if os.path.isfile(object)]
+        directories: list[str] = [object for object in contents if object not in files]
+        extensions_of_interest: tuple[str, str,str,str] = ("txt", "pdf", "epub", "jpg")
+
+        for file in tqdm(
+            iterable=files,
+            desc="Extracting files of interest..."
+        ):
+            file_has_desired_format: bool = file.lower().endswith(extensions_of_interest) 
+            file_base_name: str = os.path.basename(file)
+            if file_has_desired_format and not Path(download_path + f"/{file_base_name}").exists():
+                shutil.move(file, download_path)
+
+        # Clean up directories 
+        for directory in tqdm(
+            iterable=directories,
+            desc="Deleting directories that contained the extracted files..."
         ): 
-            breakpoint()
-            for file in files:
-                if file.lower().endswith("pdf") or file.lower().endswith("epub") or file.lower().endswith("jpg"):
-                    file_path: str = os.path.join(root, file)
-                    immediate_parent: str = os.path.dirname(file_path)
+            if Path(directory).exists():
+                shutil.rmtree(directory)
 
-                    if (immediate_parent != download_path) and not Path(download_path+f"/{file}").exists(): 
-                        shutil.move(file_path, download_path)
-                        if download_path == os.path.dirname(os.path.dirname(file_path)):
-                            shutil.rmtree(immediate_parent)
-            
-            for dir in os.listdir(root):
-                path: str = root+f"/{dir}"
-                if os.path.isdir(path):
-                     shutil.rmtree(path)
-            
 
 class Author:
     def __init__(self, name: str, books: list[Book] | None = None, batches: list[Batch] | None = None) -> None:
@@ -106,16 +109,20 @@ class Author:
 
     def download_individually(self) -> None:
         assert self.books != None
+        self.make_paths()
+
         for book in self.books:
             file_path = book.get_save_path(author_name=self.name)
             book.download(file_path=str(file_path))
 
     def download_batch(self) -> None:
         assert self.batches != None
+        self.make_paths()
+        
         for torrent in self.batches:
             file_path = torrent.get_save_path(author_name=self.name)
             torrent.download(file_path=str(file_path))
-            torrent.extract_texts(download_path=str(file_path), author_name=self.name)
+            torrent.extract_texts(download_path=str(file_path))
 
     def download_books(self) -> None:
 
@@ -128,4 +135,15 @@ class Author:
 
         elif self.batches != None:
             self.download_batch()
+
+    def make_paths(self):
+
+        AUTHOR_DIR: Path = get_author_dir(author_name=self.name) 
+        paths_to_create: list[Path] = [AUTHOR_DIR] + [
+            Path.joinpath(AUTHOR_DIR, path) for path in ["raw", "chroma_memory", "text_embeddings"]
+        ] 
+
+        for path in paths_to_create:
+            if not Path(path).exists():
+                os.mkdir(path=path)
 
