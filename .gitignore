@@ -3,6 +3,8 @@
 sp_model.model 
 sp_model.vocab
 .python-version
+**downloaded_files.json
+**downloaded_images.json
 
 # # Directories 
 /data

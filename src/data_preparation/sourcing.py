@@ -57,7 +57,6 @@ class Book:
                         logger.success(f'Downloaded "{self.title}"')
                    
                 except Exception as error:
-                    logger.error(error)
                     logger.error(f"Unable to download {self.title}.")
         else:
             torrent = TorrentDownloader(file_path=self.magnet, save_path=file_path)
@@ -83,11 +82,12 @@ class Batch:
         contents: list[str] = glob(download_path + "/**/*", recursive=True) 
         files: list[str] = [object for object in contents if os.path.isfile(object)]
         directories: list[str] = [object for object in contents if object not in files]
-        text_extensions: tuple[str, str, str] = ("txt", "pdf", "epub")
+        text_extensions: tuple[str, str, str, str, str] = ("txt", "pdf", "epub", "mobi", "azw3")
         image_extensions: tuple[str, str] = ("jpg", "png")
 
         author_image_dir: Path = IMAGES_DIR.joinpath(author_name)
         paths_of_downloaded_files: list[str] = []
+        paths_of_downloaded_images: list[str] = []
 
         for file in tqdm(
             iterable=files,
@@ -109,12 +109,16 @@ class Batch:
                 if not Path(author_image_dir.joinpath(f"{file_base_name}")).exists():
                     shutil.move(file, author_image_dir)
 
-                paths_of_downloaded_files.append(
+                paths_of_downloaded_images.append(
                     str(author_image_dir.joinpath(f"{file_base_name}"))
                 )
         
-        breakpoint()
-        self.log_downloaded_files(author_name=author_name, paths_of_downloaded_files=paths_of_downloaded_files)
+        self.log_downloaded_files(
+            author_name=author_name, 
+            paths_of_downloaded_files=paths_of_downloaded_files,
+            paths_of_downloaded_images=paths_of_downloaded_images
+        )
+
         self.remove_book_directories(directories=directories)
 
     @staticmethod
@@ -127,17 +131,28 @@ class Batch:
             if Path(directory).exists():
                 shutil.rmtree(directory)
 
-    def log_downloaded_files(self, author_name: str, paths_of_downloaded_files: list[str]) -> None:
+    def log_downloaded_files(
+            self, 
+            author_name: str, 
+            paths_of_downloaded_files: list[str],
+            paths_of_downloaded_images: list[str]
+    ) -> None:
+
         author_path: Path = get_author_dir(author_name=author_name)
-        log_path: Path = author_path.joinpath("downloaded_files.json")
-        breakpoint()
+        author_image_dir: Path = IMAGES_DIR.joinpath(author_name)
 
-        if Path(log_path).exists():
-            breakpoint()
-            os.remove(log_path)
+        object_types_and_paths: dict[Path, list[str]] = {
+            author_path.joinpath("downloaded_files.json"): paths_of_downloaded_files,
+            author_image_dir.joinpath("downloaded_images.json"): paths_of_downloaded_images 
+        }
 
-        with open(log_path, mode="w") as file:
-            json.dump(paths_of_downloaded_files, file)
+        for path, logs in object_types_and_paths.items(): 
+
+            if Path(path).exists():
+                os.remove(path)
+
+            with open(path, mode="w") as file:
+                json.dump(logs, file)
 
 
 class Author:
@@ -151,7 +166,7 @@ class Author:
         self.books: list[Book] | None = books
         self.batches: list[Batch] | None = batches 
 
-    def download_individually(self) -> list[str]:
+    def download_individually(self) -> None: 
         assert self.books != None
         self.make_paths()
 
@@ -161,9 +176,7 @@ class Author:
             book.download(file_path=str(file_path))
             book_paths.append(str(file_path))
 
-        return book_paths
-
-    def must_torrent(self, torrent: Batch, paths_to_individual_downloads: list[str] | None = None) -> bool:
+    def must_torrent(self, torrent: Batch) -> bool:
 
         file_path = torrent.get_destination_path(author_name=self.name)
         contents = glob(str(file_path) + "/**/*", recursive=True) 
@@ -178,9 +191,7 @@ class Author:
             with open(log_path, mode="r", encoding="utf-8") as file:
                 logged_paths: list[str] = json.load(file)
             
-            num_individual_downloads = 0 if paths_to_individual_downloads == None else len(paths_to_individual_downloads)
-
-            if (len(files_only) == len(logged_paths) + num_individual_downloads) and len(logged_paths) != 0:
+            if (len(files_only) == len(logged_paths)) and len(logged_paths) != 0:
                 logger.success(f"All files associated with {self.name} are available")
                 return False
             else:
@@ -192,19 +203,19 @@ class Author:
         torrent.download(file_path=str(file_path))
         torrent.extract_files(download_path=str(file_path), author_name=self.name)
 
-    def download_batch(self, paths_to_individual_downloads: list[str] | None = None) -> None:
+    def download_batch(self) -> None:
         assert self.batches != None
         self.make_paths()
         
         for torrent in self.batches:
-            if self.must_torrent(torrent=torrent, paths_to_individual_downloads=paths_to_individual_downloads):
+            if self.must_torrent(torrent=torrent):
                 self.leech(torrent=torrent)
 
     def download_books(self) -> None:
 
         if (self.books != None) and (self.batches != None):
-            paths_to_downloads: list[str] = self.download_individually()
-            self.download_batch(paths_to_individual_downloads=paths_to_downloads)
+            self.download_individually()
+            self.download_batch()
 
         elif self.books != None:
             _ = self.download_individually()
