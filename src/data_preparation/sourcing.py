@@ -35,7 +35,6 @@ class Book:
         self.start_page: int | None = start_page
         self.end_page: int | None = end_page
         self.file_name: str = title.lower().replace(" ", "_") 
-
         make_fundamental_paths()
     
     def get_save_path(self, author_name: str) -> Path:
@@ -70,25 +69,12 @@ class Batch:
     def __init__(self, magnet: str) -> None:
         self.magnet: str = magnet 
 
-    def download(self, file_path: str, author_name: str):
-
-        downloaded_files: list[str] = self.find_downloaded_files(author_name)
-        breakpoint()
-        exist: list[str] = []
-
-        for file in downloaded_files:
-            if Path(file).exists():
-                exist.append(file)
-
-        if len(downloaded_files) != 0 and len(exist) == len(downloaded_files):
-            logger.success(f"All of the files associated with {author_name} already exist")
-        else:
-            logger.warning(f"Some of {author_name}'s files are missing.")
-            torrent = TorrentDownloader(file_path=self.magnet, save_path=file_path)
-            asyncio.run(torrent.start_download())
-           
+    def download(self, file_path: str):
+        torrent = TorrentDownloader(file_path=self.magnet, save_path=file_path)
+        asyncio.run(torrent.start_download())
+       
     @staticmethod
-    def get_save_path(author_name: str) -> Path:
+    def get_destination_path(author_name: str) -> Path:
         author_path: Path = get_author_dir(author_name=author_name) 
         return Path.joinpath(author_path, "raw")
 
@@ -111,18 +97,23 @@ class Batch:
             file_is_text: bool = file.lower().endswith(text_extensions) 
             file_is_image: bool = file.lower().endswith(image_extensions) 
 
-            if file_is_text and not Path(download_path + f"/{file_base_name}").exists():
-                shutil.move(file, download_path)
+            if file_is_text: 
+                if not Path(download_path).joinpath(file_base_name).exists():
+                    shutil.move(file, download_path)
+
                 paths_of_downloaded_files.append(
                     str(Path(download_path + f"/{file_base_name}"))
                 )
 
-            elif file_is_image and not Path(author_image_dir.joinpath(f"{file_base_name}")).exists():
-                shutil.move(file, author_image_dir)
+            elif file_is_image: 
+                if not Path(author_image_dir.joinpath(f"{file_base_name}")).exists():
+                    shutil.move(file, author_image_dir)
+
                 paths_of_downloaded_files.append(
-                    str(author_image_dir.joinpath(f"/{file_base_name}"))
+                    str(author_image_dir.joinpath(f"{file_base_name}"))
                 )
         
+        breakpoint()
         self.log_downloaded_files(author_name=author_name, paths_of_downloaded_files=paths_of_downloaded_files)
         self.remove_book_directories(directories=directories)
 
@@ -139,21 +130,14 @@ class Batch:
     def log_downloaded_files(self, author_name: str, paths_of_downloaded_files: list[str]) -> None:
         author_path: Path = get_author_dir(author_name=author_name)
         log_path: Path = author_path.joinpath("downloaded_files.json")
+        breakpoint()
+
+        if Path(log_path).exists():
+            breakpoint()
+            os.remove(log_path)
 
         with open(log_path, mode="w") as file:
             json.dump(paths_of_downloaded_files, file)
-
-    def find_downloaded_files(self, author_name: str) -> list[str]: 
-        author_path: Path = get_author_dir(author_name=author_name)
-        log_path: Path = author_path.joinpath("downloaded_files.json")
-        
-        if not Path(log_path).exists():
-            paths: list[str] = []
-        else:
-            with open(log_path, mode="r", encoding="utf-8") as file:
-                paths: list[str] = json.load(file)
-            
-        return paths
 
 
 class Author:
@@ -167,31 +151,63 @@ class Author:
         self.books: list[Book] | None = books
         self.batches: list[Batch] | None = batches 
 
-    def download_individually(self) -> None:
+    def download_individually(self) -> list[str]:
         assert self.books != None
         self.make_paths()
 
+        book_paths: list[str] = []
         for book in self.books:
             file_path = book.get_save_path(author_name=self.name)
             book.download(file_path=str(file_path))
+            book_paths.append(str(file_path))
 
-    def download_batch(self) -> None:
+        return book_paths
+
+    def must_torrent(self, torrent: Batch, paths_to_individual_downloads: list[str] | None = None) -> bool:
+
+        file_path = torrent.get_destination_path(author_name=self.name)
+        contents = glob(str(file_path) + "/**/*", recursive=True) 
+        files_only = [object for object in contents if os.path.isfile(object)]
+
+        author_path: Path = get_author_dir(author_name=self.name)
+        log_path: Path = author_path.joinpath("downloaded_files.json")
+
+        if not Path(log_path).exists():
+            return True
+        else:
+            with open(log_path, mode="r", encoding="utf-8") as file:
+                logged_paths: list[str] = json.load(file)
+            
+            num_individual_downloads = 0 if paths_to_individual_downloads == None else len(paths_to_individual_downloads)
+
+            if (len(files_only) == len(logged_paths) + num_individual_downloads) and len(logged_paths) != 0:
+                logger.success(f"All files associated with {self.name} are available")
+                return False
+            else:
+                logger.warning(f"Some of {self.name}'s files are missing.")
+                return True
+
+    def leech(self, torrent: Batch):
+        file_path = torrent.get_destination_path(author_name=self.name)
+        torrent.download(file_path=str(file_path))
+        torrent.extract_files(download_path=str(file_path), author_name=self.name)
+
+    def download_batch(self, paths_to_individual_downloads: list[str] | None = None) -> None:
         assert self.batches != None
         self.make_paths()
         
         for torrent in self.batches:
-            file_path = torrent.get_save_path(author_name=self.name)
-            torrent.download(file_path=str(file_path), author_name=self.name)
-            torrent.extract_files(download_path=str(file_path), author_name=self.name)
+            if self.must_torrent(torrent=torrent, paths_to_individual_downloads=paths_to_individual_downloads):
+                self.leech(torrent=torrent)
 
     def download_books(self) -> None:
 
         if (self.books != None) and (self.batches != None):
-            self.download_individually()
-            self.download_batch()
+            paths_to_downloads: list[str] = self.download_individually()
+            self.download_batch(paths_to_individual_downloads=paths_to_downloads)
 
         elif self.books != None:
-            self.download_individually()
+            _ = self.download_individually()
 
         elif self.batches != None:
             self.download_batch()
