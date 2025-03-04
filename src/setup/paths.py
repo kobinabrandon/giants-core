@@ -8,7 +8,7 @@ IMAGES_DIR = PARENT_DIR.joinpath("images")
 CHROMA_DIR = PARENT_DIR.joinpath("./chroma")
 
 DATA_DIR = PARENT_DIR.joinpath("data")
-AUTHORS_FILE_DIR = DATA_DIR.joinpath("authors.json") 
+AUTHORS_FILE_DIR = DATA_DIR.joinpath("archive.json") 
 # BOOK_IMAGES_DIR = IMAGES_DIR.joinpath("book_images")
 
 

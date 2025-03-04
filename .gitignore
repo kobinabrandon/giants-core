@@ -1,7 +1,6 @@
 # Files
 .env
-sp_model.model 
-sp_model.vocab
+**archive.json
 .python-version
 **downloaded_files.json
 **downloaded_images.json
@@ -9,14 +8,10 @@ sp_model.vocab
 # # Directories 
 /data
 /images
-**/__pycache__
-
-
 **/chroma/
 **/models/
-# **/__pycache__/
-#
-
+**/__pycache__
+**/__pycache__/
 
 # /data/authors.json
 **authors.py

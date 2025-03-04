@@ -1,6 +1,9 @@
 books:
 	poetry run python src/authors.py
 
+archive:
+	poetry run python src/data_preparation/archive.py
+
 chat:
 	poetry run python src/graph/graph.py 
 
