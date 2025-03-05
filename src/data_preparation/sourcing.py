@@ -9,7 +9,30 @@ from pathlib import Path
 from loguru import logger
 
 from torrentp import TorrentDownloader
+from src.data_preparation.scraper import scrape_page
 from src.setup.paths import CHROMA_DIR, IMAGES_DIR, get_author_dir, make_fundamental_paths
+
+
+def get_destination_path(author_name: str) -> Path:
+    author_path: Path = get_author_dir(author_name=author_name) 
+    return Path.joinpath(author_path, "raw")
+
+def get_file_path(file_name: str, destination_path: Path) -> Path:
+    return Path.joinpath(destination_path, f"{file_name}.pdf")
+
+
+class ViaScraper:
+    def __init__(self, title: str, url: str) -> None:
+        self.title: str = title
+        self.file_name: str = f"{self.title}.txt"
+        self.url: str = url
+
+    def download(self, author_name: str) -> None:
+        logger.info(f"Attempting to scrape {self.title}")
+        text: str = scrape_page(url=self.url)
+        destination_path: Path = get_destination_path(author_name=author_name)
+        file_path: Path = get_file_path(file_name=self.file_name, destination_path=destination_path)
+        _ = Path(file_path).write_text(text)
 
 
 class ViaHTTP:
@@ -33,11 +56,7 @@ class ViaHTTP:
         self.file_name: str = title.lower().replace(" ", "_") 
         make_fundamental_paths()
     
-    def get_save_path(self, author_name: str) -> Path:
-        author_path: Path = get_author_dir(author_name=author_name) 
-        raw_data_path = Path.joinpath(author_path, "raw")
-        return Path.joinpath(raw_data_path, f"{self.file_name}.pdf") 
-
+    
     def download(self, file_path: str) -> None:
         
         assert self.url != None
@@ -63,11 +82,6 @@ class ViaTorrent:
         torrent = TorrentDownloader(file_path=self.magnet, save_path=file_path)
         asyncio.run(torrent.start_download())
        
-    @staticmethod
-    def get_destination_path(author_name: str) -> Path:
-        author_path: Path = get_author_dir(author_name=author_name) 
-        return Path.joinpath(author_path, "raw")
-
     def extract_files(self, download_path: str, author_name: str) -> None:
 
         contents: list[str] = glob(download_path + "/**/*", recursive=True) 
@@ -151,11 +165,43 @@ class Author:
         self, 
         name: str, 
         books_via_http: list[ViaHTTP] | None = None, 
-        books_via_torrent: list[ViaTorrent] | None = None
+        books_via_torrent: list[ViaTorrent] | None = None,
+        books_via_scraper: list[ViaScraper] | None = None
     ) -> None:
         self.name: str = name
         self.books_via_http: list[ViaHTTP] | None = books_via_http 
         self.books_via_torrent: list[ViaTorrent] | None = books_via_torrent 
+        self.books_via_scraper: list[ViaScraper] | None = books_via_scraper 
+
+    def download_books(self) -> None:
+
+        match (self.books_via_http != None, self.books_via_torrent != None, self.books_via_scraper != None):
+
+            case (True, True, True):
+                self.download_via_http()
+                self.download_via_scraper()
+                self.download_via_torrents()
+
+            case (True, False, False): 
+                self.download_via_http()
+            case (False, True, False):
+                self.download_via_torrents()
+            case(False, False, True):
+                self.download_via_scraper()
+
+            case(False, True, True):
+                self.download_via_torrents()
+                self.download_via_scraper()
+            case(True, False, True):
+                self.download_via_http()
+                self.download_via_scraper()
+            case (True, True, False): 
+                self.download_via_http()
+                self.download_via_torrents()
+
+            case (False, False, False):
+                raise Exception(f"Across download methods, no information on any books have been provided for {self.name}") 
+
 
     def download_via_http(self) -> None: 
         assert self.books_via_http != None
@@ -163,14 +209,29 @@ class Author:
 
         book_paths: list[str] = []
         for book in self.books_via_http:
-            file_path = book.get_save_path(author_name=self.name)
+            destination_path = get_destination_path(author_name=self.name)
+            file_path = get_file_path(file_name=book.file_name, destination_path=destination_path) 
             book.download(file_path=str(file_path))
             book_paths.append(str(file_path))
 
-    def must_torrent(self, torrent: ViaTorrent) -> bool:
+    def download_via_torrents(self) -> None:
+        assert self.books_via_torrent != None
+        self.make_paths()
+        
+        for book in self.books_via_torrent:
+            if self.must_torrent():
+                self.leech(book=book)
 
-        file_path = torrent.get_destination_path(author_name=self.name)
-        contents = glob(str(file_path) + "/**/*", recursive=True) 
+    def download_via_scraper(self) -> None:
+        assert self.books_via_scraper != None
+        self.make_paths()
+
+        for book in self.books_via_scraper:
+            book.download(author_name=self.name)
+
+    def must_torrent(self) -> bool:
+        destination_path: Path = get_destination_path(author_name=self.name)
+        contents = glob(str(destination_path) + "/**/*", recursive=True) 
         files_only = [object for object in contents if os.path.isfile(object)]
 
         author_path: Path = get_author_dir(author_name=self.name)
@@ -189,30 +250,11 @@ class Author:
                 logger.warning(f"Some of {self.name}'s files are missing.")
                 return True
 
-    def leech(self, torrent: ViaTorrent):
-        file_path = torrent.get_destination_path(author_name=self.name)
-        torrent.download(file_path=str(file_path))
-        torrent.extract_files(download_path=str(file_path), author_name=self.name)
+    def leech(self, book: ViaTorrent):
+        file_path = get_destination_path(author_name=self.name)
+        book.download(file_path=str(file_path))
+        book.extract_files(download_path=str(file_path), author_name=self.name)
 
-    def download_via_torrents(self) -> None:
-        assert self.books_via_torrent != None
-        self.make_paths()
-        
-        for torrent in self.books_via_torrent:
-            if self.must_torrent(torrent=torrent):
-                self.leech(torrent=torrent)
-
-    def download_books(self) -> None:
-
-        if (self.books_via_http != None) and (self.books_via_torrent != None):
-            self.download_via_http()
-            self.download_via_torrents()
-
-        elif self.books_via_http != None:
-            _ = self.download_via_http()
-
-        elif self.books_via_torrent != None:
-            self.download_via_torrents()
 
     def make_paths(self):
 
