@@ -12,15 +12,13 @@ from torrentp import TorrentDownloader
 from src.setup.paths import CHROMA_DIR, IMAGES_DIR, get_author_dir, make_fundamental_paths
 
 
-class Book:
+class ViaHTTP:
     def __init__(
         self, 
         title: str, 
         url: str | None, 
         format: str = "pdf",
-        torrent: bool = False,
         needs_ocr: bool = False, 
-        magnet: str | None = None,
         start_page: int | None = None, 
         end_page: int | None = None
     ) -> None:
@@ -30,8 +28,6 @@ class Book:
         self.url: str | None = url 
         self.author: str | None = None
         self.needs_ocr: bool = needs_ocr
-        self.magnet: str | None = magnet 
-        self.torrent: bool | None = torrent
         self.start_page: int | None = start_page
         self.end_page: int | None = end_page
         self.file_name: str = title.lower().replace(" ", "_") 
@@ -40,31 +36,26 @@ class Book:
     def get_save_path(self, author_name: str) -> Path:
         author_path: Path = get_author_dir(author_name=author_name) 
         raw_data_path = Path.joinpath(author_path, "raw")
-        return Path.joinpath(raw_data_path/ f"{self.file_name}.pdf") 
+        return Path.joinpath(raw_data_path, f"{self.file_name}.pdf") 
 
     def download(self, file_path: str) -> None:
         
-        if not self.torrent and self.url != None:
-            if not Path(file_path).exists():
-                logger.warning(f'Unable to find "{self.title}" on disk -> Downloading...')
-                try:
-                    response = requests.get(url=self.url)
+        assert self.url != None
+        if not Path(file_path).exists():
+            logger.warning(f'Unable to find "{self.title}" on disk -> Downloading...')
+            try:
+                response = requests.get(url=self.url)
+                if response.status_code == 200:
+                    with open(file_path, mode="wb") as file:
+                        _ = file.write(response.content)
 
-                    if response.status_code == 200:
-                        with open(file_path, mode="wb") as file:
-                            _ = file.write(response.content)
+                    logger.success(f'Downloaded "{self.title}"')
+               
+            except Exception as error:
+                logger.error(f"Unable to download {self.title}.")
+          
 
-                        logger.success(f'Downloaded "{self.title}"')
-                   
-                except Exception as error:
-                    logger.error(f"Unable to download {self.title}.")
-        else:
-            torrent = TorrentDownloader(file_path=self.magnet, save_path=file_path)
-            asyncio.run(torrent.start_download())
-            logger.success(f'Downloaded "{self.title}"')
-           
-
-class Batch:
+class ViaTorrent:
     def __init__(self, magnet: str) -> None:
         self.magnet: str = magnet 
 
@@ -85,9 +76,9 @@ class Batch:
         text_extensions: tuple[str, str, str, str, str] = ("txt", "pdf", "epub", "mobi", "azw3")
         image_extensions: tuple[str, str] = ("jpg", "png")
 
-        author_image_dir: Path = IMAGES_DIR.joinpath(author_name)
         paths_of_downloaded_files: list[str] = []
         paths_of_downloaded_images: list[str] = []
+        author_image_dir: Path = IMAGES_DIR.joinpath(author_name)
 
         for file in tqdm(
             iterable=files,
@@ -132,10 +123,10 @@ class Batch:
                 shutil.rmtree(directory)
 
     def log_downloaded_files(
-            self, 
-            author_name: str, 
-            paths_of_downloaded_files: list[str],
-            paths_of_downloaded_images: list[str]
+        self, 
+        author_name: str, 
+        paths_of_downloaded_files: list[str],
+        paths_of_downloaded_images: list[str]
     ) -> None:
 
         author_path: Path = get_author_dir(author_name=author_name)
@@ -159,24 +150,24 @@ class Author:
     def __init__(
         self, 
         name: str, 
-        books: list[Book] | None = None, 
-        batches: list[Batch] | None = None
+        books_via_http: list[ViaHTTP] | None = None, 
+        books_via_torrent: list[ViaTorrent] | None = None
     ) -> None:
         self.name: str = name
-        self.books: list[Book] | None = books
-        self.batches: list[Batch] | None = batches 
+        self.books_via_http: list[ViaHTTP] | None = books_via_http 
+        self.books_via_torrent: list[ViaTorrent] | None = books_via_torrent 
 
-    def download_individually(self) -> None: 
-        assert self.books != None
+    def download_via_http(self) -> None: 
+        assert self.books_via_http != None
         self.make_paths()
 
         book_paths: list[str] = []
-        for book in self.books:
+        for book in self.books_via_http:
             file_path = book.get_save_path(author_name=self.name)
             book.download(file_path=str(file_path))
             book_paths.append(str(file_path))
 
-    def must_torrent(self, torrent: Batch) -> bool:
+    def must_torrent(self, torrent: ViaTorrent) -> bool:
 
         file_path = torrent.get_destination_path(author_name=self.name)
         contents = glob(str(file_path) + "/**/*", recursive=True) 
@@ -198,34 +189,35 @@ class Author:
                 logger.warning(f"Some of {self.name}'s files are missing.")
                 return True
 
-    def leech(self, torrent: Batch):
+    def leech(self, torrent: ViaTorrent):
         file_path = torrent.get_destination_path(author_name=self.name)
         torrent.download(file_path=str(file_path))
         torrent.extract_files(download_path=str(file_path), author_name=self.name)
 
-    def download_batch(self) -> None:
-        assert self.batches != None
+    def download_via_torrents(self) -> None:
+        assert self.books_via_torrent != None
         self.make_paths()
         
-        for torrent in self.batches:
+        for torrent in self.books_via_torrent:
             if self.must_torrent(torrent=torrent):
                 self.leech(torrent=torrent)
 
     def download_books(self) -> None:
 
-        if (self.books != None) and (self.batches != None):
-            self.download_individually()
-            self.download_batch()
+        if (self.books_via_http != None) and (self.books_via_torrent != None):
+            self.download_via_http()
+            self.download_via_torrents()
 
-        elif self.books != None:
-            _ = self.download_individually()
+        elif self.books_via_http != None:
+            _ = self.download_via_http()
 
-        elif self.batches != None:
-            self.download_batch()
+        elif self.books_via_torrent != None:
+            self.download_via_torrents()
 
     def make_paths(self):
 
         AUTHOR_DIR: Path = get_author_dir(author_name=self.name) 
+
         paths_to_create: list[Path] = [
             AUTHOR_DIR,
             IMAGES_DIR.joinpath(self.name),

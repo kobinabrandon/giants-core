@@ -1,5 +1,6 @@
 # Files
 .env
+magnets.env
 **archive.json
 .python-version
 **downloaded_files.json
