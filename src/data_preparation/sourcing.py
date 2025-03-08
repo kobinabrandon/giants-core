@@ -17,15 +17,16 @@ def get_destination_path(author_name: str) -> Path:
     author_path: Path = get_author_dir(author_name=author_name) 
     return Path.joinpath(author_path, "raw")
 
+
 def get_file_path(file_name: str, destination_path: Path) -> Path:
     return Path.joinpath(destination_path, f"{file_name}.pdf")
 
 
 class ViaScraper:
     def __init__(self, title: str, url: str) -> None:
+        self.url: str = url
         self.title: str = title
         self.file_name: str = f"{self.title}.txt"
-        self.url: str = url
 
     def download(self, author_name: str) -> None:
         logger.info(f"Attempting to scrape {self.title}")
@@ -58,7 +59,6 @@ class ViaHTTP:
     
     
     def download(self, file_path: str) -> None:
-        
         assert self.url != None
         if not Path(file_path).exists():
             logger.warning(f'Unable to find "{self.title}" on disk -> Downloading...')
@@ -71,7 +71,7 @@ class ViaHTTP:
                     logger.success(f'Downloaded "{self.title}"')
                
             except Exception as error:
-                logger.error(f"Unable to download {self.title}.")
+                logger.error(f"Unable to download {self.title}. Error: {error}")
           
 
 class ViaTorrent:

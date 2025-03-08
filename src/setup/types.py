@@ -1,5 +1,8 @@
 from typing import TypeAlias
 
-BatchArchive: TypeAlias = list[dict[str, str]]
-BookArchive: TypeAlias = dict[str, list[dict[str, str | bool | int | None ] | BatchArchive]] 
+# Data Preparation 
+ScrapedArchive: TypeAlias = dict[str, list[dict[str, str]]]
+HTTPArchive: TypeAlias = dict[str, list[dict[str, str | bool | int | None]]]
+TorrentArchive: TypeAlias = list[dict[str, str | bool | int | None ] | HTTPArchive] 
+AuthorArchive: TypeAlias = tuple[HTTPArchive, TorrentArchive, ScrapedArchive] | tuple[HTTPArchive, TorrentArchive] | tuple[HTTPArchive, ScrapedArchive] | HTTPArchive | ScrapedArchive | TorrentArchive | None 
 
