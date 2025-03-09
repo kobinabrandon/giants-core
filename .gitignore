@@ -1,6 +1,6 @@
 # Files
 .env
-magnets.env
+**candidates.md
 **archive.json
 .python-version
 **downloaded_files.json

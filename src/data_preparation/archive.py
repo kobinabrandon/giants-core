@@ -91,13 +91,13 @@ def make_final_archive(authors: list[Author]):
         books_from_scraper: list[ViaScraper] | None = author.books_via_scraper
 
         archiver = AuthorArchiver(author=author)
-        author_archives = archiver.construct_archive(
+        author_archive: AuthorArchive = archiver.construct_archive(
             books_from_http=books_from_http, 
             books_from_torrent=books_from_torrent, 
             books_from_scraper=books_from_scraper
         ) 
 
-        final_archive.append(author_archives)
+        final_archive.append(author_archive)
 
     with open(AUTHORS_FILE_DIR, mode="w") as file:
         json.dump(final_archive, file)

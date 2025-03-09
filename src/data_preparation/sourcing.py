@@ -23,13 +23,19 @@ def get_file_path(file_name: str, destination_path: Path) -> Path:
 
 
 class ViaScraper:
-    def __init__(self, title: str, url: str) -> None:
+    def __init__(
+            self, 
+            title: str, 
+            url: str, 
+            is_interview: bool = False
+    ) -> None:
         self.url: str = url
         self.title: str = title
+        self.is_interview: bool = is_interview
         self.file_name: str = f"{self.title}.txt"
 
     def download(self, author_name: str) -> None:
-        logger.info(f"Attempting to scrape {self.title}")
+        logger.warning(f"Attempting to scrape {self.title}")
         text: str = scrape_page(url=self.url)
         destination_path: Path = get_destination_path(author_name=author_name)
         file_path: Path = get_file_path(file_name=self.file_name, destination_path=destination_path)
@@ -56,7 +62,6 @@ class ViaHTTP:
         self.end_page: int | None = end_page
         self.file_name: str = title.lower().replace(" ", "_") 
         make_fundamental_paths()
-    
     
     def download(self, file_path: str) -> None:
         assert self.url != None
@@ -202,7 +207,6 @@ class Author:
             case (False, False, False):
                 raise Exception(f"Across download methods, no information on any books have been provided for {self.name}") 
 
-
     def download_via_http(self) -> None: 
         assert self.books_via_http != None
         self.make_paths()
@@ -254,7 +258,6 @@ class Author:
         file_path = get_destination_path(author_name=self.name)
         book.download(file_path=str(file_path))
         book.extract_files(download_path=str(file_path), author_name=self.name)
-
 
     def make_paths(self):
 
