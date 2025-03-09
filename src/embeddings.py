@@ -1,7 +1,6 @@
 """
 Contains code for embedding chunks of text into selected vector databases.
 """
-import time 
 from pathlib import Path
 from loguru import logger 
 from argparse import ArgumentParser 

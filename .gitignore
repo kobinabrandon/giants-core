@@ -1,21 +1,20 @@
 # Files
 .env
-sp_model.model 
-sp_model.vocab
+**candidates.md
+**archive.json
 .python-version
+**downloaded_files.json
+**downloaded_images.json
 
-# Directories 
-**/data/book_stats/
-**/data/chunk_details/
-**/data/cleaned_text/
-**/data/embeddings/
-**/data/non_core_sections/
-**/data/page_details/
-**/data/raw/
-
+# # Directories 
+/data
+/images
 **/chroma/
 **/models/
+**/__pycache__
 **/__pycache__/
 
-**/chroma_db/
+# /data/authors.json
+**authors.py
+**backup.py
 
