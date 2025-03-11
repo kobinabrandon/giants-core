@@ -10,7 +10,7 @@ from loguru import logger
 
 from torrentp import TorrentDownloader
 from src.data_preparation.scraper import scrape_page
-from src.setup.paths import CHROMA_DIR, IMAGES_DIR, get_author_dir, make_fundamental_paths
+from src.setup.paths import CHROMA_DIR, OCR_IMAGES, IMAGES_IN_DOWNLOADS, get_author_dir, make_fundamental_paths
 
 
 def get_destination_path(author_name: str) -> Path:
@@ -18,16 +18,16 @@ def get_destination_path(author_name: str) -> Path:
     return Path.joinpath(author_path, "raw")
 
 
-def get_file_path(file_name: str, destination_path: Path) -> Path:
-    return Path.joinpath(destination_path, f"{file_name}.pdf")
+def get_file_path(file_name: str, destination_path: Path, is_pdf: bool = True) -> Path:
+    return destination_path.joinpath(f"{file_name}{".pdf" if is_pdf else ""}")
 
 
 class ViaScraper:
     def __init__(
-            self, 
-            title: str, 
-            url: str, 
-            is_interview: bool = False
+        self, 
+        title: str, 
+        url: str, 
+        is_interview: bool = False
     ) -> None:
         self.url: str = url
         self.title: str = title
@@ -35,11 +35,19 @@ class ViaScraper:
         self.file_name: str = f"{self.title}.txt"
 
     def download(self, author_name: str) -> None:
-        logger.warning(f"Attempting to scrape {self.title}")
-        text: str = scrape_page(url=self.url)
+
         destination_path: Path = get_destination_path(author_name=author_name)
-        file_path: Path = get_file_path(file_name=self.file_name, destination_path=destination_path)
-        _ = Path(file_path).write_text(text)
+            
+        file_path: Path = get_file_path(
+            file_name=self.file_name, 
+            destination_path=destination_path, 
+            is_pdf=False
+        )
+
+        if not Path(file_path).exists():
+            logger.warning(f'Attempting to scrape "{self.title}"')
+            text: str = scrape_page(url=self.url)
+            _ = Path(file_path).write_text(text)
 
 
 class ViaHTTP:
@@ -56,7 +64,6 @@ class ViaHTTP:
         self.title: str = title
         self.format: str = format
         self.url: str | None = url 
-        self.author: str | None = None
         self.needs_ocr: bool = needs_ocr
         self.start_page: int | None = start_page
         self.end_page: int | None = end_page
@@ -66,7 +73,7 @@ class ViaHTTP:
     def download(self, file_path: str) -> None:
         assert self.url != None
         if not Path(file_path).exists():
-            logger.warning(f'Unable to find "{self.title}" on disk -> Downloading...')
+            logger.warning(f'Downloading "{self.title}"...')
             try:
                 response = requests.get(url=self.url)
                 if response.status_code == 200:
@@ -97,7 +104,7 @@ class ViaTorrent:
 
         paths_of_downloaded_files: list[str] = []
         paths_of_downloaded_images: list[str] = []
-        author_image_dir: Path = IMAGES_DIR.joinpath(author_name)
+        author_image_dir: Path = IMAGES_IN_DOWNLOADS.joinpath(author_name)
 
         for file in tqdm(
             iterable=files,
@@ -149,7 +156,7 @@ class ViaTorrent:
     ) -> None:
 
         author_path: Path = get_author_dir(author_name=author_name)
-        author_image_dir: Path = IMAGES_DIR.joinpath(author_name)
+        author_image_dir: Path = IMAGES_IN_DOWNLOADS.joinpath(author_name)
 
         object_types_and_paths: dict[Path, list[str]] = {
             author_path.joinpath("downloaded_files.json"): paths_of_downloaded_files,
@@ -265,7 +272,8 @@ class Author:
 
         paths_to_create: list[Path] = [
             AUTHOR_DIR,
-            IMAGES_DIR.joinpath(self.name),
+            OCR_IMAGES.joinpath(self.name),
+            IMAGES_IN_DOWNLOADS.joinpath(self.name),
             Path.joinpath(AUTHOR_DIR, "raw"), 
             Path.joinpath(CHROMA_DIR, self.name), 
         ] 

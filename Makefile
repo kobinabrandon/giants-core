@@ -4,6 +4,9 @@ books:
 archive:
 	poetry run python src/data_preparation/archive.py
 
+ocr:
+	poetry run python src/data_preparation/ocr.py
+
 # chat:
 # 	poetry run python src/graph/graph.py 
 #

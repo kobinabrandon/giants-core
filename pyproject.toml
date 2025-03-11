@@ -26,6 +26,7 @@ requests = "^2.32.3"
 torrentp = "^0.2.3"
 tqdm = "^4.67.1"
 beautifulsoup4 = "^4.13.3"
+pytesseract = "^0.3.13"
 
 [build-system]
 requires = ["poetry-core"]
