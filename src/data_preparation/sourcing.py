@@ -3,23 +3,19 @@ import json
 import asyncio
 import shutil
 import requests
-from tqdm import tqdm
 from glob import glob
 from pathlib import Path
-from loguru import logger
 
+from tqdm import tqdm
+from loguru import logger
 from torrentp import TorrentDownloader
 from src.data_preparation.scraper import scrape_page
-from src.setup.paths import CHROMA_DIR, OCR_IMAGES, IMAGES_IN_DOWNLOADS, get_author_dir, make_fundamental_paths
+from src.setup.paths import CHROMA_DIR, DATA_DIR, OCR_IMAGES, IMAGES_IN_DOWNLOADS, make_fundamental_paths
 
 
-def get_destination_path(author_name: str) -> Path:
-    author_path: Path = get_author_dir(author_name=author_name) 
-    return Path.joinpath(author_path, "raw")
-
-
-def get_file_path(file_name: str, destination_path: Path, is_pdf: bool = True) -> Path:
-    return destination_path.joinpath(f"{file_name}{".pdf" if is_pdf else ""}")
+def find_raw_data_for_author(author_name: str) -> Path:
+    from src.authors import prepare_sources
+    return [author.path_to_raw_data for author in prepare_sources() if author_name == author.name][0]
 
 
 class ViaScraper:
@@ -36,14 +32,9 @@ class ViaScraper:
 
     def download(self, author_name: str) -> None:
 
-        destination_path: Path = get_destination_path(author_name=author_name)
+        destination_path: Path = find_raw_data_for_author(author_name=author_name)
+        file_path: Path = destination_path.joinpath(f"{self.file_name}")
             
-        file_path: Path = get_file_path(
-            file_name=self.file_name, 
-            destination_path=destination_path, 
-            is_pdf=False
-        )
-
         if not Path(file_path).exists():
             logger.warning(f'Attempting to scrape "{self.title}"')
             text: str = scrape_page(url=self.url)
@@ -155,7 +146,7 @@ class ViaTorrent:
         paths_of_downloaded_images: list[str]
     ) -> None:
 
-        author_path: Path = get_author_dir(author_name=author_name)
+        author_path: Path = find_raw_data_for_author(author_name=author_name).parent
         author_image_dir: Path = IMAGES_IN_DOWNLOADS.joinpath(author_name)
 
         object_types_and_paths: dict[Path, list[str]] = {
@@ -181,6 +172,8 @@ class Author:
         books_via_scraper: list[ViaScraper] | None = None
     ) -> None:
         self.name: str = name
+        self.path_to_data: Path = DATA_DIR.joinpath(name)
+        self.path_to_raw_data : Path = self.path_to_data.joinpath("raw")
         self.books_via_http: list[ViaHTTP] | None = books_via_http 
         self.books_via_torrent: list[ViaTorrent] | None = books_via_torrent 
         self.books_via_scraper: list[ViaScraper] | None = books_via_scraper 
@@ -220,8 +213,8 @@ class Author:
 
         book_paths: list[str] = []
         for book in self.books_via_http:
-            destination_path = get_destination_path(author_name=self.name)
-            file_path = get_file_path(file_name=book.file_name, destination_path=destination_path) 
+
+            file_path: Path = self.path_to_raw_data.joinpath(f"{book.file_name}.pdf")
             book.download(file_path=str(file_path))
             book_paths.append(str(file_path))
 
@@ -241,12 +234,9 @@ class Author:
             book.download(author_name=self.name)
 
     def must_torrent(self) -> bool:
-        destination_path: Path = get_destination_path(author_name=self.name)
-        contents = glob(str(destination_path) + "/**/*", recursive=True) 
+        contents = glob(str(self.path_to_raw_data) + "/**/*", recursive=True) 
         files_only = [object for object in contents if os.path.isfile(object)]
-
-        author_path: Path = get_author_dir(author_name=self.name)
-        log_path: Path = author_path.joinpath("downloaded_files.json")
+        log_path: Path = self.path_to_data.joinpath("downloaded_files.json")
 
         if not Path(log_path).exists():
             return True
@@ -262,20 +252,17 @@ class Author:
                 return True
 
     def leech(self, book: ViaTorrent):
-        file_path = get_destination_path(author_name=self.name)
-        book.download(file_path=str(file_path))
-        book.extract_files(download_path=str(file_path), author_name=self.name)
+        book.download(file_path=str(self.path_to_raw_data))
+        book.extract_files(download_path=str(self.path_to_raw_data), author_name=self.name)
 
     def make_paths(self):
 
-        AUTHOR_DIR: Path = get_author_dir(author_name=self.name) 
-
         paths_to_create: list[Path] = [
-            AUTHOR_DIR,
+            self.path_to_data,
+            self.path_to_raw_data,
             OCR_IMAGES.joinpath(self.name),
-            IMAGES_IN_DOWNLOADS.joinpath(self.name),
-            Path.joinpath(AUTHOR_DIR, "raw"), 
-            Path.joinpath(CHROMA_DIR, self.name), 
+            CHROMA_DIR.joinpath(self.name), 
+            IMAGES_IN_DOWNLOADS.joinpath(self.name)
         ] 
 
         for path in paths_to_create:

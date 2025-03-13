@@ -1,7 +1,8 @@
-import json
+import json 
 from loguru import logger
+
 from src.authors import prepare_sources
-from src.setup.paths import AUTHORS_FILE_DIR
+from src.setup.paths import ARCHIVE_DIR 
 from src.data_preparation.sourcing import ViaHTTP, ViaTorrent, ViaScraper, Author
 from src.setup.types import HTTPArchive, TorrentArchive, ScrapedArchive, AuthorArchive 
 
@@ -99,7 +100,7 @@ def make_final_archive(authors: list[Author]):
 
         final_archive.append(author_archive)
 
-    with open(AUTHORS_FILE_DIR, mode="w") as file:
+    with open(ARCHIVE_DIR, mode="w") as file:
         json.dump(final_archive, file)
         
     logger.success("Archived sources") 
