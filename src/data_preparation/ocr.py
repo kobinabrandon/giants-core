@@ -20,11 +20,15 @@ class OCRModule:
         self.keep_images: bool = keep_images
         self.image_format: str = image_format
         self.output_format: str = output_format
-
-        make_fundamental_paths()
-        assert self.output_format in ["txt", "pdf"], "Texts that have undergone OCR can only be output as .text and PDF files" 
         self.path_to_ocr_images: Path = OCR_IMAGES.joinpath(author.name) 
         self.path_to_text_after_ocr: Path = PDFS_AFTER_OCR.joinpath(author.name) if output_format == "pdf" else TXT_AFTER_OCR.joinpath(author.name)
+
+        self.__setup__()
+        assert self.output_format in ["txt", "pdf"], "Texts that have undergone OCR can only be output as .text and PDF files" 
+
+    def __setup__(self):
+        make_fundamental_paths()
+        self.create_ocr_paths_for_author()
 
     def create_ocr_paths_for_author(self):
         for path in [self.path_to_ocr_images, self.path_to_text_after_ocr]:
@@ -32,13 +36,16 @@ class OCRModule:
                 os.mkdir(path)
 
     def get_path_to_images_from_book(self, book: ViaHTTP) -> Path :
-        return self.path_to_ocr_images.joinpath(book.file_name)
+        path_to_ocr_images_of_book: Path = self.path_to_ocr_images.joinpath(book.file_name)
+        if not path_to_ocr_images_of_book.exists():
+            os.mkdir(path_to_ocr_images_of_book)
 
-    def extract_images(self) -> list[Image] | None:
+        return path_to_ocr_images_of_book 
 
-        self.create_ocr_paths_for_author()
+    def extract_text_from_images(self) -> list[Image] | None:
         if self.author.books_via_http != None:  # At the moment, the only books that are confirmed to need OCR are among those I got through HTTP 
             for book in self.author.books_via_http:
+
                 if book.needs_ocr:
                     logger.warning(f'"{book.title}" by {self.author.name} requires OCR')
                     path_to_ocr_images_of_book: Path = self.get_path_to_images_from_book(book=book) 
@@ -48,11 +55,7 @@ class OCRModule:
                         os.mkdir(path_to_ocr_images_of_book)
 
                     logger.info("Taking an image of each page")
-                    return pdf2image.convert_from_path(pdf_path=book_file_path)
-
-    def extract_text_from_images(self, images_from_books: list[Image]) -> None:
-            if self.author.books_via_http != None:  
-                for book in self.author.books_via_http:
+                    images_from_books: list[Image] = pdf2image.convert_from_path(pdf_path=book_file_path)
 
                     merger = PdfWriter()
                     full_text = ""
@@ -61,11 +64,10 @@ class OCRModule:
                         iterable=enumerate(images_from_books),
                         desc="Extracting text from each page..."
                     ):
-                        path_to_ocr_images_of_book: Path = self.get_path_to_images_from_book(book=book)
                         page_image_path: Path = path_to_ocr_images_of_book.joinpath(f"Page {i+1}.jpg")
                         if not page_image_path.exists():
                             if (book.start_page != None) and (book.end_page != None):
-                                if (i <= book.start_page) or (i >= book.end_page):
+                                if (i < book.start_page) or (i > book.end_page):
                                    continue 
 
                             if self.keep_images:
@@ -99,10 +101,6 @@ class OCRModule:
 
 if __name__ == "__main__":
     for author in prepare_sources():
-        module = OCRModule(author=author, keep_images=False)
-        images_from_books: list[Image] | None = module.extract_images() 
-        if images_from_books != None:
-            module.extract_text_from_images(images_from_books=images_from_books)
-        else:
-            logger.success(f"{author.name} has no books that require the use of OCR")
+        module = OCRModule(author=author, keep_images=True)
+        _ = module.extract_text_from_images() 
 
