@@ -1,6 +1,10 @@
 books:
 	poetry run python src/authors.py
 
+select:
+	poetry run python src/data_preparation/text_selection.py
+
+
 archive:
 	poetry run python src/data_preparation/archive.py
 

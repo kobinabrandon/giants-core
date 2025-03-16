@@ -9,6 +9,7 @@ from pathlib import Path
 from tqdm import tqdm
 from loguru import logger
 from torrentp import TorrentDownloader
+
 from src.data_preparation.scraper import scrape_page
 from src.setup.paths import CHROMA_DIR, DATA_DIR, OCR_IMAGES, IMAGES_IN_DOWNLOADS, make_fundamental_paths
 
@@ -234,8 +235,8 @@ class Author:
             book.download(author_name=self.name)
 
     def must_torrent(self) -> bool:
-        contents = glob(str(self.path_to_raw_data) + "/**/*", recursive=True) 
-        files_only = [object for object in contents if os.path.isfile(object)]
+        contents: list[str] = glob(str(self.path_to_raw_data) + "/**/*", recursive=True) 
+        files_only: list[str] = [object for object in contents if os.path.isfile(object)]
         log_path: Path = self.path_to_data.joinpath("downloaded_files.json")
 
         if not Path(log_path).exists():
