@@ -170,7 +170,8 @@ class Author:
         name: str, 
         books_via_http: list[ViaHTTP] | None = None, 
         books_via_torrent: list[ViaTorrent] | None = None,
-        books_via_scraper: list[ViaScraper] | None = None
+        books_via_scraper: list[ViaScraper] | None = None,
+        biographers_and_compilers: list[str] | None = None
     ) -> None:
         self.name: str = name
         self.path_to_data: Path = DATA_DIR.joinpath(name)
@@ -178,6 +179,7 @@ class Author:
         self.books_via_http: list[ViaHTTP] | None = books_via_http 
         self.books_via_torrent: list[ViaTorrent] | None = books_via_torrent 
         self.books_via_scraper: list[ViaScraper] | None = books_via_scraper 
+        self.biographers_and_compilers: list[str] | None = biographers_and_compilers
 
     def download_books(self) -> None:
 

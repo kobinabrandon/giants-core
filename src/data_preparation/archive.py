@@ -34,7 +34,8 @@ class AuthorArchiver:
         torrent_archive: TorrentArchive = [] 
         for batch in books:
             torrent_archive.append({
-                f"magnet #{books.index(batch)}": batch.magnet
+                f"magnet #{books.index(batch)}": batch.magnet,
+                "biographers_and_compilers": self.author.biographers_and_compilers
             })
 
         return torrent_archive
@@ -44,11 +45,7 @@ class AuthorArchiver:
         archive: ScrapedArchive = {} 
         for book in books:
             archive[self.author.name] =  []
-            book_details: dict[str, str] = {
-                "title": book.title,
-                "url": book.url,
-            }
-
+            book_details: dict[str, str] = {"title": book.title, "url": book.url}
             archive[self.author.name].append(book_details)
 
         return archive

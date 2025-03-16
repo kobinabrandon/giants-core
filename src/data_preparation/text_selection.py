@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+from re import search, escape, Match
+
 from loguru import logger 
 
 from src.authors import prepare_sources
@@ -11,9 +13,10 @@ class VersionManager:
         self.author: Author = author
         self.format_to_keep: str = format_to_keep
         self.extensions: list[str] = [".pdf", ".epub", ".mobi"]
+        self.files: list[str] = os.listdir(self.author.path_to_raw_data) 
 
         self.file_names: list[str] = [
-            item for item in os.listdir(self.author.path_to_raw_data) if os.path.isfile(
+            item for item in self.files if os.path.isfile(
                 Path.joinpath(self.author.path_to_raw_data, item)
             )
         ]        
@@ -63,7 +66,7 @@ class VersionManager:
         file_path = self.__get_file_path__(truncated_name=truncated_name, format=format) 
         os.remove(file_path) 
 
-    def delete_by_preference(self, names_without_extensions: list[str]) -> None:
+    def delete_version_by_format(self, names_without_extensions: list[str]) -> None:
 
         deprioritised_extensions: list[str] = [extension for extension in self.extensions if extension != self.format_to_keep] 
         for truncated_name in names_without_extensions:
@@ -87,11 +90,19 @@ class VersionManager:
             else:
                 raise Exception(f"Somehow there is no version of {truncated_name} in any format")
 
-            # pattern = rf"/\raw\/([^\/]+)\.{escape(extension)}$" 
-            # match: Match[str] | None = search(pattern, path)
-            # if match:
-            #     pass
-            #
+            
+    def remove_biographical_works(self):
+        
+        if self.author.biographers_and_compilers != None:
+            for file in self.files:
+                for name in self.author.biographers_and_compilers:
+                    if name in file:
+                        breakpoint()
+                        # self.__get_file_path__(truncated_name=self.get_file_name_without_extension(file_name=name))
+                        # os.remove()
+
+
+
 
 
 if __name__ == "__main__":
@@ -99,7 +110,7 @@ if __name__ == "__main__":
         selector = VersionManager(author=author)
         if author.books_via_torrent != None:
             logger.warning(f"Text selection required for the works of {author.name}")
-            selector.eliminate_duplicates()
+            selector.remove_biographical_works()
         else:
             logger.success(f"No text selection required for the works of {author.name}")
 

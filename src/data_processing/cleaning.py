@@ -4,10 +4,10 @@ Contains code that cleans the raw text in the documents of a given book
 from langchain_core.documents import Document
 from langchain_community.document_loaders import PyPDFLoader
 
-from src.data_preparation.sourcing import Book
+from src.data_preparation.sourcing import Author 
 
 
-def clean_books(books: list[Book]) -> list[Document]:
+def clean_books(author: Author) -> list[Document]:
     """
     Loads each book using Langchain's PDF loader, resulting in a list of instances of Langchain's Document
     class. It then cleans the pages of each book by performing the following cleaning tasks. 
