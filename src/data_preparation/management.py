@@ -80,7 +80,7 @@ class VersionManager:
             elif not epub_exists and mobi_exists:
                 logger.success(f"Only the mobi version of {truncated_name} exists.")
             else:
-                raise Exception(f"Somehow there is no version of {truncated_name} in any format")
+                logger.warning(f"Somehow there is no version of {truncated_name} in any format")
 
     def remove_complete_works(self) -> None:
         texts_that_are_complete_works: list[str] = [file for file in self.file_names if "complete works" in file] 
@@ -96,7 +96,6 @@ class VersionManager:
         for name in names_and_extensions.keys(): 
             truncated_name: str = self.get_file_name_without_extension(name)
             count: int = names_without_extensions.count(truncated_name)
-            breakpoint()
             if count == 1:
                 logger.success(f'There is no duplicate of "{truncated_name}"')
             else:

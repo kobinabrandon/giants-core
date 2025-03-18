@@ -2,14 +2,19 @@ books:
 	poetry run python src/authors.py
 
 selection:
-	poetry run python src/data_preparation/text_management.py
-
+	poetry run python src/data_preparation/management.py
 
 archive:
 	poetry run python src/data_preparation/archive.py
 
 ocr:
 	poetry run python src/data_preparation/ocr.py
+
+read:
+	poetry run python src/data_processing/reading.py
+
+
+
 
 # chat:
 # 	poetry run python src/graph/graph.py 
