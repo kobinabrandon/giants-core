@@ -10,12 +10,12 @@ from tqdm import tqdm
 from loguru import logger
 from torrentp import TorrentDownloader
 
+from src.authors import prepare_sources
 from src.data_preparation.scraper import scrape_page
 from src.setup.paths import CHROMA_DIR, DATA_DIR, OCR_IMAGES, IMAGES_IN_DOWNLOADS, make_fundamental_paths
 
 
 def find_raw_data_for_author(author_name: str) -> Path:
-    from src.authors import prepare_sources
     return [author.path_to_raw_data for author in prepare_sources() if author_name == author.name][0]
 
 
@@ -61,7 +61,14 @@ class ViaHTTP:
         self.end_page: int | None = end_page
         self.file_name: str = title.lower().replace(" ", "_") 
         make_fundamental_paths()
-    
+         
+    def get_place_of_extension(self) -> int:
+        return 5 if (".epub" in self.file_name or ".mobi" in self.file_name) else 4
+
+    def get_file_extension(self) -> str:
+        extension_place: int = self.get_place_of_extension()
+        return self.file_name[-extension_place:] 
+
     def download(self, file_path: str) -> None:
         assert self.url != None
         if not Path(file_path).exists():
@@ -76,7 +83,7 @@ class ViaHTTP:
                
             except Exception as error:
                 logger.error(f"Unable to download {self.title}. Error: {error}")
-          
+    
 
 class ViaTorrent:
     def __init__(self, magnet: str) -> None:
@@ -180,6 +187,13 @@ class Author:
         self.books_via_torrent: list[ViaTorrent] | None = books_via_torrent 
         self.books_via_scraper: list[ViaScraper] | None = books_via_scraper 
         self.biographers_and_compilers: list[str] | None = biographers_and_compilers
+
+        self.file_paths: list[Path] = [
+            self.path_to_raw_data.joinpath(file) for file in os.listdir(self.path_to_raw_data) if 
+                self.path_to_raw_data.joinpath(file).is_file()  
+                # Might seem unecessary if you assume that the directory will only ever contain files, but
+                # I'm not willing to assume that.
+        ]
 
     def download_books(self) -> None:
 

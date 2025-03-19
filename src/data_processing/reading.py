@@ -5,11 +5,10 @@ from pathlib import Path
 from ebooklib import epub
 from bs4 import BeautifulSoup
 
-from src.authors import prepare_sources
 from src.data_preparation.sourcing import Author
 
 
-class Parser:
+class TextParser:
     def __init__(self, author: Author, extension: str) -> None:
         self.author: Author = author
         self.extension: str = extension 
@@ -27,28 +26,17 @@ class Parser:
 
     def parse(self, path: str) -> str:
 
+        raw_text = ""
         if self.extension == ".mobi":
             _ , metadata = mobi.extract(infile=path) 
             with open(metadata, mode="r", encoding="utf-8") as file:
-                return file.read()
-
+                raw_text += file.read() + "\n\n"
         else: 
-            raw_text = ""
             book: epub.EpubBook = epub.read_epub(name=path)
             for item in book.get_items():
                 if item.get_type() == ebooklib.ITEM_DOCUMENT:
                     soup = BeautifulSoup(item.get_content(), "html.parser")
-                    raw_text += soup.get_text() + "\n"
+                    raw_text += soup.get_text() + "\n\n"
 
-            return raw_text
+        return raw_text
 
-
-# if __name__ == "__main__":
-#     for author in prepare_sources():
-#         parser = Parser(author=author, extension=".epub")
-#         if parser.has_files():
-#             file = parser.get_files()[0]
-#             breakpoint()
-#             text = parser.parse(path=str(file))
-#             print(text)
-        # file_path: Path = destination_path.joinpath(f"{self.file_name}")
