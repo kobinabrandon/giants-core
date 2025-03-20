@@ -10,12 +10,12 @@ from tqdm import tqdm
 from loguru import logger
 from torrentp import TorrentDownloader
 
-from src.authors import prepare_sources
 from src.data_preparation.scraper import scrape_page
 from src.setup.paths import CHROMA_DIR, DATA_DIR, OCR_IMAGES, IMAGES_IN_DOWNLOADS, make_fundamental_paths
 
 
 def find_raw_data_for_author(author_name: str) -> Path:
+    from src.authors import prepare_sources
     return [author.path_to_raw_data for author in prepare_sources() if author_name == author.name][0]
 
 

@@ -1,7 +1,7 @@
 books:
 	poetry run python src/authors.py
 
-selection:
+manage:
 	poetry run python src/data_preparation/management.py
 
 archive:

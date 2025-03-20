@@ -17,10 +17,13 @@ def get_file_name_without_extension(file_name: str) -> str:
     return file_name[:len(file_name)-extension_place]
 
 def get_place_of_extension(file_name: str) -> int:
-    if file_name.endswith(".epub") or file_name.endswith(".mobi"):
+    is_epub_or_mobi: bool = file_name.endswith(".epub") or file_name.endswith(".mobi")
+    is_pdf_or_txt: bool = file_name.endswith(".pdf") or file_name.endswith(".txt") 
+
+    if is_epub_or_mobi:
         return 5
     else: 
-        assert file_name.endswith(".pdf"), f"{file_name} is neither a .mobi, .epub, nor a .pdf file. Unable to return the location of the extension"
+        assert is_pdf_or_txt, f"{file_name} is neither a .mobi, .epub, .txt nor .pdf file. Unable to return the location of the extension"
         return 4
 
 

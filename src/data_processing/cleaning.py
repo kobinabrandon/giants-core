@@ -32,25 +32,12 @@ class Cleaner:
             logger.warning(f"{self.author.name} has no texts that contain have specified start and end pages")
 
     def execute(self) -> list[Document] | None:
-        """
-        Loads each book using Langchain's PDF loader, resulting in a list of instances of Langchain's Document
-        class. It then cleans the pages of each book by performing the following cleaning tasks. 
-            - removing pages that aren't core to the text
-            - removing new line markers
-            - removing specified artifacts
-            - rewriting words that were not properly scanned by the reader.
 
-        Args:
-            books: a list of Books to be read and processed.
-
-        Returns:
-            list[Document]: list of Document objects containing the cleaned contents of each page from each book.
-        """
         author_documents: list[Document] = []
         for file_path in self.author.file_paths:
             file_name: str = self.get_file_name(file_path=file_path)
             extension = get_file_extension(file_name=file_name)
-            searcher = CorePageSearch(author=self.author, file_name=file_name)
+            searcher = CorePageSearch(author=self.author)
 
             try:
                 core_pages: bool | range | None = searcher.look_up(file_name=file_name, target="values") 
@@ -133,8 +120,7 @@ class Cleaner:
 
         return documents 
 
-    @staticmethod
-    def fix_known_spelling_issues(text: str) -> str:
+    def fix_known_spelling_issues(self, text: str) -> str:
         """
         Replace a target string with a preferred one.
 
@@ -144,20 +130,22 @@ class Cleaner:
         Returns:
            str: the string following all the changes. 
         """
-        target_strings_and_replacements = {
-            r"\xad": "", 
-            "19 66": "1966",
-            "I 966": "1966",
-            "Cl.A": "C.I.A",
-            r"\'coup\'": "coup",
-            "fkunkeys": "flunkeys" 
-        }
+        if "kwame nkrumah" == self.author.name.lower(): # Because Nkrumah is currently the only person for whom I have identified such issues. 
+            target_strings_and_replacements = {
+                r"\xad": "", 
+                "19 66": "1966",
+                "I 966": "1966",
+                "Cl.A": "C.I.A",
+                r"\'coup\'": "coup",
+                "fkunkeys": "flunkeys" 
+            }
 
-        for target_string in target_strings_and_replacements.keys():
-            replacement = target_strings_and_replacements[target_string]
-            text = text.replace(target_string, replacement)
+            for target_string in target_strings_and_replacements.keys():
+                replacement = target_strings_and_replacements[target_string]
+                text = text.replace(target_string, replacement)
 
         return text 
+
 
     @staticmethod
     def remove_new_line_markers(documents: list[Document]) -> list[Document]:
