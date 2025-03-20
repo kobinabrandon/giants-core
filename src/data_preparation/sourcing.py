@@ -10,7 +10,7 @@ from tqdm import tqdm
 from loguru import logger
 from torrentp import TorrentDownloader
 
-from src.data_preparation.scraper import scrape_page
+from src.data_preparation.scraping import Scraper 
 from src.setup.paths import CHROMA_DIR, DATA_DIR, OCR_IMAGES, IMAGES_IN_DOWNLOADS, make_fundamental_paths
 
 
@@ -24,10 +24,14 @@ class ViaScraper:
         self, 
         title: str, 
         url: str, 
-        is_interview: bool = False
+        is_interview: bool = False,
+        partial: bool = False,
+        marker: str | None = None
     ) -> None:
         self.url: str = url
         self.title: str = title
+        self.partial: bool = partial
+        self.marker: str | None = marker
         self.is_interview: bool = is_interview
         self.file_name: str = f"{self.title}.txt"
 
@@ -35,11 +39,16 @@ class ViaScraper:
 
         destination_path: Path = find_raw_data_for_author(author_name=author_name)
         file_path: Path = destination_path.joinpath(f"{self.file_name}")
+        scraper = Scraper(url=self.url, partial=self.partial, marker=self.marker)
             
         if not Path(file_path).exists():
             logger.warning(f'Attempting to scrape "{self.title}"')
-            text: str = scrape_page(url=self.url)
-            _ = Path(file_path).write_text(text)
+            text: str | None = scraper.execute() 
+
+            if isinstance(text, str):
+                _ = Path(file_path).write_text(text)
+            else:
+                raise Exception(f"Scraping of {self.title} failed")
 
 
 class ViaHTTP:
@@ -180,6 +189,7 @@ class Author:
         books_via_scraper: list[ViaScraper] | None = None,
         biographers_and_compilers: list[str] | None = None
     ) -> None:
+
         self.name: str = name
         self.path_to_data: Path = DATA_DIR.joinpath(name)
         self.path_to_raw_data : Path = self.path_to_data.joinpath("raw")
@@ -187,6 +197,8 @@ class Author:
         self.books_via_torrent: list[ViaTorrent] | None = books_via_torrent 
         self.books_via_scraper: list[ViaScraper] | None = books_via_scraper 
         self.biographers_and_compilers: list[str] | None = biographers_and_compilers
+
+        self.make_paths()
 
         self.file_paths: list[Path] = [
             self.path_to_raw_data.joinpath(file) for file in os.listdir(self.path_to_raw_data) if 
@@ -226,7 +238,6 @@ class Author:
 
     def download_via_http(self) -> None: 
         assert self.books_via_http != None
-        self.make_paths()
 
         book_paths: list[str] = []
         for book in self.books_via_http:
@@ -237,7 +248,6 @@ class Author:
 
     def download_via_torrents(self) -> None:
         assert self.books_via_torrent != None
-        self.make_paths()
         
         for book in self.books_via_torrent:
             if self.must_torrent():
@@ -245,7 +255,6 @@ class Author:
 
     def download_via_scraper(self) -> None:
         assert self.books_via_scraper != None
-        self.make_paths()
 
         for book in self.books_via_scraper:
             book.download(author_name=self.name)

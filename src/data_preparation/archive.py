@@ -100,7 +100,7 @@ def make_final_archive(authors: list[Author]):
     with open(ARCHIVE_DIR, mode="w") as file:
         json.dump(final_archive, file)
         
-    logger.success("Archived sources") 
+    logger.success("Sources Archived") 
 
 
 if __name__ == "__main__":
