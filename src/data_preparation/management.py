@@ -16,9 +16,7 @@ def get_file_name_without_extension(file_name: str) -> str:
     extension_place: int = get_place_of_extension(file_name=file_name)
     return file_name[:len(file_name)-extension_place]
 
-
 def get_place_of_extension(file_name: str) -> int:
-    
     if file_name.endswith(".epub") or file_name.endswith(".mobi"):
         return 5
     else: 

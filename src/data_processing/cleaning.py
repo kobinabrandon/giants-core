@@ -1,14 +1,15 @@
 """
 Contains code that cleans the raw text in the documents of a given book
 """
+from tqdm import tqdm
 from pathlib import Path
 from loguru import logger
 from langchain_core.documents import Document
 from langchain_community.document_loaders import PyPDFLoader
 
+from src.data_preparation.sourcing import Author
 from src.data_processing.reading import TextParser 
-from src.data_preparation.sourcing import Author, ViaHTTP 
-from src.data_preparation.management import VersionManager, get_file_name_without_extension 
+from src.data_preparation.management import VersionManager, get_file_extension
 
 
 class Cleaner:
@@ -22,55 +23,62 @@ class Cleaner:
         # This assert statement is temporary, and will be replaced by the code that eliminates duplicates (once it works the way I want) 
         return matching_file_name[0]
 
-    def logs_core_pages(self, file_name: str) -> bool | None:
-
+    def get_core_pages(self, file_name: str) -> range | None:
         if self.author.books_via_http:
             for book in self.author.books_via_http:
-                found_file: bool = (file_name in book.file_name)
-                start_page_specified: bool = book.start_page != None  
-                end_page_specified: bool = book.end_page != None  
-
-                match (found_file, start_page_specified, end_page_specified):
-                    case (True, True, True):
-                        return True
-                    case (True, False, False):
-                        logger.warning(f'"{file_name}" isn\'t equipped with any information on the core pages')
-                        return False
-                    case (True, True, False) | (True, False, True):
-                        raise Exception(f'"{file_name}" somehow has partial core page specifications.')
-                    case (False, True, True) | (False, False, False) | (False, False, True) | (False, True, False):
-                        logger.warning(f'"{file_name}" not found yet')
+                if (file_name in book.file_name) and (book.start_page and book.end_page):
+                    return range(book.start_page, book.end_page)
         else:
-            logger.warning(f'There are no books by "{self.author.name}" that provide any information on the core pages.')
-            return False
+            logger.warning(f"{self.author.name} has no texts that contain have specified start and end pages")
 
-    # def execute(self) -> list[Document]:
-    #     """
-    #     Loads each book using Langchain's PDF loader, resulting in a list of instances of Langchain's Document
-    #     class. It then cleans the pages of each book by performing the following cleaning tasks. 
-    #         - removing pages that aren't core to the text
-    #         - removing new line markers
-    #         - removing specified artifacts
-    #         - rewriting words that were not properly scanned by the reader.
-    #
-    #     Args:
-    #         books: a list of Books to be read and processed.
-    #
-    #     Returns:
-    #         list[Document]: list of Document objects containing the cleaned contents of each page from each book.
-    #     """
-    #     for file_path in self.author.file_paths:
-    #         extension_cases: tuple[bool, bool, bool] = str(file_path).endswith(".pdf"), str(file_path).endswith(".epub"), str(file_path).endswith(".mobi")
-    #         file_name = self.get_file_name(file_path=file_path)
-    #         text_logs_core_pages: bool | None = self.logs_core_pages(file_name=file_name)
-    #
-    #         match extension_cases: 
-    #             case (True, False, False):
-    #                 self.clean_pdf(file_path=file_path, )
-    #
-    #             self.clean_text(file_path)
+    def execute(self) -> list[Document] | None:
+        """
+        Loads each book using Langchain's PDF loader, resulting in a list of instances of Langchain's Document
+        class. It then cleans the pages of each book by performing the following cleaning tasks. 
+            - removing pages that aren't core to the text
+            - removing new line markers
+            - removing specified artifacts
+            - rewriting words that were not properly scanned by the reader.
 
-    
+        Args:
+            books: a list of Books to be read and processed.
+
+        Returns:
+            list[Document]: list of Document objects containing the cleaned contents of each page from each book.
+        """
+        author_documents: list[Document] = []
+        for file_path in self.author.file_paths:
+            file_name: str = self.get_file_name(file_path=file_path)
+            extension = get_file_extension(file_name=file_name)
+            searcher = CorePageSearch(author=self.author, file_name=file_name)
+
+            try:
+                core_pages: bool | range | None = searcher.look_up(file_name=file_name, target="values") 
+            except Exception as error:
+                raise(error)
+
+            if extension == ".pdf": 
+                assert isinstance(core_pages, range) or (core_pages == None)
+                documents = self.clean_pdf(file_path=file_path, core_pages=core_pages)
+                author_documents.extend(documents)
+                return author_documents
+
+            elif (extension == ".epub") or (extension == ".mobi"): 
+                documents = self.clean_epub_or_mobi(extension=extension)
+                author_documents.extend(documents)
+                return author_documents
+
+            elif (extension == ".txt"):
+                with open(file_path, mode="r") as txt_file:
+                    raw_text: str = txt_file.read()
+                    
+                documents = [Document(page_content=raw_text)] 
+                documents = self.perform_cleaning(documents)
+                author_documents.extend(documents)
+                return author_documents
+
+            else:
+                raise NotImplementedError(f"Cleaning halted at {file_path}. No cleaning process implemented for {extension} files")
 
     def clean_pdf(self, file_path: Path, core_pages: range | None) -> list[Document]:
 
@@ -80,30 +88,30 @@ class Cleaner:
         if core_pages:
             pages: list[Document] = self.remove_non_core_pages(documents=pages, core_pages=core_pages) 
 
-        documents_without_new_lines: list[Document] = self.remove_new_line_markers(documents=pages)
-        
-        for document in documents_without_new_lines:
-            if "the" in document.page_content:
-                document.page_content = self.fix_known_spelling_issues(text=document.page_content)
-        
-        return documents_without_new_lines
+        return self.perform_cleaning(documents=pages)
 
-    def clean_epub_or_mobi(self) -> list[Document]:
+    def clean_epub_or_mobi(self, extension: str) -> list[Document]:
 
         documents: list[Document] = []
-        for extension in [".epub", ".mobi"]:
-            parser = TextParser(author=self.author, extension=extension)
-            
-            if parser.has_files():
-                file: list[Path] = parser.get_files()
-                text: str = parser.parse(path=str(file))
-                document = Document(page_content=text)
-                documents.append(document)
-            else:
-                logger.warning(f"There are no {extension} files for {self.author}")
+        assert extension in [".epub", ".mobi"]
+        parser = TextParser(author=self.author, extension=extension)
+        
+        if parser.has_files():
+            file: list[Path] = parser.get_files()
+            text: str = parser.parse(path=str(file))
+            document = Document(page_content=text)
+            documents.append(document)
 
-        return documents
+        return self.perform_cleaning(documents=documents) 
 
+    def perform_cleaning(self, documents: list[Document]) -> list[Document]: 
+
+        documents_without_new_lines: list[Document] = self.remove_new_line_markers(documents=documents)
+        
+        for document in documents_without_new_lines:
+            document.page_content = self.fix_known_spelling_issues(text=document.page_content)
+
+        return documents_without_new_lines 
 
     @staticmethod
     def remove_non_core_pages(documents: list[Document], core_pages: range) -> list[Document]:
@@ -168,4 +176,42 @@ class Cleaner:
             document.page_content = raw_text.replace("\n", " ").strip()
 
         return documents
+
+
+class CorePageSearch:
+    def __init__(self, author: Author) -> None:
+        self.author: Author = author
+
+    def look_up(self, file_name: str, target: str) -> bool | range | None:
+
+        assert target in ["presence", "values"], f'The "target" argument is can only be "presence" or "values"'
+
+        if self.author.books_via_http != None:
+            for book in tqdm(
+                iterable=self.author.books_via_http,
+                desc=f"Looking for core page specifications for {file_name}"
+            ):
+                file_found: bool = (file_name in book.file_name)
+                start_page_specified: bool = book.start_page != None  
+                end_page_specified: bool = book.end_page != None  
+
+                match (file_found, start_page_specified, end_page_specified):
+                    case (True, True, True):
+                        return True if target == "presence" else range(book.start_page, book.end_page) 
+
+                    case (True, False, False):
+                        logger.warning(f'"{file_name}" isn\'t equipped with any information on the core pages')
+                        if target == "presence":
+                            return False 
+                        else:
+                            logger.error(f"We don't have any specified start and end pages for {book.file_name}")
+                            return None
+
+                    case (True, True, False) | (True, False, True):
+                        raise Exception(f'"{file_name}" somehow has partial core page specifications.')
+                    case (False, True, True) | (False, False, False) | (False, False, True) | (False, True, False):
+                        logger.warning(f'"{file_name}" not found yet')
+        else:
+            logger.warning(f'There are no books by "{self.author.name}" that provide any information on the core pages.')
+            return False if target == "presence" else None
 
