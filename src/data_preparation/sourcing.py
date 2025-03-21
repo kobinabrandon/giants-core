@@ -10,7 +10,7 @@ from tqdm import tqdm
 from loguru import logger
 from torrentp import TorrentDownloader
 
-from src.data_preparation.scraping import Scraper 
+from src.data_preparation.scraping import scrape 
 from src.setup.paths import CHROMA_DIR, DATA_DIR, OCR_IMAGES, IMAGES_IN_DOWNLOADS, make_fundamental_paths
 
 
@@ -25,25 +25,29 @@ class ViaScraper:
         title: str, 
         url: str, 
         is_interview: bool = False,
-        partial: bool = False,
-        marker: str | None = None
+        initial_marker: str | None = None,
+        terminal_marker: str | None = None
     ) -> None:
         self.url: str = url
         self.title: str = title
-        self.partial: bool = partial
-        self.marker: str | None = marker
         self.is_interview: bool = is_interview
         self.file_name: str = f"{self.title}.txt"
+        self.initial_marker: str | None = initial_marker
+        self.terminal_marker: str | None = terminal_marker 
 
     def download(self, author_name: str) -> None:
 
         destination_path: Path = find_raw_data_for_author(author_name=author_name)
         file_path: Path = destination_path.joinpath(f"{self.file_name}")
-        scraper = Scraper(url=self.url, partial=self.partial, marker=self.marker)
-            
+        
         if not Path(file_path).exists():
             logger.warning(f'Attempting to scrape "{self.title}"')
-            text: str | None = scraper.execute() 
+            
+            text: str | None = scrape(
+                url=self.url, 
+                initial_marker=self.initial_marker,
+                terminal_marker=self.terminal_marker
+            ) 
 
             if isinstance(text, str):
                 _ = Path(file_path).write_text(text)
