@@ -1,6 +1,7 @@
 """
 Contains code for embedding chunks of text into selected vector databases.
 """
+import os
 from pathlib import Path
 from loguru import logger 
 from argparse import ArgumentParser 
@@ -9,42 +10,46 @@ from langchain_core.documents import Document
 from langchain_chroma.vectorstores import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 
-from src.setup.paths import set_paths
-from src.setup.config import embed_config, env_config
-from src.data_preparation.cleaning import clean_books
-from src.data_preparation.chunking import split_documents 
-from src.data_preparation.books import Book
+from src.setup.paths import CHROMA_DIR
+from src.setup.config import embed_config
+
+from src.authors import prepare_sources
+from src.data_processing.cleaning import Cleaner 
+from src.data_preparation.sourcing import Author
+from src.data_processing.chunking import split_documents 
+
     
-
 class ChromaAPI: 
-    def __init__(self) -> None: 
-        # self.books: list[Book] = 
-        self.embeddings_directory: Path = set_paths()["text_embeddings"] 
-        self.memory_directory: Path = set_paths()["chroma_memory"]
+    def __init__(self, author: Author) -> None: 
+        self.author: Author = author
+        self.embeddings_directory: Path = CHROMA_DIR.joinpath(author.name) 
 
-        self.main_store: Chroma = Chroma(
-            collection_name="nkrumah", 
+        self.author_vector_store: Chroma = Chroma(
+            collection_name=author.name.replace(" ", "_"),  # Chroma does not permit collection names to have whitespace in them 
             persist_directory=str(self.embeddings_directory),
             embedding_function=get_embedding_model()
         ) 
 
-    def embed_books(self, chunk: bool) -> list[str]:
+    def embed_books(self, chunk: bool) -> list[str] | None:
 
-        documents: list[Document] = clean_books(books=self.books)         
-
-        if chunk:
-            chunks = split_documents(documents=documents)
-            ids = self.main_store.add_documents(documents=chunks)
+        if len(os.listdir(self.embeddings_directory)) > 1:
+            logger.success(f"Embeddings have already been made for {self.author.name}'s texts")
         else:
-            ids = self.main_store.add_documents(documents=documents)
+            cleaner = Cleaner(author=self.author)
+            documents: list[Document] | None = cleaner.execute() 
+            
+            if documents == None:
+                raise Exception(f"Unable to retrieve cleaned text for {self.author.name}")
+            else:
+                logger.info(f"Creating vector embeddings of the texts by {self.author.name}")
+                if chunk:
+                    chunks: list[Document] = split_documents(documents=documents)
+                    ids = self.author_vector_store.add_documents(documents=chunks)
+                else:
+                    ids = self.author_vector_store.add_documents(documents=documents)
 
-        logger.success(f"Successfully embedded the {'chunks of' if chunk else ''} text and saved the results to ChromaDB.")
-        return ids
-
-    def embed_memory(self, text: str) -> list[str]:
-        ids: list[str] = self.store.add_texts([text]) 
-        logger.success(f"Successfully embedded the memory and saved it to ChromaDB.")
-        return ids
+                logger.success(f"Successfully embedded the {'chunks of' if chunk else ''} text using ChromaDB.")
+                return ids
 
 
 def get_embedding_model() -> HuggingFaceEmbeddings:
@@ -57,6 +62,8 @@ if __name__ == "__main__":
     _ = parser.add_argument("--chunk", action="store_true")
     args = parser.parse_args()
    
-    api = ChromaAPI()
-    ids = api.embed_books(chunk=args.chunk)
+    for author in prepare_sources():
+        author.download_books()
+        api = ChromaAPI(author=author)
+        _ = api.embed_books(chunk=args.chunk)
 

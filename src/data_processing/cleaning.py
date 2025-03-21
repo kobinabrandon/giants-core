@@ -33,14 +33,15 @@ class Cleaner:
 
     def execute(self) -> list[Document] | None:
 
+        logger.info(f"Cleaning the texts by {self.author.name}")
+
         author_documents: list[Document] = []
         for file_path in self.author.file_paths:
             file_name: str = self.get_file_name(file_path=file_path)
             extension = get_file_extension(file_name=file_name)
-            searcher = CorePageSearch(author=self.author)
 
             try:
-                core_pages: bool | range | None = searcher.look_up(file_name=file_name, target="values") 
+                core_pages: bool | range | None = look_up_core_pages(author=self.author, file_name=file_name, target="values") 
             except Exception as error:
                 raise(error)
 
@@ -48,12 +49,10 @@ class Cleaner:
                 assert isinstance(core_pages, range) or (core_pages == None)
                 documents = self.clean_pdf(file_path=file_path, core_pages=core_pages)
                 author_documents.extend(documents)
-                return author_documents
 
             elif (extension == ".epub") or (extension == ".mobi"): 
                 documents = self.clean_epub_or_mobi(extension=extension)
                 author_documents.extend(documents)
-                return author_documents
 
             elif (extension == ".txt"):
                 with open(file_path, mode="r") as txt_file:
@@ -62,10 +61,11 @@ class Cleaner:
                 documents = [Document(page_content=raw_text)] 
                 documents = self.perform_cleaning(documents)
                 author_documents.extend(documents)
-                return author_documents
 
             else:
                 raise NotImplementedError(f"Cleaning halted at {file_path}. No cleaning process implemented for {extension} files")
+
+        return author_documents
 
     def clean_pdf(self, file_path: Path, core_pages: range | None) -> list[Document]:
 
@@ -166,40 +166,33 @@ class Cleaner:
         return documents
 
 
-class CorePageSearch:
-    def __init__(self, author: Author) -> None:
-        self.author: Author = author
+def look_up_core_pages(author: Author, file_name: str, target: str) -> bool | range | None:
 
-    def look_up(self, file_name: str, target: str) -> bool | range | None:
+    assert target in ["presence", "values"], f'The "target" argument is can only be "presence" or "values"'
 
-        assert target in ["presence", "values"], f'The "target" argument is can only be "presence" or "values"'
+    if author.books_via_http != None:
+        for book in author.books_via_http:
+            file_found: bool = (file_name in book.file_name)
+            start_page_specified: bool = book.start_page != None  
+            end_page_specified: bool = book.end_page != None  
 
-        if self.author.books_via_http != None:
-            for book in tqdm(
-                iterable=self.author.books_via_http,
-                desc=f"Looking for core page specifications for {file_name}"
-            ):
-                file_found: bool = (file_name in book.file_name)
-                start_page_specified: bool = book.start_page != None  
-                end_page_specified: bool = book.end_page != None  
+            match (file_found, start_page_specified, end_page_specified):
+                case (True, True, True):
+                    return True if target == "presence" else range(book.start_page, book.end_page) 
 
-                match (file_found, start_page_specified, end_page_specified):
-                    case (True, True, True):
-                        return True if target == "presence" else range(book.start_page, book.end_page) 
+                case (True, False, False):
+                    logger.warning(f'"{file_name}" isn\'t equipped with any information on the core pages')
+                    if target == "presence":
+                        return False 
+                    else:
+                        logger.error(f"We don't have any specified start and end pages for {book.file_name}")
+                        return None
 
-                    case (True, False, False):
-                        logger.warning(f'"{file_name}" isn\'t equipped with any information on the core pages')
-                        if target == "presence":
-                            return False 
-                        else:
-                            logger.error(f"We don't have any specified start and end pages for {book.file_name}")
-                            return None
-
-                    case (True, True, False) | (True, False, True):
-                        raise Exception(f'"{file_name}" somehow has partial core page specifications.')
-                    case (False, True, True) | (False, False, False) | (False, False, True) | (False, True, False):
-                        logger.warning(f'"{file_name}" not found yet')
-        else:
-            logger.warning(f'There are no books by "{self.author.name}" that provide any information on the core pages.')
-            return False if target == "presence" else None
+                case (True, True, False) | (True, False, True):
+                    raise Exception(f'"{file_name}" somehow has partial core page specifications.')
+                case (False, True, True) | (False, False, False) | (False, False, True) | (False, True, False):
+                    continue
+    else:
+        logger.warning(f'There are no books by "{author.name}" that provide any information on the core pages.')
+        return False if target == "presence" else None
 

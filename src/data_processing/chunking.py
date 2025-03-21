@@ -47,7 +47,7 @@ def split_documents(documents: list[Document]) -> list[Document]:
 
        
     chunks: list[Document] = splitter.split_documents(documents=documents)
-    logger.success(f"Successfully split the combined text of our books into {len(chunks)} chunks")     
+    logger.success(f"Successfully split the combined text into {len(chunks)} chunks")     
     return chunks
 
 

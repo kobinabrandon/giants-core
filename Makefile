@@ -13,6 +13,11 @@ ocr:
 read:
 	poetry run python src/data_processing/reading.py
 
+embed-chunk:
+	poetry run python src/embeddings.py --chunk
+
+embed-no-chunk:
+	poetry run python src/embeddings.py 
 
 
 # chat:
@@ -20,11 +25,6 @@ read:
 #
 #
 # # Embeddings into ChromaDB
-# embed-chunk:
-# 	poetry run python src/embeddings.py --chunk
-#
-# embed-no-chunk:
-# 	poetry run python src/embeddings.py 
 #
 #
 # # Querying Chroma
