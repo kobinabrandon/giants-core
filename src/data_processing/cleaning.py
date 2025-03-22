@@ -6,20 +6,25 @@ from loguru import logger
 from langchain_core.documents import Document
 from langchain_community.document_loaders import PyPDFLoader
 
+from src.data_preparation.ocr import OCRModule
 from src.data_preparation.sourcing import Author
 from src.data_processing.reading import TextParser 
-from src.data_preparation.management import VersionManager, get_file_extension
+from src.data_preparation.utils import get_file_extension
+from src.data_preparation.management import VersionManager
 
 
 class Cleaner:
     def __init__(self, author: Author):
         self.author: Author = author
+        self.ocr_object: OCRModule = OCRModule(author=self.author)
+        self.ocr_object.extract_text_from_images()
 
     def get_file_name(self, file_path: Path) -> str:
         manager = VersionManager(author=self.author)
         matching_file_name: list[str] = [file_name for file_name in manager.file_names if file_name in str(file_path)]
-        assert len(matching_file_name) == 1, f"There is more than one file called {matching_file_name} in {self.author.path_to_raw_data}"
+
         # This assert statement is temporary, and will be replaced by the code that eliminates duplicates (once it works the way I want) 
+        assert len(matching_file_name) == 1, f"There is more than one file called {matching_file_name} in {self.author.path_to_raw_data}"
         return matching_file_name[0]
 
     def get_core_pages(self, file_name: str) -> range | None:
@@ -30,14 +35,35 @@ class Cleaner:
         else:
             logger.warning(f"{self.author.name} has no texts that contain have specified start and end pages")
 
-    def execute(self) -> list[Document] | None:
+    def get_path_to_text_after_ocr(self, file_name: str) -> Path:
+        file_extension: str = get_file_extension(file_name_or_path=file_name)
+        path_to_text_after_ocr: Path = self.ocr_object.path_to_text_after_ocr
+        return path_to_text_after_ocr.joinpath(file_name + file_extension)
 
+    def file_requires_ocr(self, file_name: str) -> bool:
+
+        names_of_files_requiring_ocr: list[str] = []
+        if self.author.books_via_http != None:
+            for book in self.author.books_via_http:
+                if book.needs_ocr:
+                    names_of_files_requiring_ocr.append(book.file_name)
+        else:
+            logger.warning(f"{self.author.name} has no texts that require OCR")
+
+        return True if file_name in names_of_files_requiring_ocr else False
+
+    def execute(self) -> list[Document] | None:
         logger.info(f"Cleaning the texts by {self.author.name}")
 
         author_documents: list[Document] = []
         for file_path in self.author.file_paths:
             file_name: str = self.get_file_name(file_path=file_path)
-            extension = get_file_extension(file_name=file_name)
+
+            if self.file_requires_ocr(file_name=file_name):
+                file_path: Path = self.get_path_to_text_after_ocr(file_name=file_name)  # We clean the version of the document that has been processed by OCR instead of the original 
+                extension = get_file_extension(file_name_or_path=str(file_path))
+            else:
+                extension = get_file_extension(file_name_or_path=file_name)
 
             try:
                 core_pages: bool | range | None = look_up_core_pages(author=self.author, file_name=file_name, target="values") 
@@ -171,7 +197,7 @@ def look_up_core_pages(author: Author, file_name: str, target: str) -> bool | ra
 
     if author.books_via_http != None:
         for book in author.books_via_http:
-            file_found: bool = (file_name in book.file_name)
+            file_found: bool = file_name in book.file_name
             start_page_specified: bool = book.start_page != None  
             end_page_specified: bool = book.end_page != None  
 

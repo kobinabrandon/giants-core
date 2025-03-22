@@ -11,24 +11,22 @@ from pytesseract import pytesseract
 
 from src.authors import prepare_sources
 from src.data_preparation.sourcing import Author, ViaHTTP
+from src.data_preparation.utils import get_file_extension
 from src.setup.paths import OCR_IMAGES, PDFS_AFTER_OCR, TXT_AFTER_OCR, make_fundamental_paths 
 
 
 class OCRModule:
-    def __init__(self, author: Author, keep_images: bool, image_format: str = "JPEG", output_format: str = "pdf") -> None:
+    def __init__(self, author: Author, keep_images: bool = True, image_format: str = "JPEG", output_format: str = ".pdf") -> None:
         self.author: Author = author 
         self.keep_images: bool = keep_images
         self.image_format: str = image_format
         self.output_format: str = output_format
         self.path_to_ocr_images: Path = OCR_IMAGES.joinpath(author.name) 
-        self.path_to_text_after_ocr: Path = PDFS_AFTER_OCR.joinpath(author.name) if output_format == "pdf" else TXT_AFTER_OCR.joinpath(author.name)
+        self.path_to_text_after_ocr: Path = PDFS_AFTER_OCR.joinpath(author.name) if output_format == ".pdf" else TXT_AFTER_OCR.joinpath(author.name)
 
-        self.__setup__()
-        assert self.output_format in ["txt", "pdf"], "Texts that have undergone OCR can only be output as .text and PDF files" 
-
-    def __setup__(self):
         make_fundamental_paths()
         self.create_ocr_paths_for_author()
+        assert self.output_format in [".txt", ".pdf"], "Texts that have undergone OCR can only be output as .text and PDF files" 
 
     def create_ocr_paths_for_author(self):
         for path in [self.path_to_ocr_images, self.path_to_text_after_ocr]:
@@ -42,11 +40,19 @@ class OCRModule:
 
         return path_to_ocr_images_of_book 
 
-    def extract_text_from_images(self) -> list[Image] | None:
+    def is_book_already_processed(self, book: ViaHTTP) -> bool:
+        if self.path_to_text_after_ocr.joinpath(f"{book.file_name}" + self.output_format).exists():
+            logger.success(f'"{book.title}" by {self.author.name} has already been processed.')
+            return True
+        else:
+            return False
+            
+
+    def extract_text_from_images(self) -> None:
         if self.author.books_via_http != None:  # At the moment, the only books that are confirmed to need OCR are among those I got through HTTP 
             for book in self.author.books_via_http:
 
-                if book.needs_ocr:
+                if book.needs_ocr and not self.is_book_already_processed(book=book):
                     logger.warning(f'"{book.title}" by {self.author.name} requires OCR')
                     path_to_ocr_images_of_book: Path = self.get_path_to_images_from_book(book=book) 
                     book_file_path: Path = self.author.path_to_raw_data.joinpath(f"{book.file_name}" + ".pdf")
@@ -57,8 +63,8 @@ class OCRModule:
                     logger.info("Taking an image of each page")
                     images_from_books: list[Image] = pdf2image.convert_from_path(pdf_path=book_file_path)
 
-                    merger = PdfWriter()
                     full_text = ""
+                    merger = PdfWriter()
 
                     for i, image in tqdm(
                         iterable=enumerate(images_from_books),
@@ -101,6 +107,6 @@ class OCRModule:
 
 if __name__ == "__main__":
     for author in prepare_sources():
-        module = OCRModule(author=author, keep_images=True)
-        _ = module.extract_text_from_images() 
+        module = OCRModule(author=author)
+        module.extract_text_from_images() 
 

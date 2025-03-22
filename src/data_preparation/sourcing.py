@@ -75,13 +75,6 @@ class ViaHTTP:
         self.file_name: str = title.lower().replace(" ", "_") 
         make_fundamental_paths()
          
-    def get_place_of_extension(self) -> int:
-        return 5 if (".epub" in self.file_name or ".mobi" in self.file_name) else 4
-
-    def get_file_extension(self) -> str:
-        extension_place: int = self.get_place_of_extension()
-        return self.file_name[-extension_place:] 
-
     def download(self, file_path: str) -> None:
         assert self.url != None
         if not Path(file_path).exists():

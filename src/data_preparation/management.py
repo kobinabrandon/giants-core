@@ -6,25 +6,7 @@ from loguru import logger
 
 from src.authors import prepare_sources
 from src.data_preparation.sourcing import Author
-
-
-def get_file_extension(file_name: str) -> str:
-    extension_place: int = get_place_of_extension(file_name=file_name)
-    return file_name[-extension_place:] 
-
-def get_file_name_without_extension(file_name: str) -> str:
-    extension_place: int = get_place_of_extension(file_name=file_name)
-    return file_name[:len(file_name)-extension_place]
-
-def get_place_of_extension(file_name: str) -> int:
-    is_epub_or_mobi: bool = file_name.endswith(".epub") or file_name.endswith(".mobi")
-    is_pdf_or_txt: bool = file_name.endswith(".pdf") or file_name.endswith(".txt") 
-
-    if is_epub_or_mobi:
-        return 5
-    else: 
-        assert is_pdf_or_txt, f"{file_name} is neither a .mobi, .epub, .txt nor .pdf file. Unable to return the location of the extension"
-        return 4
+from src.data_preparation.utils import get_file_extension, get_file_name_without_extension
 
 
 class VersionManager:
@@ -42,8 +24,8 @@ class VersionManager:
 
     def collect_file_names_and_extensions(self) -> dict[str, str]:
         file_names_and_extensions: dict[str, str] = {} 
-        for file in self.file_names:
-            file_names_and_extensions[file] = get_file_extension(file) 
+        for file_name in self.file_names:
+            file_names_and_extensions[file_name] = get_file_extension(file_name_or_path=file_name) 
 
         return file_names_and_extensions 
         
@@ -110,8 +92,8 @@ class VersionManager:
             logger.warning(f"Checking for/removing texts by the biographers of {self.author.name}")
             for file_name, biographer in itertools.product(self.file_names, biographers_and_compilers):
                 if biographer in file_name:
-                    truncated_name: str = get_file_name_without_extension(file_name=file_name)
-                    file_extension: str = get_file_extension(file_name=file_name)
+                    truncated_name: str = get_file_name_without_extension(file_name_or_path=file_name)
+                    file_extension: str = get_file_extension(file_name_or_path=file_name)
                     file_path: Path = self.__get_file_path__(truncated_name=truncated_name, format=file_extension)
                     os.remove(file_path)
         else:
