@@ -24,7 +24,7 @@ class ChromaAPI:
         self.author: Author = author
         self.embeddings_directory: Path = CHROMA_DIR.joinpath(author.name) 
 
-        self.author_vector_store: Chroma = Chroma(
+        self.vector_store: Chroma = Chroma(
             collection_name=author.name.replace(" ", "_"),  # Chroma does not permit collection names to have whitespace in them 
             persist_directory=str(self.embeddings_directory),
             embedding_function=get_embedding_model()
@@ -44,9 +44,9 @@ class ChromaAPI:
                 logger.info(f"Creating vector embeddings of the texts by {self.author.name}")
                 if chunk:
                     chunks: list[Document] = split_documents(documents=documents)
-                    ids = self.author_vector_store.add_documents(documents=chunks)
+                    ids = self.vector_store.add_documents(documents=chunks)
                 else:
-                    ids = self.author_vector_store.add_documents(documents=documents)
+                    ids = self.vector_store.add_documents(documents=documents)
 
                 logger.success(f"Successfully embedded the {'chunks of' if chunk else ''} text using ChromaDB.")
                 return ids

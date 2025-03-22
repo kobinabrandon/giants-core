@@ -1,26 +1,31 @@
-import torch
-from loguru import logger
 from argparse import ArgumentParser
 
+from loguru import logger
 from langchain_core.documents import Document
-from sentence_transformers import SentenceTransformer
 
-from src.setup.config import embed_config 
-from src.embeddings import ChromaAPI, PineconeAPI
+from src.embeddings import ChromaAPI
+from src.authors import prepare_sources
+from src.data_preparation.sourcing import Author
 
 
-def get_context(question: str, raw: bool, top_k: int = 3) -> str | list[Document]:
+def get_context(nickname: str, question: str, raw: bool, top_k: int = 5) -> str | list[Document]:
     """
     Query the VectorDB(Chroma for now) to perform a similarity search,  
 
     Args:
+        nickname: 
         question: the question being asked of the model. 
+        raw: 
+        top_k: 
 
     Returns:
        str: the text retrieved from the vector database based on a certain similarity metric 
     """
-    chroma = ChromaAPI()
-    query_results: list[Document] = chroma.main_store.similarity_search(query=question, k=top_k)
+    author: Author | None = get_author(nickname=nickname)
+
+    assert author != None
+    chroma = ChromaAPI(author=author)
+    query_results: list[Document] = chroma.vector_store.similarity_search(query=question, k=top_k)
 
     if not raw:
         return query_results
@@ -32,43 +37,26 @@ def get_context(question: str, raw: bool, top_k: int = 3) -> str | list[Document
         )
 
 
-def query_pinecone(question: str, multi_index: bool, book_file_name: str | None, top_k: int) -> list[dict[str, str]]:
+def get_author(nickname: str) -> Author | None:
+
+    matching_authors: list[Author] = [author for author in prepare_sources() if nickname in author.name.lower()]
+
+    if len(matching_authors) == 0:
+        raise Exception(f"The nickname {nickname} doesn't correspond to any existing author")
+    elif len(matching_authors) == 1:
+        logger.warning(f"Querying {matching_authors[0].name}'s vector database")
+        return matching_authors[0]
+    else:
+        raise Exception(f"The nickname {nickname} correponds to {len(matching_authors)} authors. Pick a better nickname!")
+
     
-    logger.info("Quering Pinecone...")
-    api = PineconeAPI(multi_index=multi_index)
-    index = api.get_index(book_file_name=book_file_name)
-
-    device = "gpu" if torch.cuda.is_available() else "cpu"
-    model = SentenceTransformer(embed_config.embedding_model_name, device=device)
-
-    query_vector = model.encode(question).tolist()
-    xc = index.query(vector=query_vector, top_k=top_k, include_metadata=True)
-    
-    return xc["matches"]
-
- 
+     
 if __name__ == "__main__":
     parser = ArgumentParser()
-
-    _ = parser.add_argument("--pinecone", action="store_true")
-    _ = parser.add_argument("--chroma", action="store_true")
-    _ = parser.add_argument("--multi_index", action="store_true")
-    _ = parser.add_argument("-o", "--book_file_name", nargs="?")
-    _ = parser.add_argument("--top_k", type=int)
+    _ = parser.add_argument("--nickname", type=str)
+    _ = parser.add_argument("--question", type=str)
 
     args = parser.parse_args()    
-    question = "Who were the coup plotters?"
-
-    if args.pinecone:
-        results = query_pinecone(
-                question=question, 
-                multi_index=args.multi_index, 
-                book_file_name=args.book_file_name,
-                top_k=args.top_k
-        )
-
-    else:
-        results = get_context(question=question, top_k=args.top_k, raw=True)
-
-    breakpoint()
+    results = get_context(nickname=args.nickname, question=args.question, raw=True)
+    print(results)
 

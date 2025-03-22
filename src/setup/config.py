@@ -41,7 +41,6 @@ class HuggingFaceConfig(BaseSettings):
         "readerlm-v2-fnd": "404 Error"
     }
 
-
     if env_file_present:
         url_of_preferred_llm_endpoint: str = "" #os.environ["URL_OF_ENDPOINT_FOR_PREFERRED_LLM"] 
 

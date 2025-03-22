@@ -1,7 +1,6 @@
 """
 Contains code that cleans the raw text in the documents of a given book
 """
-from tqdm import tqdm
 from pathlib import Path
 from loguru import logger
 from langchain_core.documents import Document
