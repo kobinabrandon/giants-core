@@ -4,14 +4,14 @@ from langgraph.graph import END, StateGraph, START, MessagesState
 from langgraph.checkpoint.memory import MemorySaver
 
 
-from src.generation.appendix import record_responses 
+# from src.generation.appendix import record_responses 
 from src.graph.nodes import tools, generate, query_or_response_node
 
 
-def build_graph(name_of_retrieval_node: str = "make_retrieval_node", name_of_entry_point: str = "query_or_response_node") -> CompiledStateGraph: 
+def build_graph(name_of_entry_point: str = "query_or_response_node") -> CompiledStateGraph: 
 
     builder: StateGraph = StateGraph(MessagesState)
-    builder.set_entry_point(key=name_of_entry_point)
+    _ = builder.set_entry_point(key=name_of_entry_point)
 
     for node in [query_or_response_node, tools, generate]:
         builder = builder.add_node(node)
@@ -24,7 +24,6 @@ def build_graph(name_of_retrieval_node: str = "make_retrieval_node", name_of_ent
 
 
 def add_edges(builder: StateGraph, name_of_tool_node: str = "tools", name_of_generator_node: str = "generate", name_of_entry_point: str = "query_or_response_node") -> StateGraph:
-
 
     builder = builder.add_edge(start_key=START, end_key=name_of_entry_point)
 
@@ -65,6 +64,6 @@ if __name__ == "__main__":
         "configurable": {"thread_id": "abc123"}
     }
 
-    for input in ["Hello", "Who were the coup plotters against Nkrumah?", "What were their motivations?"]:
+    for input in ["Hello", "What were the goals of the revolution?", "Were they achieved?"]: 
         stream(input=input, compiled_graph=compiled_graph, config=config)
 

@@ -1,8 +1,7 @@
 import os
-from typing import TypedDict
-
 from dotenv import find_dotenv, load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 env_file_present: bool = load_dotenv(find_dotenv()) 
 env_vars = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
@@ -24,38 +23,12 @@ class EmbedddingSettings:
     embedding_model_name: str = "thenlper/gte-large"
     
 
-class Tokens(BaseSettings):
+class GroqConfig(BaseSettings):
 
-    if env_file_present:
-        pinecone_api_key: str = "" #os.environ["PINECONE_API_KEY"]
-        hugging_face_token: str = os.environ["HUGGING_FACE_TOKEN"]
+    assert env_file_present
+    preferred_model: str = "llama-3.3-70b-versatile" 
+    api_key: str = os.environ["GROQ_API_KEY"]
 
-
-class HuggingFaceConfig(BaseSettings):
-    
-    preferred_model: str = "wayfarer-12b-gguf-hva"
-
-    # Rejected models
-    rejected_models_with_reasons: dict[str, str] = {
-        "llama-3-2-1b-mdj": "more expensive than wayfarer-12b-gguf-hva", 
-        "readerlm-v2-fnd": "404 Error"
-    }
-
-    if env_file_present:
-        url_of_preferred_llm_endpoint: str = "" #os.environ["URL_OF_ENDPOINT_FOR_PREFERRED_LLM"] 
-
-        endpoints_under_consideration: dict[str, str] = {                           
-            "wayfarer-12b-gguf-hva": url_of_preferred_llm_endpoint, # In order of preference 
-            "phi-4-gguf-dej": "" # os.environ["PHI_4_GGUF_ENDPOINT_URL"] 
-        }  
-
-   
-# class GroqConfig(BaseSettings):
-#
-#     assert env_file_present
-#     preferred_model: str = "llama-3.3-70b-versatile" 
-#     api_key: str = os.environ["GROQ_API_KEY"]
-#
 
 class FrontendConfig:
     bot_name: str = "Historian" 
@@ -71,11 +44,9 @@ class VideoConfig(BaseSettings):
     speech_after_overthrow: str = "https://www.youtube.com/watch?v=GDtMvpDrXcY" 
 
 
-hf_config = HuggingFaceConfig()
 chunk_config = ChunkingSettings()
 embed_config = EmbedddingSettings()
 frontend_config = FrontendConfig()
-# groq_config = GroqConfig()
+groq_config = GroqConfig()
 videos = VideoConfig()
-env_config = Tokens()
 

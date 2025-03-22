@@ -24,6 +24,7 @@ class ChromaAPI:
         self.author: Author = author
         self.embeddings_directory: Path = CHROMA_DIR.joinpath(author.name) 
 
+        # logger.info(f"Creating vector database for {author.name}")
         self.vector_store: Chroma = Chroma(
             collection_name=author.name.replace(" ", "_"),  # Chroma does not permit collection names to have whitespace in them 
             persist_directory=str(self.embeddings_directory),

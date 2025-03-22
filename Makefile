@@ -14,18 +14,19 @@ read:
 	poetry run python src/data_processing/reading.py
 
 embed-chunk:
-	poetry run python src/embeddings.py --chunk
+	poetry run python src/vector_store/embeddings.py --chunk
 
 embed-no-chunk:
-	poetry run python src/embeddings.py 
+	poetry run python src/vector_store/embeddings.py 
+
 
 # Querying Chroma
 query:
 	poetry run python src/retrieval.py --nickname fidel --question "What are the goals of imperialism?" 
 
 
-# chat:
-# 	poetry run python src/graph/graph.py 
+chat:
+	poetry run python src/graph/graph.py 
 
 # generate:
 # 	poetry run python src/generation/main.py --top_p 0 
