@@ -18,3 +18,6 @@
 # /data/authors.json
 **authors.py
 **backup.py
+
+# Virtual Environment
+/.venv/

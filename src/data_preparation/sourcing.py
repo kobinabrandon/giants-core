@@ -200,8 +200,7 @@ class Author:
         self.file_paths: list[Path] = [
             self.path_to_raw_data.joinpath(file) for file in os.listdir(self.path_to_raw_data) if 
                 self.path_to_raw_data.joinpath(file).is_file()  
-                # Might seem unecessary if you assume that the directory will only ever contain files, but
-                # I'm not willing to assume that.
+                # Might seem unecessary if you assume that the directory will only ever contain files, but I'm not willing to assume that.
         ]
 
     def download_books(self) -> None:
