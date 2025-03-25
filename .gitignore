@@ -1,12 +1,12 @@
 # Files
 .env
-**candidates.md
-**archive.json
 .python-version
+**archive.json
+**candidates.md
 **downloaded_files.json
 **downloaded_images.json
 
-# # Directories 
+# Directories 
 /OCR
 /data
 /images
@@ -15,7 +15,7 @@
 **/__pycache__/
 **/pdfs_after_ocr
 
-# /data/authors.json
+# Scripts
 **authors.py
 **backup.py
 

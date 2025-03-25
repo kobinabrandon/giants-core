@@ -14,16 +14,13 @@ read:
 	uv run src/data_processing/reading.py
 
 embed-chunk:
-	uv run src/vector_store/embeddings.py --chunk
+	uv run src/data_processing/embeddings.py --chunk
 
 embed-no-chunk:
-	uv run src/vector_store/embeddings.py 
+	uv run src/data_processing/embeddings.py 
 
-
-# Querying Chroma
-query:
-	uv run src/retrieval.py --nickname fidel --question "What are the goals of imperialism?" 
-
+generate:
+	uv run src/generation.py
 
 chat:
 	uv run src/graph/graph.py 
