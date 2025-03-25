@@ -4,13 +4,15 @@ from pathlib import Path
 from loguru import logger
 
 from langchain_groq import ChatGroq
+from langchain_core.messages import BaseMessage
 from langchain_core.language_models.chat_models import BaseChatModel
 
+from src.history import History
 from src.setup.config import groq_config
 from src.data_preparation.sourcing import Author
 from src.data_preparation.utils import get_author
+from src.retrieval.utils import make_base_prompt 
 from src.retrieval.vector_store import get_context
-from src.retrieval.utils import make_prompt
 
 
 class Generator:
@@ -22,12 +24,10 @@ class Generator:
             temperature: float | None = None,
             model_name: str = groq_config.preferred_model
     ) -> None:
-    
         self.nickname: str = nickname
         self.question: str = question
-        self.model_name: str = model_name 
-
         self.top_p: float | None = top_p 
+        self.model_name: str = model_name 
         self.temperature: float | None = temperature 
 
     def answer(self, save: bool = True) -> None: 
@@ -39,7 +39,7 @@ class Generator:
         assert author != None
         
         context: str = get_context(author=author, question=self.question) 
-        prompt: str = make_prompt(author=author, context=context, question=self.question)
+        prompt: str = make_base_prompt(author=author, context=context, question=self.question)
 
         final_answer = ""
         for chat in llm.stream(input=prompt):
@@ -48,7 +48,7 @@ class Generator:
 
         if save:
             self.__record_answer__(author=author, context=context, response=final_answer)
-
+        
     def __get_llm__(self, temperature: int = 0) -> BaseChatModel | None:
         if self.model_name == groq_config.preferred_model:
             return ChatGroq(temperature=temperature, model=self.model_name)

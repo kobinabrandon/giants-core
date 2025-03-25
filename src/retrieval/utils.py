@@ -1,6 +1,7 @@
 from src.data_preparation.sourcing import Author
 
-def make_prompt(author: Author, context: str, question: str) -> str:
+
+def make_base_prompt(author: Author, context: str, question: str) -> str:
 
     return f""" 
             You are a helpful chatbot whose job is to answer questions about {author.name} based on context that will be given 
@@ -17,4 +18,5 @@ def make_prompt(author: Author, context: str, question: str) -> str:
             Here is the question: 
             {question}
             """  
+
 
