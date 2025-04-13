@@ -1,14 +1,10 @@
-import os
-import json
-from pathlib import Path
 from argparse import ArgumentParser
 
-from loguru import logger
 from langchain_core.documents import Document
 
-from src.authors import prepare_sources
 from src.data_preparation.sourcing import Author
 from src.vector_store.embeddings import ChromaAPI
+from src.data_preparation.authors import prepare_sources
 
 
 def get_context(nickname: str, question: str, top_k: int = 5) -> list[Document]:
@@ -154,6 +150,6 @@ if __name__ == "__main__":
     _ = parser.add_argument("--question", type=str)
 
     args = parser.parse_args()    
-    results = get_context(nickname=args.nickname, question=args.question, raw=True)
+    results = get_context(nickname=args.nickname, question=args.question)
     print(results)
 

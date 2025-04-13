@@ -15,7 +15,7 @@ from src.setup.paths import CHROMA_DIR, DATA_DIR, OCR_IMAGES, IMAGES_IN_DOWNLOAD
 
 
 def find_raw_data_for_author(author_name: str) -> Path:
-    from src.authors import prepare_sources
+    from src.data_preparation.authors import prepare_sources
     return [author.path_to_raw_data for author in prepare_sources() if author_name == author.name][0]
 
 
@@ -238,7 +238,6 @@ class Author:
 
         book_paths: list[str] = []
         for book in self.books_via_http:
-
             file_path: Path = self.path_to_raw_data.joinpath(f"{book.file_name}.pdf")
             book.download(file_path=str(file_path))
             book_paths.append(str(file_path))

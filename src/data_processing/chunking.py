@@ -23,7 +23,6 @@ def split_documents(documents: list[Document]) -> list[Document]:
     max_seq_length = get_max_sequence_length()
 
     if some_pages_too_big_for_embedding(max_seq_length=max_seq_length, documents=documents):
-        
         logger.warning("Splitting into chunks by the token")
 
         splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(

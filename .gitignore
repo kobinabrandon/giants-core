@@ -9,6 +9,7 @@
 # # Directories 
 /OCR
 /data
+/.venv
 /images
 **/chroma/
 **/models/

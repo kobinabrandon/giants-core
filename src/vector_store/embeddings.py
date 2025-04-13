@@ -12,11 +12,10 @@ from langchain_huggingface import HuggingFaceEmbeddings
 
 from src.setup.paths import CHROMA_DIR
 from src.setup.config import embed_config
-
-from src.authors import prepare_sources
 from src.data_processing.cleaning import Cleaner 
 from src.data_preparation.sourcing import Author
 from src.data_processing.chunking import split_documents 
+from src.data_preparation.authors import prepare_sources
 
     
 class ChromaAPI: 

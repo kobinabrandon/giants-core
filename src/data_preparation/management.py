@@ -4,8 +4,8 @@ from pathlib import Path
 
 from loguru import logger
 
-from src.authors import prepare_sources
 from src.data_preparation.sourcing import Author
+from src.data_preparation.authors import prepare_sources
 from src.data_preparation.utils import get_file_extension, get_file_name_without_extension
 
 
@@ -95,7 +95,9 @@ class VersionManager:
                     truncated_name: str = get_file_name_without_extension(file_name_or_path=file_name)
                     file_extension: str = get_file_extension(file_name_or_path=file_name)
                     file_path: Path = self.__get_file_path__(truncated_name=truncated_name, format=file_extension)
-                    os.remove(file_path)
+
+                    if file_path.exists():
+                        os.remove(file_path)
         else:
             logger.success(f"There are no biographers/compilers for any of the saved texts by {author.name}")
 

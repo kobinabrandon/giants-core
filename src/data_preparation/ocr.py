@@ -9,7 +9,7 @@ from PIL.Image import Image
 from pypdf import PdfWriter
 from pytesseract import pytesseract 
 
-from src.authors import prepare_sources
+from src.data_preparation.authors import prepare_sources
 from src.data_preparation.sourcing import Author, ViaHTTP
 from src.data_preparation.utils import get_file_extension
 from src.setup.paths import OCR_IMAGES, PDFS_AFTER_OCR, TXT_AFTER_OCR, make_fundamental_paths 

@@ -1,33 +1,33 @@
 books:
-	poetry run python src/authors.py
+	uv run src/data_preparation/authors.py
 
 manage:
-	poetry run python src/data_preparation/management.py
+	uv run src/data_preparation/management.py
 
 archive:
-	poetry run python src/data_preparation/archive.py
+	uv run src/data_preparation/archive.py
 
 ocr:
-	poetry run python src/data_preparation/ocr.py
+	uv run src/data_preparation/ocr.py
 
 read:
-	poetry run python src/data_processing/reading.py
+	uv run src/data_processing/reading.py
 
 embed-chunk:
-	poetry run python src/vector_store/embeddings.py --chunk
+	uv run src/vector_store/embeddings.py --chunk
 
 embed-no-chunk:
-	poetry run python src/vector_store/embeddings.py 
+	uv run src/vector_store/embeddings.py 
 
 
 # Querying Chroma
 query:
-	poetry run python src/retrieval.py --nickname fidel --question "What are the goals of imperialism?" 
+	uv run src/retrieval.py --nickname fidel --question "What are the goals of imperialism?" 
 
 
 chat:
-	poetry run python src/graph/graph.py 
+	uv run src/graph/graph.py 
 
 # generate:
-# 	poetry run python src/generation/main.py --top_p 0 
+# 	uv run  src/generation/main.py --top_p 0 
 

@@ -1,8 +1,8 @@
 import json 
 from loguru import logger
 
-from src.authors import prepare_sources
 from src.setup.paths import ARCHIVE_DIR 
+from src.data_preparation.authors import prepare_sources
 from src.data_preparation.sourcing import ViaHTTP, ViaTorrent, ViaScraper, Author
 from src.setup.types import HTTPArchive, TorrentArchive, ScrapedArchive, AuthorArchive 
 
