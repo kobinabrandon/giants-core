@@ -18,7 +18,7 @@ llm: BaseChatModel = initiate_llm()
 
 
 @tool(response_format="content_and_artifact")
-def make_retrieval_node(state: ChatState, question: str, nickname: str ="fidel") -> tuple[str, list[Document]]:
+def make_retrieval_node(state: ChatState, question: str, nickname: str) -> tuple[str, list[Document]]:
     """
 
     Args:

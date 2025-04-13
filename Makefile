@@ -22,7 +22,7 @@ embed-no-chunk:
 
 # Querying Chroma
 query:
-	uv run src/retrieval.py --nickname fidel --question "What are the goals of imperialism?" 
+	uv run src/retrieval.py --nickname rumi --question "What are Rumi's views on God?" 
 
 
 chat:

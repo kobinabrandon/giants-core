@@ -1613,6 +1613,18 @@ wheels = [
 ]
 
 [[package]]
+name = "pdf2image"
+version = "1.17.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pillow" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/00/d8/b280f01045555dc257b8153c00dee3bc75830f91a744cd5f84ef3a0a64b1/pdf2image-1.17.0.tar.gz", hash = "sha256:eaa959bc116b420dd7ec415fcae49b98100dda3dd18cd2fdfa86d09f112f6d57", size = 12811 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/62/33/61766ae033518957f877ab246f87ca30a85b778ebaad65b7f74fa7e52988/pdf2image-1.17.0-py3-none-any.whl", hash = "sha256:ecdd58d7afb810dffe21ef2b1bbc057ef434dabbac6c33778a38a3f7744a27e2", size = 11618 },
+]
+
+[[package]]
 name = "pillow"
 version = "11.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2248,6 +2260,7 @@ dependencies = [
     { name = "langchain-huggingface" },
     { name = "loguru" },
     { name = "mobi" },
+    { name = "pdf2image" },
     { name = "pydantic-settings" },
     { name = "pypdf" },
     { name = "pypdf2" },
@@ -2272,6 +2285,7 @@ requires-dist = [
     { name = "langchain-huggingface", specifier = ">=0.1.2" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "mobi", specifier = ">=0.1.0" },
+    { name = "pdf2image", specifier = ">=1.17.0" },
     { name = "pydantic-settings", specifier = ">=2.8.1" },
     { name = "pypdf", specifier = ">=5.4.0" },
     { name = "pypdf2", specifier = ">=3.0.1" },
