@@ -114,9 +114,9 @@ def prepare_sources():
         books_via_http=[
             ViaHTTP(
                 title="The Philosophy & Opinions of Marcus Garvey",
-                url="https://jpanafrican.org/ebooks/eViaHTTP%20Phil%20and%20Opinions.pdf",
-                start_page=1,
-                end_page=63
+                url="https://ia801208.us.archive.org/5/items/ThePhilosophyOpinionsOfMarcusGarveyOrAfricaForTheAfricans/EbookPhilAndOpinions.pdf",
+                start_page=3,
+                end_page=62
             ),
         ]
     )
@@ -461,7 +461,7 @@ def prepare_sources():
     return [
         marx, mao, lenin, garvey, gandhi, yat_sen, goldman, kropotkin, rizal, rumi, nietzsche, 
         bakunin, proudhon, berkman, sun_tzu, vivekananda, rai, blavatsky 
-    ] 
+    ]
 
 
 if __name__ == "__main__":

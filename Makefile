@@ -10,9 +10,6 @@ archive:
 ocr:
 	uv run src/data_preparation/ocr.py
 
-read:
-	uv run src/data_processing/reading.py
-
 embed-chunk:
 	uv run src/vector_store/embeddings.py --chunk
 
